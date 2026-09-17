@@ -18,16 +18,16 @@
   },
   "status": {
     "financas": {
-      "situation": "regularizada",
-      "lastSync": "2026-09-17T19:16:59.608Z",
-      "certidaoValidaAte": "2026-12-16",
+      "situation": "nao_configurado",
+      "lastSync": null,
+      "certidaoValidaAte": null,
       "dividasAtivas": 0,
       "divergencias": 0
     },
     "segurancaSocial": {
-      "situation": "regularizada",
-      "lastSync": "2026-09-17T19:17:08.799Z",
-      "debitoDiretoAtivo": true,
+      "situation": "nao_configurado",
+      "lastSync": null,
+      "debitoDiretoAtivo": false,
       "ultimoPagamento": null,
       "proximoPagamento": null
     }

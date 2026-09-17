@@ -79,30 +79,41 @@ class Database {
     }
 
     getProfile() {
+        this.data = this.load();
         return this.data.profile;
     }
 
     updateProfile(updates) {
+        this.data = this.load();
         this.data.profile = { ...this.data.profile, ...updates };
         this.save();
         return this.data.profile;
     }
 
     getStatus() {
+        this.data = this.load();
         return this.data.status;
     }
 
     updateStatus(updates) {
-        this.data.status = { ...this.data.status, ...updates };
+        this.data = this.load();
+        if (updates.financas) {
+            this.data.status.financas = { ...this.data.status.financas, ...updates.financas };
+        }
+        if (updates.segurancaSocial) {
+            this.data.status.segurancaSocial = { ...this.data.status.segurancaSocial, ...updates.segurancaSocial };
+        }
         this.save();
         return this.data.status;
     }
 
     getInvoices() {
-        return this.data.invoices;
+        this.data = this.load();
+        return this.data.invoices || [];
     }
 
     addInvoice(invoice) {
+        this.data = this.load();
         const newInv = {
             id: "inv-" + Date.now(),
             date: new Date().toISOString().split('T')[0],
@@ -117,6 +128,7 @@ class Database {
     }
 
     classifyInvoice(id, category) {
+        this.data = this.load();
         const inv = this.data.invoices.find(i => i.id === id);
         if (inv) {
             inv.category = category;
@@ -128,6 +140,7 @@ class Database {
     }
 
     classifyAllPending() {
+        this.data = this.load();
         let count = 0;
         this.data.invoices.forEach(inv => {
             if (inv.type === 'expense' && inv.efaturaStatus === 'pending') {
@@ -141,13 +154,17 @@ class Database {
     }
 
     getCalendar() {
-        const isConfigured = Boolean(this.data.status.financas.lastSync || this.data.status.segurancaSocial.lastSync || (this.data.invoices && this.data.invoices.length > 0));
-        // Se ainda não iniciou sessão, não assume nem inventa obrigações fiscais
-        if (!isConfigured) {
+        this.data = this.load();
+        const hasFinancas = Boolean(this.data.status.financas && this.data.status.financas.lastSync);
+        const hasSS = Boolean(this.data.status.segurancaSocial && this.data.status.segurancaSocial.lastSync);
+        const hasInvoices = Boolean(this.data.invoices && this.data.invoices.length > 0);
+
+        // Se ainda não iniciou sessão nos portais oficiais, a agenda está 100% vazia
+        if (!hasFinancas && !hasSS && !hasInvoices) {
             return [];
         }
 
-        const fiscalList = getFiscalCalendar();
+        const fiscalList = getFiscalCalendar(new Date().getFullYear(), this.data.profile);
         const savedStates = this.data.calendarState || {};
 
         return fiscalList.map(item => {

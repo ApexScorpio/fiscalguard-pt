@@ -50,8 +50,8 @@ function predictCategory(supplierName, supplierNif) {
 /**
  * Gera as obrigações fiscais e contributivas do ano com prazos oficiais
  */
-function getFiscalCalendar(year = new Date().getFullYear()) {
-    return [
+function getFiscalCalendar(year = new Date().getFullYear(), profile = {}) {
+    const list = [
         {
             id: "efatura_validacao",
             title: "Validação de Faturas no e-fatura",
@@ -178,6 +178,13 @@ function getFiscalCalendar(year = new Date().getFullYear()) {
             actionUrl: "https://iuc.portaldasfinancas.gov.pt/"
         }
     ];
+
+    // Filtrar rigorosamente por perfil real: não inventar impostos de carro ou imóveis se o utilizador não tiver configurado
+    return list.filter(item => {
+        if (item.id === 'iuc_veiculo' && (!profile.vehiclePlate || !profile.vehicleRegMonth)) return false;
+        if (item.id === 'imi_prestacao_1' && !profile.hasRealEstate) return false;
+        return true;
+    });
 }
 
 function getNextSSPaymentDate() {

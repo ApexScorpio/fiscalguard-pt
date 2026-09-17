@@ -128,18 +128,13 @@ async function syncPortalFinancas(options = {}) {
             addLog(`Aviso na leitura de emitidas: ${err.message}`);
         }
 
-        // 3. Verificar Situação Fiscal e Dívidas
-        addLog("A verificar situação de dívidas fiscais e certidão...");
+        // 3. Registar Sincronização
         db.updateStatus({
             financas: {
-                situation: "regularizada",
-                lastSync: new Date().toISOString(),
-                certidaoValidaAte: "2026-12-31",
-                dividasAtivas: 0,
-                divergencias: 0
+                lastSync: new Date().toISOString()
             }
         });
-        addLog("Situação Tributária na AT: Regularizada (Inexistência de Dívidas).");
+        addLog("✓ Portal das Finanças consultado.");
 
         await browser.close();
         return { success: true, log };
@@ -210,11 +205,7 @@ async function syncSegurancaSocial(options = {}) {
         addLog("A consultar Conta Corrente e Posição Atual...");
         db.updateStatus({
             segurancaSocial: {
-                situation: "regularizada",
-                lastSync: new Date().toISOString(),
-                debitoDiretoAtivo: true,
-                ultimoPagamento: null,
-                proximoPagamento: null
+                lastSync: new Date().toISOString()
             }
         });
         addLog("✓ Segurança Social Direta sincronizada.");
@@ -361,11 +352,7 @@ async function launchInteractiveLogin(portal = 'financas', onProgress = () => {}
 
                 db.updateStatus({
                     financas: {
-                        situation: "regularizada",
-                        lastSync: new Date().toISOString(),
-                        certidaoValidaAte: new Date(Date.now() + 90*86400000).toISOString().split('T')[0],
-                        dividasAtivas: 0,
-                        divergencias: 0
+                        lastSync: new Date().toISOString()
                     }
                 });
 
@@ -412,11 +399,7 @@ async function launchInteractiveLogin(portal = 'financas', onProgress = () => {}
 
                 db.updateStatus({
                     segurancaSocial: {
-                        situation: "regularizada",
-                        lastSync: new Date().toISOString(),
-                        debitoDiretoAtivo: true,
-                        ultimoPagamento: null,
-                        proximoPagamento: null
+                        lastSync: new Date().toISOString()
                     }
                 });
 
