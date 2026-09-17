@@ -630,9 +630,9 @@
                 <button class="btn-close-modal" id="btn-close-portal-modal">&times;</button>
             </div>
             <div class="modal-body" style="padding: 24px;">
-                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
-                    Como definiste, <strong>não vais registar nada à mão</strong>. A app abre uma janela oficial do <strong>Google Chrome</strong> diretamente no portal pretendido para autenticares com as tuas credenciais ou Chave Móvel Digital.
-                </p>
+                <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3); border-radius: var(--radius-md); padding: 14px; margin-bottom: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+                    <strong style="color: var(--accent-emerald);">🤖 Como funciona:</strong> Clica no botão abaixo — o FiscalGuard abre o Google Chrome com o Portal oficial. Faz o teu login normalmente (NIF/Senha ou Chave Móvel Digital). Depois, clica <strong>"⚡ Já fiz Login no Chrome"</strong> que aparecerá no ecrã de sincronização, e as tuas faturas são extraídas automaticamente.
+                </div>
 
                 <div style="display: flex; flex-direction: column; gap: 16px;">
                     <!-- OPÇÃO 1: FINANÇAS -->
@@ -642,19 +642,11 @@
                             <span class="badge badge-pending" id="badge-modal-at">Por Autenticar</span>
                         </div>
                         <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
-                            Abre a página oficial <code>acesso.gov.pt</code> no Google Chrome. Podes entrar com NIF/Senha ou Chave Móvel Digital. As tuas faturas do e-fatura e recibos emitidos são lidos diretamente para o disco S:.
+                            O Google Chrome abre no portal <code>acesso.gov.pt</code>. Faz login com NIF/Senha ou Chave Móvel Digital. Faturas do e-fatura e recibos verdes são extraídos automaticamente após o teu login.
                         </p>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button id="btn-login-at-chrome" class="btn btn-emerald" style="flex: 1;">
-                                <span class="btn-icon">🌐</span> Abrir Finanças no Google Chrome
-                            </button>
-                            <button id="btn-login-at-direct" type="button" class="btn btn-outline" style="border-color: var(--accent-emerald); font-size: 12.5px;" title="Abre diretamente o Google Chrome instalado no teu Windows">
-                                <span>🚀 Abrir Chrome Nativo</span>
-                            </button>
-                            <a href="https://www.acesso.gov.pt/v2/loginForm?partID=PFAP" target="_blank" class="btn btn-outline" style="font-size: 12.5px; text-decoration: none; display: inline-flex; align-items: center;" title="Abre numa nova aba do teu navegador atual">
-                                <span>🔗 Nova Aba</span>
-                            </a>
-                        </div>
+                        <button id="btn-login-at-chrome" class="btn btn-emerald" style="width: 100%;">
+                            <span class="btn-icon">🌐</span> Abrir Portal das Finanças no Google Chrome
+                        </button>
                     </div>
 
                     <!-- OPÇÃO 2: SEGURANÇA SOCIAL -->
@@ -664,25 +656,17 @@
                             <span class="badge badge-pending" id="badge-modal-ss">Por Autenticar</span>
                         </div>
                         <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
-                            Abre <code>app.seg-social.pt</code> no Google Chrome para autenticares com NISS ou Chave Móvel Digital. Permite monitorizar conta corrente, débito direto e valores a pagar.
+                            O Google Chrome abre em <code>app.seg-social.pt</code>. Faz login com NISS ou Chave Móvel Digital. Conta corrente, débito direto e valores a pagar são lidos após o teu login.
                         </p>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button id="btn-login-ss-chrome" class="btn btn-primary" style="flex: 1;">
-                                <span class="btn-icon">🌐</span> Abrir SS Direta no Google Chrome
-                            </button>
-                            <button id="btn-login-ss-direct" type="button" class="btn btn-outline" style="border-color: var(--accent-blue); font-size: 12.5px;" title="Abre diretamente o Google Chrome instalado no teu Windows">
-                                <span>🚀 Abrir Chrome Nativo</span>
-                            </button>
-                            <a href="https://app.seg-social.pt/ptss/" target="_blank" class="btn btn-outline" style="font-size: 12.5px; text-decoration: none; display: inline-flex; align-items: center;" title="Abre numa nova aba do teu navegador atual">
-                                <span>🔗 Nova Aba</span>
-                            </a>
-                        </div>
+                        <button id="btn-login-ss-chrome" class="btn btn-primary" style="width: 100%;">
+                            <span class="btn-icon">🌐</span> Abrir Segurança Social Direta no Google Chrome
+                        </button>
                     </div>
 
                     <!-- OPÇÃO 3: COFRE LOCAL -->
                     <div style="background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); border-radius: var(--radius-md); padding: 12px; text-align: center;">
                         <small style="color: var(--text-muted);">
-                            Preferes leitura 100% automática e silenciosa em segundo plano? Configura o teu NIF/Senha no Cofre Local em <a href="#" id="link-goto-vault" style="color: var(--accent-blue); text-decoration: underline;">Definições & Cofre</a>.
+                            Preferes leitura 100% automática e silenciosa em segundo plano? Configura o teu NIF/Senha no Cofre Local em <a href="#" id="link-goto-vault" style="color: var(--accent-blue); text-decoration: underline;">Definições &amp; Cofre</a>.
                         </small>
                     </div>
                 </div>

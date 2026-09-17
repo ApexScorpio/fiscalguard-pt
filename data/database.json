@@ -18,9 +18,9 @@
   },
   "status": {
     "financas": {
-      "situation": "nao_configurado",
-      "lastSync": null,
-      "certidaoValidaAte": null,
+      "situation": "regularizada",
+      "lastSync": "2026-09-17T19:50:51.541Z",
+      "certidaoValidaAte": "2026-12-16",
       "dividasAtivas": 0,
       "divergencias": 0
     },
