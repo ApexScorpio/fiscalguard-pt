@@ -644,9 +644,14 @@
                         <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
                             Abre a página oficial <code>acesso.gov.pt</code> no Google Chrome. Podes entrar com NIF/Senha ou Chave Móvel Digital. As tuas faturas do e-fatura e recibos emitidos são lidos diretamente para o disco S:.
                         </p>
-                        <button id="btn-login-at-chrome" class="btn btn-emerald" style="width: 100%;">
-                            <span class="btn-icon">🌐</span> Abrir Portal das Finanças no Google Chrome
-                        </button>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button id="btn-login-at-chrome" class="btn btn-emerald" style="flex: 1;">
+                                <span class="btn-icon">🌐</span> Abrir Finanças no Google Chrome
+                            </button>
+                            <button id="btn-login-at-direct" type="button" class="btn btn-outline" style="border-color: var(--accent-emerald); font-size: 12.5px;" title="Abre diretamente o Google Chrome instalado no teu Windows">
+                                <span>🚀 Abrir Chrome Nativo</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- OPÇÃO 2: SEGURANÇA SOCIAL -->
@@ -658,9 +663,14 @@
                         <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
                             Abre <code>app.seg-social.pt</code> no Google Chrome para autenticares com NISS ou Chave Móvel Digital. Permite monitorizar conta corrente, débito direto e valores a pagar.
                         </p>
-                        <button id="btn-login-ss-chrome" class="btn btn-primary" style="width: 100%;">
-                            <span class="btn-icon">🌐</span> Abrir Segurança Social Direta no Google Chrome
-                        </button>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button id="btn-login-ss-chrome" class="btn btn-primary" style="flex: 1;">
+                                <span class="btn-icon">🌐</span> Abrir SS Direta no Google Chrome
+                            </button>
+                            <button id="btn-login-ss-direct" type="button" class="btn btn-outline" style="border-color: var(--accent-blue); font-size: 12.5px;" title="Abre diretamente o Google Chrome instalado no teu Windows">
+                                <span>🚀 Abrir Chrome Nativo</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- OPÇÃO 3: COFRE LOCAL -->
@@ -692,7 +702,10 @@
 [Aguardando início da sincronização...]
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                <button type="button" class="btn btn-small btn-emerald" id="btn-console-open-native">
+                    🚀 Abrir Diretamente no Teu Chrome
+                </button>
                 <button type="button" class="btn btn-primary" id="btn-dismiss-sync-console">Fechar</button>
             </div>
         </div>
@@ -751,6 +764,6 @@
     </div>
 
     <!-- SCRIPT DA APLICAÇÃO -->
-    <script src="app.js"></script>
+    <script src="app.js?v=2.0.2"></script>
 </body>
 </html>

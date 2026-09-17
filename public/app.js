@@ -596,7 +596,27 @@ window.openPortalLoginModal = function(portal = null) {
     if (modal) modal.classList.add('active');
 };
 
+let currentInteractivePortal = 'financas';
+
+async function openDirectChrome(portal = 'financas') {
+    currentInteractivePortal = portal;
+    try {
+        const res = await fetch('/api/auth/open-native-chrome', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ portal })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert(`✓ Google Chrome oficial aberto diretamente no teu ecrã para o ${portal === 'financas' ? 'Portal das Finanças' : 'Segurança Social Direta'}.\nPodes fazer o teu login oficial à vontade!`);
+        }
+    } catch (e) {
+        alert("Erro ao abrir Chrome: " + e.message);
+    }
+}
+
 async function runInteractiveLogin(portal = 'financas') {
+    currentInteractivePortal = portal;
     const consoleModal = document.getElementById('modal-sync-console');
     const logsEl = document.getElementById('sync-terminal-logs');
     if (consoleModal && logsEl) {
@@ -657,11 +677,34 @@ function initEventListeners() {
         });
     }
 
+    const btnLoginAtDirect = document.getElementById('btn-login-at-direct');
+    if (btnLoginAtDirect && modalPortalLogin) {
+        btnLoginAtDirect.addEventListener('click', () => {
+            modalPortalLogin.classList.remove('active');
+            openDirectChrome('financas');
+        });
+    }
+
     const btnLoginSsChrome = document.getElementById('btn-login-ss-chrome');
     if (btnLoginSsChrome && modalPortalLogin) {
         btnLoginSsChrome.addEventListener('click', () => {
             modalPortalLogin.classList.remove('active');
             runInteractiveLogin('seg_social');
+        });
+    }
+
+    const btnLoginSsDirect = document.getElementById('btn-login-ss-direct');
+    if (btnLoginSsDirect && modalPortalLogin) {
+        btnLoginSsDirect.addEventListener('click', () => {
+            modalPortalLogin.classList.remove('active');
+            openDirectChrome('seg_social');
+        });
+    }
+
+    const btnConsoleNative = document.getElementById('btn-console-open-native');
+    if (btnConsoleNative) {
+        btnConsoleNative.addEventListener('click', () => {
+            openDirectChrome(currentInteractivePortal || 'financas');
         });
     }
 

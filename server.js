@@ -4,7 +4,7 @@ const path = require('path');
 const db = require('./db');
 const { calculateNetIncome, simulateSSTrimestral } = require('./rules');
 const { sendNativeToast, checkAndTriggerAlerts } = require('./notifier');
-const { syncPortalFinancas, syncSegurancaSocial, getCredentials, saveCredentials, launchInteractiveLogin } = require('./sync');
+const { syncPortalFinancas, syncSegurancaSocial, getCredentials, saveCredentials, launchInteractiveLogin, openNativeChrome } = require('./sync');
 const multiSync = require('./sync-relay');
 const { answerQuestion } = require('./assistant');
 
@@ -13,7 +13,13 @@ const PORT = process.env.PORT || 4848;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+    etag: false,
+    maxAge: 0,
+    setHeaders: (res) => {
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    }
+}));
 
 app.get('/api/status', (req, res) => {
     const profile = db.getProfile();
@@ -189,6 +195,16 @@ app.post('/api/auth/open-portal', async (req, res) => {
         const { portal = 'financas' } = req.body || {};
         const result = await launchInteractiveLogin(portal);
         res.json(result);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/auth/open-native-chrome', (req, res) => {
+    try {
+        const { portal = 'financas' } = req.body || {};
+        const result = openNativeChrome(portal);
+        res.json({ success: true, ...result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }

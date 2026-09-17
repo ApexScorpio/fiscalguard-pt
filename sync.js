@@ -230,6 +230,18 @@ async function syncSegurancaSocial(options = {}) {
 }
 
 /**
+ * Abre o Google Chrome oficial diretamente no Windows com a página de login
+ */
+function openNativeChrome(portal = 'financas') {
+    const { exec } = require('child_process');
+    const targetUrl = portal === 'financas'
+        ? 'https://www.acesso.gov.pt/v2/loginForm?partID=PFAP'
+        : 'https://app.seg-social.pt/ptss/';
+    exec(`powershell -Command "Start-Process 'chrome.exe' -ArgumentList '${targetUrl}'"`);
+    return { success: true, url: targetUrl };
+}
+
+/**
  * Início de Sessão Oficial Interativo
  * Abre o Google Chrome na página oficial de autenticação (acesso.gov.pt ou app.seg-social.pt).
  * O utilizador faz login como habitual (NIF/Senha, Chave Móvel Digital por SMS, etc.).
@@ -250,76 +262,143 @@ async function launchInteractiveLogin(portal = 'financas', onProgress = () => {}
         const portalName = isFinancas ? 'Portal das Finanças (AT)' : 'Segurança Social Direta';
         addLog(`A abrir o Google Chrome para início de sessão oficial no ${portalName}...`);
 
+        const { exec } = require('child_process');
+
         browser = await chromium.launch({
             channel: 'chrome',
             headless: false,
-            args: ['--start-maximized']
+            args: [
+                '--start-maximized',
+                '--new-window',
+                '--no-first-run',
+                '--no-default-browser-check'
+            ]
         });
 
+        // Forçar janela para a frente no Windows
+        exec('powershell -Command "$wshell = New-Object -ComObject Wscript.Shell; Start-Sleep -Milliseconds 600; $wshell.AppActivate(\'Chrome\'); $wshell.AppActivate(\'Google Chrome\'); $wshell.AppActivate(\'Autenticação\'); $wshell.AppActivate(\'Acesso\')"');
+
         const targetSession = isFinancas ? SESSION_AT_FILE : SESSION_SS_FILE;
-        const context = await browser.newContext(fs.existsSync(targetSession) ? { storageState: targetSession } : {});
+        const context = await browser.newContext({
+            viewport: null,
+            ...(fs.existsSync(targetSession) ? { storageState: targetSession } : {})
+        });
         const page = await context.newPage();
+        await page.bringToFront().catch(() => {});
+
+        let isClosed = false;
+        page.on('close', () => { isClosed = true; });
+        browser.on('disconnected', () => { isClosed = true; });
 
         if (isFinancas) {
             await page.goto('https://www.acesso.gov.pt/v2/loginForm?partID=PFAP', { waitUntil: 'domcontentloaded' });
-            addLog("Por favor faz a tua autenticação na janela do Google Chrome aberta no ecrã (com NIF/Senha ou Chave Móvel Digital).");
-            addLog("A aplicação está a aguardar que termines a autenticação oficial...");
+            addLog("Janela do Google Chrome aberta no ecrã.");
+            addLog("Por favor faz a tua autenticação com NIF/Senha ou Chave Móvel Digital.");
+            addLog("A aplicação aguarda que concluas o login...");
 
-            // Aguarda até o utilizador concluir login
-            await page.waitForURL(url => !url.href.includes('loginForm') && !url.href.includes('/v2/login'), { timeout: 180000 }).catch(() => {});
+            // Aguarda até o utilizador concluir o login ou fechar a janela (até 5 minutos)
+            let authenticated = false;
+            const startTime = Date.now();
+            while (!isClosed && (Date.now() - startTime < 300000)) {
+                await new Promise(r => setTimeout(r, 1500));
+                if (isClosed) break;
 
-            // Guardar sessão em S:\fiscalguard-pt
-            await context.storageState({ path: SESSION_AT_FILE }).catch(() => {});
-            addLog("✓ Sessão autenticada do Portal das Finanças guardada com sucesso em S:\\fiscalguard-pt!");
-
-            // Tentar extrair NIF
-            try {
-                const bodyText = await page.textContent('body');
-                const nifMatch = bodyText.match(/\b([123]\d{8}|5\d{8})\b/);
-                if (nifMatch) {
-                    db.updateProfile({ nif: nifMatch[1] });
-                    addLog(`✓ NIF detetado na sessão oficial: ${nifMatch[1]}`);
+                try {
+                    const currentUrl = page.url();
+                    if (!currentUrl.includes('loginForm') && !currentUrl.includes('/v2/login') && (currentUrl.includes('portaldasfinancas.gov.pt') || currentUrl.includes('/geral/dashboard'))) {
+                        authenticated = true;
+                        addLog("✓ Login bem-sucedido detetado no Portal das Finanças!");
+                        break;
+                    }
+                } catch (e) {
+                    break;
                 }
-            } catch (e) {}
+            }
 
-            db.updateStatus({
-                financas: {
-                    situation: "regularizada",
-                    lastSync: new Date().toISOString(),
-                    certidaoValidaAte: new Date(Date.now() + 90*86400000).toISOString().split('T')[0],
-                    dividasAtivas: 0,
-                    divergencias: 0
-                }
-            });
+            if (authenticated) {
+                // Guardar sessão em S:\fiscalguard-pt
+                await context.storageState({ path: SESSION_AT_FILE }).catch(() => {});
+                addLog("✓ Sessão autenticada do Portal das Finanças guardada com sucesso em S:\\fiscalguard-pt!");
 
-            try {
-                addLog("A consultar as tuas despesas no e-fatura...");
-                await page.goto('https://faturas.portaldasfinancas.gov.pt/consultarDespesasAdquirente.action', { waitUntil: 'domcontentloaded', timeout: 25000 });
-                addLog("✓ Módulo e-fatura verificado.");
-            } catch (e) {}
+                // Tentar extrair NIF
+                try {
+                    const bodyText = await page.textContent('body');
+                    const nifMatch = bodyText.match(/\b([123]\d{8}|5\d{8})\b/);
+                    if (nifMatch) {
+                        db.updateProfile({ nif: nifMatch[1] });
+                        addLog(`✓ NIF detetado na sessão oficial: ${nifMatch[1]}`);
+                    }
+                } catch (e) {}
+
+                db.updateStatus({
+                    financas: {
+                        situation: "regularizada",
+                        lastSync: new Date().toISOString(),
+                        certidaoValidaAte: new Date(Date.now() + 90*86400000).toISOString().split('T')[0],
+                        dividasAtivas: 0,
+                        divergencias: 0
+                    }
+                });
+
+                try {
+                    addLog("A consultar as tuas despesas no e-fatura...");
+                    await page.goto('https://faturas.portaldasfinancas.gov.pt/consultarDespesasAdquirente.action', { waitUntil: 'domcontentloaded', timeout: 25000 });
+                    addLog("✓ Módulo e-fatura verificado.");
+                } catch (e) {}
+
+                await browser.close().catch(() => {});
+                addLog("✓ Autenticação concluída com sucesso.");
+            } else {
+                addLog("ℹ️ Janela do Google Chrome fechada.");
+                if (!isClosed) await browser.close().catch(() => {});
+            }
 
         } else {
             await page.goto('https://app.seg-social.pt/ptss/', { waitUntil: 'domcontentloaded' });
-            addLog("Por favor autentica-te na janela aberta da Segurança Social Direta (NISS ou Chave Móvel Digital).");
+            addLog("Janela da Segurança Social Direta aberta no ecrã.");
+            addLog("Por favor autentica-te com NISS ou Chave Móvel Digital.");
             addLog("A aguardar conclusão da tua autenticação...");
 
-            await page.waitForURL(url => !url.href.includes('/login') && !url.href.includes('autenticacao'), { timeout: 180000 }).catch(() => {});
-            await context.storageState({ path: SESSION_SS_FILE }).catch(() => {});
-            addLog("✓ Sessão da Segurança Social Direta guardada em S:\\fiscalguard-pt!");
+            let authenticated = false;
+            const startTime = Date.now();
+            while (!isClosed && (Date.now() - startTime < 300000)) {
+                await new Promise(r => setTimeout(r, 1500));
+                if (isClosed) break;
 
-            db.updateStatus({
-                segurancaSocial: {
-                    situation: "regularizada",
-                    lastSync: new Date().toISOString(),
-                    debitoDiretoAtivo: true,
-                    ultimoPagamento: null,
-                    proximoPagamento: null
+                try {
+                    const currentUrl = page.url();
+                    if (!currentUrl.includes('/login') && !currentUrl.includes('autenticacao') && currentUrl.includes('seg-social.pt') && (currentUrl.includes('/inicio') || currentUrl.includes('/ptss/'))) {
+                        authenticated = true;
+                        addLog("✓ Login bem-sucedido detetado na Segurança Social Direta!");
+                        break;
+                    }
+                } catch (e) {
+                    break;
                 }
-            });
+            }
+
+            if (authenticated) {
+                await context.storageState({ path: SESSION_SS_FILE }).catch(() => {});
+                addLog("✓ Sessão da Segurança Social Direta guardada em S:\\fiscalguard-pt!");
+
+                db.updateStatus({
+                    segurancaSocial: {
+                        situation: "regularizada",
+                        lastSync: new Date().toISOString(),
+                        debitoDiretoAtivo: true,
+                        ultimoPagamento: null,
+                        proximoPagamento: null
+                    }
+                });
+
+                await browser.close().catch(() => {});
+                addLog("✓ Autenticação na Segurança Social concluída.");
+            } else {
+                addLog("ℹ️ Janela da Segurança Social Direta fechada.");
+                if (!isClosed) await browser.close().catch(() => {});
+            }
         }
 
-        await browser.close();
-        addLog("✓ Autenticação concluída e janela fechada. A carregar os teus dados...");
         return { success: true, log };
 
     } catch (err) {
@@ -334,5 +413,6 @@ module.exports = {
     saveCredentials,
     syncPortalFinancas,
     syncSegurancaSocial,
-    launchInteractiveLogin
+    launchInteractiveLogin,
+    openNativeChrome
 };
