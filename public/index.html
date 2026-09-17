@@ -181,8 +181,8 @@
                         <button id="btn-auto-classify" class="btn btn-emerald">
                             <span class="btn-icon">✨</span> Auto-Classificar Todas as Pendentes (1-Clique)
                         </button>
-                        <button id="btn-add-invoice-modal" class="btn btn-secondary">
-                            <span class="btn-icon">➕</span> Nova Fatura / Despesa
+                        <button id="btn-sync-efatura-direct" class="btn btn-secondary" title="Ler faturas diretamente do Portal das Finanças em tempo real">
+                            <span class="btn-icon">🔄</span> Ler Diretamente do Portal das Finanças
                         </button>
                     </div>
                 </div>
@@ -533,8 +533,78 @@
                         </div>
                     </form>
                 </div>
+
+                <!-- COFRE LOCAL DE CREDENCIAIS DOS PORTAIS -->
+                <div class="settings-card" style="margin-top: 24px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:10px;">
+                        <h2>🔐 Cofre Local dos Portais Oficiais (Leitura 100% Automática)</h2>
+                        <span class="badge badge-success">Armazenamento Local em S:\</span>
+                    </div>
+                    <p class="section-desc">
+                        A aplicação lê diretamente as tuas faturas, situação fiscal e Segurança Social através do Microsoft Edge em segundo plano. As tuas senhas ficam guardadas encriptadas neste computador e nunca saem da tua máquina.
+                    </p>
+
+                    <form id="vault-form" style="margin-top: 20px;">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="vault-at-password">
+                                    Senha do Portal das Finanças (AT):
+                                    <span id="badge-at-status" class="badge badge-warning" style="margin-left: 8px;">A verificar...</span>
+                                </label>
+                                <input type="password" id="vault-at-password" class="form-input" placeholder="Introduz a senha da AT para leitura automática">
+                                <small style="color:var(--text-muted);margin-top:4px;display:block;">Usada para aceder ao e-fatura, faturas emitidas e certidões.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="vault-ss-password">
+                                    Senha da Segurança Social Direta (SSD):
+                                    <span id="badge-ss-status" class="badge badge-warning" style="margin-left: 8px;">A verificar...</span>
+                                </label>
+                                <input type="password" id="vault-ss-password" class="form-input" placeholder="Introduz a senha da SS para leitura automática">
+                                <small style="color:var(--text-muted);margin-top:4px;display:block;">Usada para ler a conta corrente, pagamentos e declarações trimestrais.</small>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;flex-wrap:wrap;gap:12px;">
+                            <label class="checkbox-label" style="margin-bottom:0;">
+                                <input type="checkbox" id="vault-headed-mode">
+                                <span>Abrir navegador em modo visível (caso seja necessário validar Chave Móvel Digital / 2FA)</span>
+                            </label>
+
+                            <div style="display:flex;gap:10px;">
+                                <button type="submit" class="btn btn-primary">
+                                    <span>💾 Guardar Senhas no Cofre</span>
+                                </button>
+                                <button type="button" id="btn-test-scrape-now" class="btn btn-emerald">
+                                    <span>⚡ Iniciar Leitura Direta Agora</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </section>
         </main>
+    </div>
+
+    <!-- MODAL: CONSOLE DE TELEMETRIA E SINCRONIZAÇÃO AO VIVO -->
+    <div class="modal-overlay" id="modal-sync-console">
+        <div class="modal-box" style="max-width: 650px;">
+            <div class="modal-header">
+                <h3>⚡ Leitura em Tempo Real dos Portais Oficiais</h3>
+                <button class="btn-close-modal" id="btn-close-sync-console">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
+                    O robô do FiscalGuard está a ligar-se aos portais oficiais através do navegador seguro para extrair todos os teus dados:
+                </p>
+                <div class="terminal-log-window" id="sync-terminal-logs" style="background:#000;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:14px;font-family:var(--font-mono);font-size:12.5px;color:#38bdf8;min-height:200px;max-height:280px;overflow-y:auto;white-space:pre-wrap;line-height:1.6;">
+[Aguardando início da sincronização...]
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btn-dismiss-sync-console">Fechar</button>
+            </div>
+        </div>
     </div>
 
     <!-- MODAL: NOVA FATURA / DESPESA -->

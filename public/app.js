@@ -321,8 +321,85 @@ async function loadSettings() {
         document.getElementById('setting-plate').value = p.vehiclePlate || '';
         document.getElementById('setting-reg-month').value = p.vehicleRegMonth || '9';
 
+        await loadVaultStatus();
+
     } catch (e) {
         console.error("Erro ao carregar /api/settings:", e);
+    }
+}
+
+async function loadVaultStatus() {
+    try {
+        const res = await fetch('/api/vault/credentials');
+        const creds = await res.json();
+
+        const atBadge = document.getElementById('badge-at-status');
+        if (atBadge) {
+            if (creds.at.hasPassword) {
+                atBadge.className = "badge badge-success";
+                atBadge.textContent = "🟢 Senha Guardada no Cofre";
+            } else {
+                atBadge.className = "badge badge-pending";
+                atBadge.textContent = "🔴 Senha Por Configurar";
+            }
+        }
+
+        const ssBadge = document.getElementById('badge-ss-status');
+        if (ssBadge) {
+            if (creds.ss.hasPassword) {
+                ssBadge.className = "badge badge-success";
+                ssBadge.textContent = "🟢 Senha Guardada no Cofre";
+            } else {
+                ssBadge.className = "badge badge-pending";
+                ssBadge.textContent = "🔴 Senha Por Configurar";
+            }
+        }
+    } catch (e) {
+        console.error("Erro ao carregar status do cofre:", e);
+    }
+}
+
+/**
+ * Executa a sincronização e extração direta dos portais com terminal ao vivo
+ */
+async function runPortalSync(options = {}) {
+    const consoleModal = document.getElementById('modal-sync-console');
+    const logsEl = document.getElementById('sync-terminal-logs');
+    if (consoleModal && logsEl) {
+        consoleModal.classList.add('active');
+        logsEl.innerHTML = `[${new Date().toLocaleTimeString()}] A iniciar robô de extração do FiscalGuard PT...\n`;
+    }
+
+    const appendLog = (msg) => {
+        if (logsEl) {
+            logsEl.innerHTML += `${msg}\n`;
+            logsEl.scrollTop = logsEl.scrollHeight;
+        }
+    };
+
+    try {
+        appendLog(`[${new Date().toLocaleTimeString()}] Modo: ${options.headed ? 'Navegador Visível (Headed)' : 'Segundo Plano Silencioso (Headless)'}`);
+        appendLog(`[${new Date().toLocaleTimeString()}] A ligar aos portais oficiais com credenciais locais do cofre...`);
+
+        const res = await fetch('/api/sync/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ headless: !options.headed })
+        });
+        const data = await res.json();
+
+        if (data.at && data.at.log) {
+            data.at.log.forEach(l => appendLog(l));
+        }
+        if (data.ss && data.ss.log) {
+            data.ss.log.forEach(l => appendLog(l));
+        }
+
+        appendLog(`[${new Date().toLocaleTimeString()}] ✓ Leitura dos Portais 100% Concluída com Sucesso.`);
+        await loadAllData();
+
+    } catch (err) {
+        appendLog(`[${new Date().toLocaleTimeString()}] ❌ Erro durante a leitura: ${err.message}`);
     }
 }
 
@@ -330,24 +407,57 @@ async function loadSettings() {
    EVENT LISTENERS & AÇÕES DO UTILIZADOR
    ========================================================================== */
 function initEventListeners() {
-    // 1. Sincronização 100% Automática
+    // 1. Sincronização 100% Automática nos botões do topo e das abas
     const syncAllBtn = document.getElementById('btn-sync-all');
     if (syncAllBtn) {
-        syncAllBtn.addEventListener('click', async () => {
-            syncAllBtn.disabled = true;
-            syncAllBtn.innerHTML = `<span>⏳ A Sincronizar Portais...</span>`;
+        syncAllBtn.addEventListener('click', () => runPortalSync({ headed: false }));
+    }
+
+    const syncEfaturaDirect = document.getElementById('btn-sync-efatura-direct');
+    if (syncEfaturaDirect) {
+        syncEfaturaDirect.addEventListener('click', () => runPortalSync({ headed: false }));
+    }
+
+    const testScrapeNowBtn = document.getElementById('btn-test-scrape-now');
+    if (testScrapeNowBtn) {
+        testScrapeNowBtn.addEventListener('click', () => {
+            const isHeaded = document.getElementById('vault-headed-mode')?.checked || false;
+            runPortalSync({ headed: isHeaded });
+        });
+    }
+
+    // Modal de Telemetria fechar
+    const closeConsoleBtn = document.getElementById('btn-close-sync-console');
+    const dismissConsoleBtn = document.getElementById('btn-dismiss-sync-console');
+    const consoleModal = document.getElementById('modal-sync-console');
+    if (closeConsoleBtn && consoleModal) {
+        closeConsoleBtn.addEventListener('click', () => consoleModal.classList.remove('active'));
+    }
+    if (dismissConsoleBtn && consoleModal) {
+        dismissConsoleBtn.addEventListener('click', () => consoleModal.classList.remove('active'));
+    }
+
+    // Formulário do Cofre de Credenciais
+    const vaultForm = document.getElementById('vault-form');
+    if (vaultForm) {
+        vaultForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const atPassword = document.getElementById('vault-at-password').value;
+            const ssPassword = document.getElementById('vault-ss-password').value;
 
             try {
-                const res = await fetch('/api/sync/run', { method: 'POST' });
+                const res = await fetch('/api/vault/credentials', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ atPassword, ssPassword })
+                });
                 const result = await res.json();
-                
-                await loadAllData();
-                alert("✓ Sincronização 100% Automática concluída!\nFinanças e Segurança Social verificadas com sucesso.");
-            } catch (e) {
-                alert("Erro na sincronização: " + e.message);
-            } finally {
-                syncAllBtn.disabled = false;
-                syncAllBtn.innerHTML = `<span class="btn-icon">⚡</span><span>Sincronizar (100% Auto)</span>`;
+                alert("✓ Senhas dos portais guardadas com sucesso no Cofre Local em S:\\fiscalguard-pt!\nA app agora consegue aceder e ler os teus dados diretamente.");
+                await loadVaultStatus();
+                document.getElementById('vault-at-password').value = '';
+                document.getElementById('vault-ss-password').value = '';
+            } catch (err) {
+                alert("Erro ao guardar senhas no cofre: " + err.message);
             }
         });
     }

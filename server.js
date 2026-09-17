@@ -4,7 +4,7 @@ const path = require('path');
 const db = require('./db');
 const { calculateNetIncome, simulateSSTrimestral } = require('./rules');
 const { sendNativeToast, checkAndTriggerAlerts } = require('./notifier');
-const { syncPortalFinancas, syncSegurancaSocial } = require('./sync');
+const { syncPortalFinancas, syncSegurancaSocial, getCredentials, saveCredentials } = require('./sync');
 const multiSync = require('./sync-relay');
 const { answerQuestion } = require('./assistant');
 
@@ -151,8 +151,9 @@ app.post('/api/simulator/profit', (req, res) => {
 
 app.post('/api/sync/run', async (req, res) => {
     try {
-        const atResult = await syncPortalFinancas({ simulated: true });
-        const ssResult = await syncSegurancaSocial({ simulated: true });
+        const { headless = true } = req.body || {};
+        const atResult = await syncPortalFinancas({ headless });
+        const ssResult = await syncSegurancaSocial({ headless });
         const multiSyncResult = multiSync.syncViaSharedFolder();
 
         res.json({
@@ -165,6 +166,31 @@ app.post('/api/sync/run', async (req, res) => {
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
+});
+
+app.get('/api/vault/credentials', (req, res) => {
+    const creds = getCredentials();
+    res.json({
+        at: {
+            nif: creds.at.nif || db.getProfile().nif,
+            hasPassword: Boolean(creds.at.password)
+        },
+        ss: {
+            niss: creds.ss.niss || db.getProfile().niss,
+            hasPassword: Boolean(creds.ss.password)
+        }
+    });
+});
+
+app.post('/api/vault/credentials', (req, res) => {
+    const { atPassword, ssPassword } = req.body;
+    const current = getCredentials();
+    if (atPassword !== undefined && atPassword !== "") current.at.password = atPassword;
+    if (ssPassword !== undefined && ssPassword !== "") current.ss.password = ssPassword;
+    current.at.nif = db.getProfile().nif;
+    current.ss.niss = db.getProfile().niss;
+    saveCredentials(current);
+    res.json({ success: true, hasAtPassword: Boolean(current.at.password), hasSsPassword: Boolean(current.ss.password) });
 });
 
 app.get('/api/sync/status', (req, res) => {
