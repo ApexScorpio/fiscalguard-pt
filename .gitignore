@@ -9,3 +9,7 @@ Thumbs.db
 # Cofre local e sessões privadas (NUNCA enviar para o GitHub)
 data/credentials.json
 data/session-*.json
+
+# Perfis do Chrome gerados pelo Playwright (dados locais do browser)
+data/chrome-playwright-profile/
+data/chrome-fresh-profile/
