@@ -1,0 +1,18 @@
+{
+  "deviceId": "dev-f00a4a04",
+  "deviceName": "PC Principal (Desktoplpx)",
+  "pairingCode": "FG-548182",
+  "secretKey": "233d9f2f7ffc43531e6e614f9124eede",
+  "pairedDevices": [
+    {
+      "id": "dev-local",
+      "name": "PC Principal (Desktoplpx)",
+      "type": "current",
+      "lastSync": "2026-09-17T17:51:50.420Z",
+      "status": "online"
+    }
+  ],
+  "syncMode": "hybrid",
+  "sharedFolderPath": "S:\\FiscalGuard-Sync",
+  "lastSyncTimestamp": "2026-09-17T17:51:50.420Z"
+}

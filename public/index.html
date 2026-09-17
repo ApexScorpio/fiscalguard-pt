@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FiscalGuard PT — Contabilista & Sentinela Pessoal (Finanças & Segurança Social)</title>
+    <meta name="description" content="Aplicação de gestão fiscal e contributiva pessoal para Portugal com monitorização em tempo real de Finanças e Segurança Social, e-fatura e sincronização entre PC e Portátil.">
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- HEADER PRINCIPAL -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="brand">
+                    <div class="brand-icon">🛡️</div>
+                    <div class="brand-text">
+                        <h1>FiscalGuard <span class="badge-pt">PT</span></h1>
+                        <p class="subtitle">O Teu Contabilista & Sentinela Fiscal Pessoal</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATUS SEMÁFORO FISCAL -->
+            <div class="header-center">
+                <div class="traffic-lights">
+                    <div class="traffic-card status-at" id="status-at-badge" title="Situação Tributária na Autoridade Tributária">
+                        <span class="status-indicator live-pulse"></span>
+                        <div class="status-info">
+                            <span class="status-label">Autoridade Tributária</span>
+                            <strong class="status-value" id="at-situation-text">Regularizada</strong>
+                        </div>
+                    </div>
+
+                    <div class="traffic-card status-ss" id="status-ss-badge" title="Situação Contributiva na Segurança Social">
+                        <span class="status-indicator live-pulse"></span>
+                        <div class="status-info">
+                            <span class="status-label">Segurança Social</span>
+                            <strong class="status-value" id="ss-situation-text">Regularizada</strong>
+                        </div>
+                    </div>
+
+                    <div class="traffic-card status-sync" id="device-sync-badge" title="Sincronização entre PC e Portátil">
+                        <span class="status-indicator live-pulse-blue"></span>
+                        <div class="status-info">
+                            <span class="status-label">Multi-Dispositivo</span>
+                            <strong class="status-value" id="sync-situation-text">PC ↔ Portátil OK</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOTÕES DE AÇÃO RÁPIDA -->
+            <div class="header-right">
+                <button id="btn-sync-all" class="btn btn-primary" title="Executa sincronização 100% automática de Finanças, SS e Portátil">
+                    <span class="btn-icon">⚡</span>
+                    <span>Sincronizar (100% Auto)</span>
+                </button>
+                <button id="btn-notify-test" class="btn btn-secondary" title="Disparar notificação de teste nativa do Windows">
+                    <span class="btn-icon">🔔</span>
+                    <span>Alerta Windows</span>
+                </button>
+                <button id="btn-open-devices" class="btn btn-outline" title="Gerir sincronização com o Portátil">
+                    <span class="btn-icon">💻</span>
+                    <span>Ligar Portátil</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- BANNER DE ALERTA DE PRAZO URGENTE -->
+        <aside class="alert-banner" id="urgent-alert-banner">
+            <div class="alert-content">
+                <span class="alert-badge">🚨 PRÓXIMA OBRIGAÇÃO</span>
+                <span class="alert-text" id="urgent-banner-text">A carregar os teus prazos fiscais...</span>
+            </div>
+            <div class="alert-actions">
+                <button id="btn-banner-action" class="btn btn-small btn-alert">Ver Detalhes</button>
+            </div>
+        </aside>
+
+        <!-- NAVEGAÇÃO POR ABAS -->
+        <nav class="main-nav">
+            <button class="nav-tab active" data-tab="tab-overview" id="nav-tab-overview">
+                <span class="tab-icon">📊</span> Visão Geral & Prazos
+            </button>
+            <button class="nav-tab" data-tab="tab-efatura" id="nav-tab-efatura">
+                <span class="tab-icon">🧾</span> e-fatura & Despesas
+                <span class="tab-counter" id="efatura-counter">0</span>
+            </button>
+            <button class="nav-tab" data-tab="tab-ss" id="nav-tab-ss">
+                <span class="tab-icon">🛡️</span> Segurança Social
+            </button>
+            <button class="nav-tab" data-tab="tab-profit" id="nav-tab-profit">
+                <span class="tab-icon">💰</span> Lucro Real no Bolso
+            </button>
+            <button class="nav-tab" data-tab="tab-devices" id="nav-tab-devices">
+                <span class="tab-icon">🔄</span> Sincronização PC / Portátil
+            </button>
+            <button class="nav-tab" data-tab="tab-assistant" id="nav-tab-assistant">
+                <span class="tab-icon">🤖</span> Assistente Fiscal IA
+            </button>
+            <button class="nav-tab" data-tab="tab-settings" id="nav-tab-settings">
+                <span class="tab-icon">⚙️</span> Definições & Cofre
+            </button>
+        </nav>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <main class="main-content">
+            
+            <!-- ABA 1: VISÃO GERAL & PRAZOS -->
+            <section class="tab-pane active" id="tab-overview">
+                <div class="overview-cards-grid">
+                    <div class="metric-card card-glow-emerald">
+                        <div class="metric-header">
+                            <span class="metric-title">Líquido Real no Bolso</span>
+                            <span class="metric-icon">💰</span>
+                        </div>
+                        <div class="metric-value text-emerald" id="overview-net-amount">0,00 €</div>
+                        <div class="metric-footnote">Dinheiro 100% limpo e livre de impostos para gastar</div>
+                    </div>
+
+                    <div class="metric-card card-glow-amber">
+                        <div class="metric-header">
+                            <span class="metric-title">Reserva de IVA (A Pagar)</span>
+                            <span class="metric-icon">🏛️</span>
+                        </div>
+                        <div class="metric-value text-amber" id="overview-vat-reserve">0,00 €</div>
+                        <div class="metric-footnote" id="overview-vat-detail">IVA liquidado deduzido de despesas</div>
+                    </div>
+
+                    <div class="metric-card card-glow-blue">
+                        <div class="metric-header">
+                            <span class="metric-title">Reserva Segurança Social</span>
+                            <span class="metric-icon">🛡️</span>
+                        </div>
+                        <div class="metric-value text-blue" id="overview-ss-reserve">0,00 €</div>
+                        <div class="metric-footnote">Previsão com base no rendimento relevante</div>
+                    </div>
+
+                    <div class="metric-card card-glow-purple">
+                        <div class="metric-header">
+                            <span class="metric-title">Provisão Estimada IRS</span>
+                            <span class="metric-icon">📑</span>
+                        </div>
+                        <div class="metric-value text-purple" id="overview-irs-reserve">0,00 €</div>
+                        <div class="metric-footnote">Para evitar surpresas na entrega de Abril/Junho</div>
+                    </div>
+                </div>
+
+                <div class="calendar-section">
+                    <div class="section-header">
+                        <div>
+                            <h2>Agenda Fiscal & Contributiva</h2>
+                            <p class="section-desc">Prazos oficiais com contagem decrescente em tempo real e notificações automáticas no teu Windows.</p>
+                        </div>
+                        <div class="filter-controls">
+                            <span class="legend-dot dot-critical"></span> Urgente (&le; 2 dias)
+                            <span class="legend-dot dot-warning"></span> Atenção (&le; 7 dias)
+                            <span class="legend-dot dot-normal"></span> A Tempo (&gt; 7 dias)
+                        </div>
+                    </div>
+
+                    <div class="obligations-list" id="obligations-container">
+                        <!-- Gerado dinamicamente -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ABA 2: E-FATURA & DESPESAS -->
+            <section class="tab-pane" id="tab-efatura">
+                <div class="efatura-header-banner">
+                    <div class="efatura-summary">
+                        <h2>Central e-fatura & Despesas</h2>
+                        <p>O teu contabilista analisa os fornecedores e CAE das despesas para garantir que deduzes o valor máximo em IRS e abates o IVA da tua atividade.</p>
+                    </div>
+                    <div class="efatura-actions">
+                        <button id="btn-auto-classify" class="btn btn-emerald">
+                            <span class="btn-icon">✨</span> Auto-Classificar Todas as Pendentes (1-Clique)
+                        </button>
+                        <button id="btn-add-invoice-modal" class="btn btn-secondary">
+                            <span class="btn-icon">➕</span> Nova Fatura / Despesa
+                        </button>
+                    </div>
+                </div>
+
+                <div class="invoices-table-container">
+                    <div class="table-filters">
+                        <button class="btn-filter active" data-filter="all">Todas as Faturas</button>
+                        <button class="btn-filter" data-filter="pending">Apenas Pendentes no e-fatura</button>
+                        <button class="btn-filter" data-filter="issued">Faturas Emitidas (Receita)</button>
+                        <button class="btn-filter" data-filter="expense">Despesas da Atividade</button>
+                    </div>
+
+                    <table class="invoices-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Entidade / Fornecedor</th>
+                                <th>NIF</th>
+                                <th>Tipo</th>
+                                <th>Base</th>
+                                <th>IVA</th>
+                                <th>Total</th>
+                                <th>Classificação e-fatura</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoices-tbody">
+                            <!-- Gerado dinamicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ABA 3: SEGURANÇA SOCIAL -->
+            <section class="tab-pane" id="tab-ss">
+                <div class="ss-dashboard-grid">
+                    <div class="ss-card ss-info-box">
+                        <div class="card-title">
+                            <span>🛡️ Situação na Segurança Social Direta</span>
+                        </div>
+                        <div class="ss-status-row">
+                            <span>Estado da Conta Corrente:</span>
+                            <span class="badge badge-success">Regularizada (Sem Dívidas)</span>
+                        </div>
+                        <div class="ss-status-row">
+                            <span>Débito Direto Ativo:</span>
+                            <span class="badge badge-info" id="ss-debito-direto-text">Sim (Automático)</span>
+                        </div>
+                        <div class="ss-status-row">
+                            <span>Próximo Pagamento Mensal:</span>
+                            <strong class="text-highlight">184,22 € até 20 de Setembro</strong>
+                        </div>
+                        <div class="payment-slip">
+                            <div class="slip-header">Dados de Pagamento Multibanco:</div>
+                            <div class="slip-row"><span>Entidade:</span> <strong>12244</strong></div>
+                            <div class="slip-row"><span>Referência:</span> <strong>512 849 392</strong></div>
+                            <div class="slip-row"><span>Montante:</span> <strong>184,22 €</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="ss-card ss-simulator-box">
+                        <div class="card-title">
+                            <span>📐 Simulador de Declaração Trimestral da SS</span>
+                        </div>
+                        <p class="card-desc">Simula o valor da contribuição mensal para o próximo trimestre e escolhe a variação legal permitida (-25% a +25%).</p>
+                        
+                        <div class="sim-input-group">
+                            <label for="ss-quarter-income">Faturação Total do Trimestre (€):</label>
+                            <input type="number" id="ss-quarter-income" class="form-input" value="6500" step="50">
+                        </div>
+
+                        <div class="sim-variation-slider">
+                            <div class="slider-labels">
+                                <span>-25% (Pagar Menos)</span>
+                                <span id="variation-display-value">Variação: 0% (Padrão)</span>
+                                <span>+25% (Mais Proteção)</span>
+                            </div>
+                            <input type="range" id="ss-variation-slider" min="-25" max="25" step="5" value="0" class="range-slider">
+                        </div>
+
+                        <div class="sim-results-box" id="ss-sim-results">
+                            <div class="sim-result-row">
+                                <span>Rendimento Relevante (70%):</span>
+                                <strong id="ss-sim-relevant">4.550,00 €</strong>
+                            </div>
+                            <div class="sim-result-row">
+                                <span>Base Mensal Ajustada:</span>
+                                <strong id="ss-sim-base">1.516,67 €</strong>
+                            </div>
+                            <div class="sim-result-row highlight">
+                                <span>Contribuição Mensal a Pagar:</span>
+                                <strong class="text-emerald" id="ss-sim-monthly">324,57 € / mês</strong>
+                            </div>
+                            <div class="sim-explanation" id="ss-sim-explanation">
+                                Pagamento padrão correspondente aos rendimentos médios do trimestre.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ABA 4: SIMULADOR DE LUCRO REAL -->
+            <section class="tab-pane" id="tab-profit">
+                <div class="profit-simulator-wrapper">
+                    <div class="profit-calculator-card">
+                        <div class="calc-header">
+                            <h2>Simulador "Lucro Real no Teu Bolso"</h2>
+                            <p>Emite uma fatura sem medo de surpresas. Vê exatamente quanto pertence ao Estado (IVA, IRS, SS) e quanto dinheiro podes gastar à vontade.</p>
+                        </div>
+
+                        <div class="calculator-form">
+                            <div class="form-row">
+                                <div class="form-group flex-2">
+                                    <label for="sim-invoice-amount">Valor da Fatura / Rendimento Bruto (€):</label>
+                                    <input type="number" id="sim-invoice-amount" class="form-input form-input-lg" value="2500" step="100">
+                                </div>
+                                <div class="form-group flex-1">
+                                    <label for="sim-activity-type">Tipo de Atividade:</label>
+                                    <select id="sim-activity-type" class="form-select">
+                                        <option value="services">Prestação de Serviços (TI)</option>
+                                        <option value="sales">Venda de Mercadorias</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-options">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="sim-vat-exempt">
+                                    <span>Isento de IVA (Artigo 53.º — faturamento &le; 15.000€/ano)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="profit-distribution-grid">
+                            <div class="dist-card dist-net">
+                                <div class="dist-icon">💰</div>
+                                <div class="dist-title">Dinheiro Limpo no Bolso</div>
+                                <div class="dist-amount text-emerald" id="profit-calc-net">1.340,00 €</div>
+                                <div class="dist-percent" id="profit-percent-net">54% do total</div>
+                            </div>
+
+                            <div class="dist-card dist-vat">
+                                <div class="dist-icon">🏛️</div>
+                                <div class="dist-title">Reserva de IVA</div>
+                                <div class="dist-amount text-amber" id="profit-calc-vat">575,00 €</div>
+                                <div class="dist-percent" id="profit-percent-vat">23% (Do Estado)</div>
+                            </div>
+
+                            <div class="dist-card dist-ss">
+                                <div class="dist-icon">🛡️</div>
+                                <div class="dist-title">Segurança Social</div>
+                                <div class="dist-amount text-blue" id="profit-calc-ss">374,50 €</div>
+                                <div class="dist-percent" id="profit-percent-ss">21,4% s/ 70%</div>
+                            </div>
+
+                            <div class="dist-card dist-irs">
+                                <div class="dist-icon">📑</div>
+                                <div class="dist-title">Provisão de IRS</div>
+                                <div class="dist-amount text-purple" id="profit-calc-irs">375,00 €</div>
+                                <div class="dist-percent" id="profit-percent-irs">Escalão Médio</div>
+                            </div>
+                        </div>
+
+                        <div class="profit-advice-box">
+                            <strong>💡 Conselho do Teu Contabilista:</strong>
+                            <p id="profit-advice-text">
+                                Ao cobrares 2.500,00 € com IVA (total cobrado ao cliente: 3.075,00 €), deves transferir imediatamente <strong>575,00 €</strong> para uma conta poupança de impostos para o IVA trimestral e reservar <strong>749,50 €</strong> para IRS e Segurança Social. O montante que podes gastar com total tranquilidade é de <strong>1.340,00 €</strong>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ABA 5: SINCRONIZAÇÃO PC / PORTÁTIL -->
+            <section class="tab-pane" id="tab-devices">
+                <div class="devices-sync-card">
+                    <div class="devices-header">
+                        <div>
+                            <h2>Sincronização Multi-Dispositivo (PC ↔ Portátil)</h2>
+                            <p>Mantém as tuas faturas, semáforo fiscal e alertas sempre perfeitamente sincronizados entre o teu computador de secretária e o teu portátil.</p>
+                        </div>
+                        <button id="btn-sync-now-devices" class="btn btn-primary">
+                            <span class="btn-icon">🔄</span> Sincronizar Agora
+                        </button>
+                    </div>
+
+                    <div class="pairing-box">
+                        <div class="pairing-details">
+                            <span class="pairing-label">Código de Emparelhamento Deste Dispositivo:</span>
+                            <div class="pairing-code-badge" id="display-pairing-code">FG-849201</div>
+                            <p class="pairing-instructions">No teu portátil (ou outro computador), abre a app e introduz este código para ligares ambos os dispositivos de forma instantânea e encriptada.</p>
+                        </div>
+                        <div class="pairing-action-form">
+                            <label for="input-remote-code">Introduzir Código de Outro Computador:</label>
+                            <div class="input-inline">
+                                <input type="text" id="input-remote-code" class="form-input" placeholder="Ex: FG-123456">
+                                <button id="btn-pair-device" class="btn btn-emerald">Emparelhar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="paired-devices-list">
+                        <h3>Dispositivos Ligados</h3>
+                        <div class="devices-grid" id="paired-devices-container">
+                            <!-- Gerado dinamicamente -->
+                        </div>
+                    </div>
+
+                    <div class="onedrive-sync-box">
+                        <div class="onedrive-info">
+                            <h4>📁 Sincronização Automática por Pasta de Nuvem (OneDrive / Google Drive)</h4>
+                            <p>O FiscalGuard pode guardar um cofre encriptado diretamente na tua pasta de nuvem ou em S:\FiscalGuard-Sync. Assim que ligas o portátil, os dados estão sincronizados automaticamente.</p>
+                            <span class="path-display" id="display-sync-path">S:\FiscalGuard-Sync</span>
+                        </div>
+                        <button id="btn-sync-folder-action" class="btn btn-secondary">Testar Sincronização por Pasta</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ABA 6: ASSISTENTE FISCAL IA -->
+            <section class="tab-pane" id="tab-assistant">
+                <div class="assistant-card">
+                    <div class="assistant-header">
+                        <div class="assistant-avatar">🤖</div>
+                        <div>
+                            <h2>Assistente Fiscal Inteligente</h2>
+                            <p>Tira qualquer dúvida sobre impostos em Portugal (CIRS, CIVA, Segurança Social, recibos verdes, deduções e coimas).</p>
+                        </div>
+                    </div>
+
+                    <div class="quick-questions">
+                        <span class="quick-label">Perguntas Rápidas:</span>
+                        <button class="btn-chip" data-q="Qual é o limite para a isenção de IVA do Artigo 53?">Isenção de IVA (Art. 53)</button>
+                        <button class="btn-chip" data-q="Como funciona a Declaração Trimestral da Segurança Social?">Declaração Trimestral SS</button>
+                        <button class="btn-chip" data-q="Posso deduzir combustível da viatura em recibos verdes?">Dedução de Combustível</button>
+                        <button class="btn-chip" data-q="O que acontece se trabalhar por conta de outrem e passar recibos verdes?">Acumulação TCO + TI</button>
+                        <button class="btn-chip" data-q="Quando tenho de pagar a Segurança Social para não ter coimas?">Prazos e Pagamento SS</button>
+                    </div>
+
+                    <div class="chat-display" id="assistant-chat-display">
+                        <div class="chat-message message-bot">
+                            <div class="message-sender">FiscalGuard IA</div>
+                            <div class="message-body">
+                                Olá! Sou o teu assistente e contabilista pessoal. Estou sempre em cima de todas as tuas obrigações fiscais nas Finanças e Segurança Social. O que gostarias de esclarecer hoje?
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-row">
+                        <input type="text" id="assistant-user-input" class="form-input" placeholder="Escreve a tua dúvida sobre Finanças, e-fatura ou Segurança Social...">
+                        <button id="btn-send-question" class="btn btn-primary">Perguntar</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ABA 7: DEFINIÇÕES & COFRE -->
+            <section class="tab-pane" id="tab-settings">
+                <div class="settings-card">
+                    <h2>Definições do Contribuinte & Cofre Seguro</h2>
+                    <p class="section-desc">Os teus dados e credenciais ficam guardados localmente em S:\fiscalguard-pt com encriptação.</p>
+
+                    <form id="settings-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="setting-nif">NIF (Número de Identificação Fiscal):</label>
+                                <input type="text" id="setting-nif" class="form-input" value="249817263">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="setting-niss">NISS (Segurança Social):</label>
+                                <input type="text" id="setting-niss" class="form-input" value="12039485711">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="setting-activity">Enquadramento Profissional:</label>
+                                <select id="setting-activity" class="form-select">
+                                    <option value="independent">Trabalhador Independente (Recibos Verdes - Regime Simplificado)</option>
+                                    <option value="tco_independent">Trabalhador por Conta de Outrem + Recibos Verdes (Acumulação)</option>
+                                    <option value="tco">Trabalhador por Conta de Outrem Exclusivo (Apenas IRS)</option>
+                                    <option value="company">Empresário em Nome Individual / Unipessoal</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="setting-vat">Regime de IVA:</label>
+                                <select id="setting-vat" class="form-select">
+                                    <option value="normal">Regime Normal (Declaração Trimestral / 23%)</option>
+                                    <option value="exempt_53">Isenção de IVA (Artigo 53.º do CIVA)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="setting-plate">Matrícula da Viatura (para IUC):</label>
+                                <input type="text" id="setting-plate" class="form-input" value="AA-00-ZZ">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="setting-reg-month">Mês da Matrícula (IUC):</label>
+                                <select id="setting-reg-month" class="form-select">
+                                    <option value="1">Janeiro</option>
+                                    <option value="2">Fevereiro</option>
+                                    <option value="3">Março</option>
+                                    <option value="4">Abril</option>
+                                    <option value="5">Maio</option>
+                                    <option value="6">Junho</option>
+                                    <option value="7">Julho</option>
+                                    <option value="8">Agosto</option>
+                                    <option value="9" selected>Setembro</option>
+                                    <option value="10">Outubro</option>
+                                    <option value="11">Novembro</option>
+                                    <option value="12">Dezembro</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="settings-actions">
+                            <button type="submit" class="btn btn-primary">Guardar Definições</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL: NOVA FATURA / DESPESA -->
+    <div class="modal-overlay" id="modal-new-invoice">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Adicionar Fatura ou Despesa</h3>
+                <button class="btn-close-modal" id="btn-close-invoice-modal">&times;</button>
+            </div>
+            <form id="form-new-invoice">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="modal-inv-type">Tipo de Documento:</label>
+                        <select id="modal-inv-type" class="form-select">
+                            <option value="expense">Despesa Recebida (e-fatura)</option>
+                            <option value="issued">Fatura Emitida / Recibo Verde</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-inv-entity">Entidade / Fornecedor / Cliente:</label>
+                        <input type="text" id="modal-inv-entity" class="form-input" required placeholder="Ex: Farmácia Sá da Bandeira ou Cliente XYZ">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-inv-nif">NIF da Entidade:</label>
+                        <input type="text" id="modal-inv-nif" class="form-input" placeholder="Ex: 501234567">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label for="modal-inv-base">Valor Base (€):</label>
+                            <input type="number" id="modal-inv-base" class="form-input" step="0.01" required value="100.00">
+                        </div>
+                        <div class="form-group flex-1">
+                            <label for="modal-inv-vat">IVA (€):</label>
+                            <input type="number" id="modal-inv-vat" class="form-input" step="0.01" value="23.00">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" id="btn-cancel-invoice">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Adicionar ao Sistema</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT DA APLICAÇÃO -->
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,683 @@
+/**
+ * FiscalGuard PT — Frontend Controller & Realtime Sync Engine
+ */
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Inicializar Navegação por Abas
+    initTabs();
+
+    // 2. Carregar Dados Iniciais da API Local
+    loadAllData();
+
+    // 3. Inicializar Listeners de Eventos e Simuladores
+    initEventListeners();
+    initSimulators();
+    initAssistant();
+
+    // 4. Polling Automático de Atualização (a cada 30 segundos)
+    setInterval(() => {
+        loadStatus();
+        loadCalendar();
+    }, 30000);
+});
+
+/* ==========================================================================
+   NAVEGAÇÃO POR ABAS
+   ========================================================================== */
+function initTabs() {
+    const tabs = document.querySelectorAll('.nav-tab');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+
+            tab.classList.add('active');
+            const targetPaneId = tab.dataset.tab;
+            const targetPane = document.getElementById(targetPaneId);
+            if (targetPane) {
+                targetPane.classList.add('active');
+            }
+        });
+    });
+
+    // Botão de atalho do banner para ver detalhes
+    const bannerBtn = document.getElementById('btn-banner-action');
+    if (bannerBtn) {
+        bannerBtn.addEventListener('click', () => {
+            switchTab('tab-overview');
+        });
+    }
+
+    // Botão de atalho do header para gerir o portátil
+    const openDevicesBtn = document.getElementById('btn-open-devices');
+    if (openDevicesBtn) {
+        openDevicesBtn.addEventListener('click', () => {
+            switchTab('tab-devices');
+        });
+    }
+}
+
+function switchTab(tabPaneId) {
+    const targetTabBtn = document.querySelector(`.nav-tab[data-tab="${tabPaneId}"]`);
+    if (targetTabBtn) {
+        targetTabBtn.click();
+    }
+}
+
+/* ==========================================================================
+   CARREGAMENTO DE DADOS (REST API)
+   ========================================================================== */
+async function loadAllData() {
+    await Promise.all([
+        loadStatus(),
+        loadCalendar(),
+        loadInvoices(),
+        loadSyncStatus(),
+        loadSettings()
+    ]);
+}
+
+async function loadStatus() {
+    try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+
+        // Atualizar Semáforo
+        document.getElementById('at-situation-text').textContent = 
+            data.status.financas.situation === 'regularizada' ? 'Regularizada (OK)' : 'Atenção / Dívida';
+        
+        document.getElementById('ss-situation-text').textContent = 
+            data.status.segurancaSocial.situation === 'regularizada' ? 'Regularizada (OK)' : 'Pendente';
+
+        // Atualizar Métricas Principais
+        document.getElementById('overview-net-amount').textContent = formatCurrency(data.stats.recommendedReserves.netTakeHome);
+        document.getElementById('overview-vat-reserve').textContent = formatCurrency(data.stats.recommendedReserves.vat);
+        document.getElementById('overview-ss-reserve').textContent = formatCurrency(data.stats.recommendedReserves.ss);
+        document.getElementById('overview-irs-reserve').textContent = formatCurrency(data.stats.recommendedReserves.irs);
+
+        // Contador de e-fatura
+        const efaturaCounter = document.getElementById('efatura-counter');
+        if (efaturaCounter) {
+            efaturaCounter.textContent = data.stats.pendingEfaturaCount;
+            efaturaCounter.style.display = data.stats.pendingEfaturaCount > 0 ? 'inline-block' : 'none';
+        }
+
+        // Atualizar Banner de Alerta Urgente
+        const urgentBanner = document.getElementById('urgent-alert-banner');
+        const bannerText = document.getElementById('urgent-banner-text');
+        if (data.nextUrgent) {
+            urgentBanner.style.display = 'flex';
+            const days = data.nextUrgent.daysRemaining;
+            let timePhrase = days < 0 
+                ? `<span style="color:#f43f5e;font-weight:700;">Terminou há ${Math.abs(days)} dia(s)!</span>` 
+                : days === 0 
+                ? `<span style="color:#f59e0b;font-weight:700;">TERMINA HOJE!</span>` 
+                : `Faltam <strong>${days} dia(s)</strong> (Prazo: ${data.nextUrgent.deadline})`;
+
+            bannerText.innerHTML = `<strong>${data.nextUrgent.title}</strong> &mdash; ${timePhrase}. ${data.nextUrgent.description}`;
+        } else {
+            urgentBanner.style.display = 'none';
+        }
+
+    } catch (e) {
+        console.error("Erro ao carregar /api/status:", e);
+    }
+}
+
+async function loadCalendar() {
+    try {
+        const res = await fetch('/api/calendar');
+        const list = await res.json();
+        const container = document.getElementById('obligations-container');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        list.forEach(item => {
+            const card = document.createElement('div');
+            card.className = `obligation-card ${item.statusColor}`;
+
+            let countdownBadgeClass = 'badge-normal';
+            let countdownText = `${item.daysRemaining}d`;
+
+            if (item.completed) {
+                countdownBadgeClass = 'badge-completed';
+                countdownText = '✓ Concluído';
+            } else if (item.daysRemaining < 0) {
+                countdownBadgeClass = 'badge-critical';
+                countdownText = `ATRASO (${Math.abs(item.daysRemaining)}d)`;
+            } else if (item.daysRemaining <= 2) {
+                countdownBadgeClass = 'badge-critical';
+                countdownText = `URGENTE (${item.daysRemaining}d)`;
+            } else if (item.daysRemaining <= 7) {
+                countdownBadgeClass = 'badge-warning';
+                countdownText = `Faltam ${item.daysRemaining}d`;
+            }
+
+            card.innerHTML = `
+                <div class="ob-left">
+                    <div class="ob-badge-countdown ${countdownBadgeClass}">${countdownText}</div>
+                    <div class="ob-details">
+                        <h4>${item.title}</h4>
+                        <p>${item.description}</p>
+                        <small style="color:var(--text-muted);">Prazo: <strong>${item.deadline}</strong> | Entidade: <strong>${item.entity}</strong></small>
+                    </div>
+                </div>
+                <div class="ob-right">
+                    <button class="btn btn-small ${item.completed ? 'btn-outline' : 'btn-emerald'}" onclick="toggleObligation('${item.id}', ${!item.completed})">
+                        ${item.completed ? 'Reabrir' : '✓ Marcar Pago / Concluído'}
+                    </button>
+                    ${item.actionUrl ? `<a href="${item.actionUrl}" target="_blank" class="btn btn-small btn-secondary" title="Abrir portal oficial">↗ Portal</a>` : ''}
+                </div>
+            `;
+
+            container.appendChild(card);
+        });
+
+    } catch (e) {
+        console.error("Erro ao carregar /api/calendar:", e);
+    }
+}
+
+window.toggleObligation = async function(id, completed) {
+    try {
+        await fetch(`/api/calendar/toggle/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ completed })
+        });
+        loadCalendar();
+        loadStatus();
+    } catch (e) {
+        alert("Erro ao atualizar estado: " + e.message);
+    }
+};
+
+async function loadInvoices(filter = 'all') {
+    try {
+        const res = await fetch('/api/invoices');
+        const data = await res.json();
+        const tbody = document.getElementById('invoices-tbody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+
+        const invoices = data.invoices.filter(inv => {
+            if (filter === 'pending') return inv.type === 'expense' && inv.efaturaStatus === 'pending';
+            if (filter === 'issued') return inv.type === 'issued';
+            if (filter === 'expense') return inv.type === 'expense';
+            return true;
+        });
+
+        invoices.forEach(inv => {
+            const tr = document.createElement('tr');
+            
+            const isExpense = inv.type === 'expense';
+            const entityName = isExpense ? inv.supplierName : inv.clientName;
+            const nif = isExpense ? inv.supplierNif : inv.clientNif;
+            const total = inv.totalAmount || (inv.baseAmount + (inv.vatAmount || 0));
+
+            let statusBadge = '';
+            let actionBtn = '';
+
+            if (isExpense) {
+                if (inv.efaturaStatus === 'pending') {
+                    statusBadge = `<span class="badge badge-pending">⚠️ Pendente e-fatura</span>`;
+                    actionBtn = `
+                        <button class="btn btn-small btn-emerald" onclick="classifySingleInvoice('${inv.id}', '${inv.suggestedCategory || 'geral'}')">
+                            Classificar como "${getCategoryName(inv.suggestedCategory)}"
+                        </button>
+                    `;
+                } else {
+                    statusBadge = `<span class="badge badge-validated">✓ ${getCategoryName(inv.category)}</span>`;
+                    actionBtn = `<span style="color:var(--text-muted);font-size:12px;">Validado na AT</span>`;
+                }
+            } else {
+                statusBadge = `<span class="badge badge-info">Fatura Emitida</span>`;
+                actionBtn = `<span style="color:var(--text-muted);font-size:12px;">Comunicada AT</span>`;
+            }
+
+            tr.innerHTML = `
+                <td>${inv.date}</td>
+                <td><strong>${entityName}</strong></td>
+                <td>${nif || 'Consumidor'}</td>
+                <td>${isExpense ? 'Despesa' : 'Rendimento'}</td>
+                <td>${formatCurrency(inv.baseAmount)}</td>
+                <td>${formatCurrency(inv.vatAmount)}</td>
+                <td style="font-weight:700;">${formatCurrency(total)}</td>
+                <td>${statusBadge}</td>
+                <td>${actionBtn}</td>
+            `;
+
+            tbody.appendChild(tr);
+        });
+
+    } catch (e) {
+        console.error("Erro ao carregar faturas:", e);
+    }
+}
+
+window.classifySingleInvoice = async function(id, category) {
+    try {
+        await fetch(`/api/invoices/classify/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ category })
+        });
+        loadInvoices();
+        loadStatus();
+    } catch (e) {
+        alert("Erro ao classificar: " + e.message);
+    }
+};
+
+async function loadSyncStatus() {
+    try {
+        const res = await fetch('/api/sync/status');
+        const sync = await res.json();
+
+        // Mostrar código de emparelhamento
+        const pairingCodeDisplay = document.getElementById('display-pairing-code');
+        if (pairingCodeDisplay) pairingCodeDisplay.textContent = sync.pairingCode;
+
+        // Mostrar caminho da pasta partilhada
+        const syncPathDisplay = document.getElementById('display-sync-path');
+        if (syncPathDisplay) syncPathDisplay.textContent = sync.sharedFolderPath;
+
+        // Dispositivos emparelhados
+        const devicesContainer = document.getElementById('paired-devices-container');
+        if (devicesContainer) {
+            devicesContainer.innerHTML = '';
+            sync.pairedDevices.forEach(dev => {
+                const item = document.createElement('div');
+                item.className = 'device-item';
+                const isCurrent = dev.type === 'current';
+                item.innerHTML = `
+                    <div class="device-icon">${isCurrent ? '💻' : '💻'}</div>
+                    <div>
+                        <div class="device-name">${dev.name} ${isCurrent ? '<span style="color:var(--accent-emerald);font-size:11px;">(Este Dispositivo)</span>' : ''}</div>
+                        <div class="device-meta">Última Sincronização: ${new Date(dev.lastSync).toLocaleTimeString()} | Status: <strong style="color:var(--accent-emerald);">${dev.status}</strong></div>
+                    </div>
+                `;
+                devicesContainer.appendChild(item);
+            });
+        }
+
+    } catch (e) {
+        console.error("Erro ao carregar /api/sync/status:", e);
+    }
+}
+
+async function loadSettings() {
+    try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        const p = data.profile;
+
+        document.getElementById('setting-nif').value = p.nif || '';
+        document.getElementById('setting-niss').value = p.niss || '';
+        document.getElementById('setting-activity').value = p.activityType || 'independent';
+        document.getElementById('setting-vat').value = p.vatRegime || 'normal';
+        document.getElementById('setting-plate').value = p.vehiclePlate || '';
+        document.getElementById('setting-reg-month').value = p.vehicleRegMonth || '9';
+
+    } catch (e) {
+        console.error("Erro ao carregar /api/settings:", e);
+    }
+}
+
+/* ==========================================================================
+   EVENT LISTENERS & AÇÕES DO UTILIZADOR
+   ========================================================================== */
+function initEventListeners() {
+    // 1. Sincronização 100% Automática
+    const syncAllBtn = document.getElementById('btn-sync-all');
+    if (syncAllBtn) {
+        syncAllBtn.addEventListener('click', async () => {
+            syncAllBtn.disabled = true;
+            syncAllBtn.innerHTML = `<span>⏳ A Sincronizar Portais...</span>`;
+
+            try {
+                const res = await fetch('/api/sync/run', { method: 'POST' });
+                const result = await res.json();
+                
+                await loadAllData();
+                alert("✓ Sincronização 100% Automática concluída!\nFinanças e Segurança Social verificadas com sucesso.");
+            } catch (e) {
+                alert("Erro na sincronização: " + e.message);
+            } finally {
+                syncAllBtn.disabled = false;
+                syncAllBtn.innerHTML = `<span class="btn-icon">⚡</span><span>Sincronizar (100% Auto)</span>`;
+            }
+        });
+    }
+
+    // 2. Disparar Notificação Nativa do Windows
+    const notifyBtn = document.getElementById('btn-notify-test');
+    if (notifyBtn) {
+        notifyBtn.addEventListener('click', async () => {
+            try {
+                await fetch('/api/notify/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: "FiscalGuard PT — Notificação Nativa",
+                        message: "O teu assistente fiscal e contabilista está ativo e a vigiar Finanças e Segurança Social no PC e Portátil!"
+                    })
+                });
+            } catch (e) {
+                alert("Falha ao disparar notificação: " + e.message);
+            }
+        });
+    }
+
+    // 3. Auto-Classificar Todas as Pendentes no e-fatura
+    const autoClassifyBtn = document.getElementById('btn-auto-classify');
+    if (autoClassifyBtn) {
+        autoClassifyBtn.addEventListener('click', async () => {
+            try {
+                const res = await fetch('/api/invoices/classify-all', { method: 'POST' });
+                const data = await res.json();
+                alert(`✓ Sucesso! ${data.count} fatura(s) pendente(s) foram classificadas automaticamente de acordo com o CAE/NIF.`);
+                loadInvoices();
+                loadStatus();
+            } catch (e) {
+                alert("Erro ao auto-classificar: " + e.message);
+            }
+        });
+    }
+
+    // 4. Filtros de Tabela de Faturas
+    const filterBtns = document.querySelectorAll('.btn-filter');
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            loadInvoices(btn.dataset.filter);
+        });
+    });
+
+    // 5. Modal de Nova Fatura
+    const openModalBtn = document.getElementById('btn-add-invoice-modal');
+    const modal = document.getElementById('modal-new-invoice');
+    const closeModalBtn = document.getElementById('btn-close-invoice-modal');
+    const cancelModalBtn = document.getElementById('btn-cancel-invoice');
+
+    if (openModalBtn && modal) {
+        openModalBtn.addEventListener('click', () => modal.classList.add('active'));
+        closeModalBtn.addEventListener('click', () => modal.classList.remove('active'));
+        cancelModalBtn.addEventListener('click', () => modal.classList.remove('active'));
+    }
+
+    const formNewInvoice = document.getElementById('form-new-invoice');
+    if (formNewInvoice) {
+        formNewInvoice.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const type = document.getElementById('modal-inv-type').value;
+            const entity = document.getElementById('modal-inv-entity').value;
+            const nif = document.getElementById('modal-inv-nif').value;
+            const base = parseFloat(document.getElementById('modal-inv-base').value) || 0;
+            const vat = parseFloat(document.getElementById('modal-inv-vat').value) || 0;
+
+            const payload = {
+                type,
+                baseAmount: base,
+                vatAmount: vat,
+                totalAmount: base + vat
+            };
+
+            if (type === 'expense') {
+                payload.supplierName = entity;
+                payload.supplierNif = nif;
+            } else {
+                payload.clientName = entity;
+                payload.clientNif = nif;
+                payload.number = "FR " + new Date().getFullYear() + "/" + Math.floor(10 + Math.random()*90);
+            }
+
+            try {
+                await fetch('/api/invoices', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                modal.classList.remove('active');
+                formNewInvoice.reset();
+                loadInvoices();
+                loadStatus();
+            } catch (err) {
+                alert("Erro ao adicionar fatura: " + err.message);
+            }
+        });
+    }
+
+    // 6. Emparelhar Dispositivo
+    const btnPair = document.getElementById('btn-pair-device');
+    if (btnPair) {
+        btnPair.addEventListener('click', async () => {
+            const inputCode = document.getElementById('input-remote-code').value.trim();
+            if (!inputCode) return alert("Por favor introduz o código de emparelhamento.");
+
+            try {
+                const res = await fetch('/api/sync/pair', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        deviceName: "Portátil Conectado",
+                        code: inputCode
+                    })
+                });
+                const result = await res.json();
+                if (result.error) throw new Error(result.error);
+
+                alert("✓ Dispositivo emparelhado com sucesso! Sincronização em tempo real ativa.");
+                loadSyncStatus();
+            } catch (e) {
+                alert("Falha no emparelhamento: " + e.message);
+            }
+        });
+    }
+
+    // 7. Sincronizar Pasta Partilhada
+    const btnSyncFolder = document.getElementById('btn-sync-folder-action');
+    if (btnSyncFolder) {
+        btnSyncFolder.addEventListener('click', async () => {
+            try {
+                const res = await fetch('/api/sync/shared-folder', { method: 'POST' });
+                const data = await res.json();
+                alert(`✓ Sincronização por Pasta: Estado atualizado (${data.action || 'OK'}).`);
+                loadSyncStatus();
+            } catch (e) {
+                alert("Erro ao sincronizar pasta: " + e.message);
+            }
+        });
+    }
+
+    // 8. Formulário de Definições
+    const settingsForm = document.getElementById('settings-form');
+    if (settingsForm) {
+        settingsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const updates = {
+                nif: document.getElementById('setting-nif').value,
+                niss: document.getElementById('setting-niss').value,
+                activityType: document.getElementById('setting-activity').value,
+                vatRegime: document.getElementById('setting-vat').value,
+                vehiclePlate: document.getElementById('setting-plate').value,
+                vehicleRegMonth: parseInt(document.getElementById('setting-reg-month').value, 10)
+            };
+
+            try {
+                await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updates)
+                });
+                alert("✓ Definições guardadas com sucesso em S:\\fiscalguard-pt!");
+                loadStatus();
+            } catch (err) {
+                alert("Erro ao guardar definições: " + err.message);
+            }
+        });
+    }
+}
+
+/* ==========================================================================
+   SIMULADORES (SEGURANÇA SOCIAL E LUCRO REAL)
+   ========================================================================== */
+function initSimulators() {
+    // Simulador da Segurança Social (Declaração Trimestral)
+    const ssIncomeInput = document.getElementById('ss-quarter-income');
+    const ssSlider = document.getElementById('ss-variation-slider');
+    const variationDisplay = document.getElementById('variation-display-value');
+
+    const updateSSSim = async () => {
+        const amount = parseFloat(ssIncomeInput.value) || 0;
+        const variation = parseInt(ssSlider.value, 10) || 0;
+
+        variationDisplay.textContent = `Variação: ${variation > 0 ? '+' : ''}${variation}%`;
+
+        try {
+            const res = await fetch('/api/ss/simulate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount, variation })
+            });
+            const data = await res.json();
+
+            document.getElementById('ss-sim-relevant').textContent = formatCurrency(data.relevantIncome);
+            document.getElementById('ss-sim-base').textContent = formatCurrency(data.adjustedMonthlyBase);
+            document.getElementById('ss-sim-monthly').textContent = `${formatCurrency(data.monthlyContribution)} / mês`;
+            document.getElementById('ss-sim-explanation').textContent = data.explanation;
+        } catch (e) {
+            console.error("Erro na simulação SS:", e);
+        }
+    };
+
+    if (ssIncomeInput && ssSlider) {
+        ssIncomeInput.addEventListener('input', updateSSSim);
+        ssSlider.addEventListener('input', updateSSSim);
+    }
+
+    // Simulador de Lucro Real no Bolso
+    const profitInput = document.getElementById('sim-invoice-amount');
+    const profitActivity = document.getElementById('sim-activity-type');
+    const profitVatExempt = document.getElementById('sim-vat-exempt');
+
+    const updateProfitSim = async () => {
+        const amount = parseFloat(profitInput.value) || 0;
+        const activityType = profitActivity.value;
+        const vatExempt = profitVatExempt.checked;
+
+        try {
+            const res = await fetch('/api/simulator/profit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount, activityType, vatExempt })
+            });
+            const data = await res.json();
+
+            document.getElementById('profit-calc-net').textContent = formatCurrency(data.netTakeHome);
+            document.getElementById('profit-calc-vat').textContent = formatCurrency(data.vatAmount);
+            document.getElementById('profit-calc-ss').textContent = formatCurrency(data.ssReserve);
+            document.getElementById('profit-calc-irs').textContent = formatCurrency(data.irsReserve);
+
+            document.getElementById('profit-percent-net').textContent = `${data.breakdownPercentages.net}% do rendimento`;
+            document.getElementById('profit-percent-vat').textContent = vatExempt ? "Isento (Art. 53)" : "23% (Do Estado)";
+
+            const adviceBox = document.getElementById('profit-advice-text');
+            if (adviceBox) {
+                adviceBox.innerHTML = `
+                    Ao cobrares <strong>${formatCurrency(data.grossAmount)}</strong> ${vatExempt ? '(Isento de IVA)' : `com IVA (Total cobrado: <strong>${formatCurrency(data.totalWithVat)}</strong>)`}, deves transferir imediatamente <strong>${formatCurrency(data.vatAmount)}</strong> para a reserva de IVA e guardar <strong>${formatCurrency(data.ssReserve + data.irsReserve)}</strong> para Segurança Social e IRS. O teu dinheiro limpo e livre para desfrutares é de <strong>${formatCurrency(data.netTakeHome)}</strong>.
+                `;
+            }
+        } catch (e) {
+            console.error("Erro no simulador de lucro:", e);
+        }
+    };
+
+    if (profitInput && profitActivity && profitVatExempt) {
+        profitInput.addEventListener('input', updateProfitSim);
+        profitActivity.addEventListener('change', updateProfitSim);
+        profitVatExempt.addEventListener('change', updateProfitSim);
+    }
+}
+
+/* ==========================================================================
+   ASSISTENTE FISCAL IA
+   ========================================================================== */
+function initAssistant() {
+    const input = document.getElementById('assistant-user-input');
+    const sendBtn = document.getElementById('btn-send-question');
+    const chatDisplay = document.getElementById('assistant-chat-display');
+    const chips = document.querySelectorAll('.btn-chip');
+
+    const askAssistant = async (questionText) => {
+        if (!questionText.trim()) return;
+
+        // Adicionar mensagem do utilizador
+        appendChatMessage("Tu", questionText, "user");
+        input.value = '';
+
+        try {
+            const res = await fetch('/api/assistant/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: questionText })
+            });
+            const data = await res.json();
+            appendChatMessage("FiscalGuard IA", `${data.title ? `<strong>${data.title}</strong>\n\n` : ''}${data.answer}`, "bot");
+        } catch (e) {
+            appendChatMessage("FiscalGuard IA", "Desculpa, ocorreu um erro ao consultar as regras fiscais: " + e.message, "bot");
+        }
+    };
+
+    if (sendBtn && input) {
+        sendBtn.addEventListener('click', () => askAssistant(input.value));
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') askAssistant(input.value);
+        });
+    }
+
+    chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            askAssistant(chip.dataset.q);
+        });
+    });
+
+    function appendChatMessage(sender, text, type) {
+        const msg = document.createElement('div');
+        msg.className = `chat-message message-${type}`;
+        msg.innerHTML = `
+            <div class="message-sender">${sender}</div>
+            <div class="message-body">${text}</div>
+        `;
+        chatDisplay.appendChild(msg);
+        chatDisplay.scrollTop = chatDisplay.scrollHeight;
+    }
+}
+
+/* ==========================================================================
+   UTILITÁRIOS
+   ========================================================================== */
+function formatCurrency(val) {
+    const num = Number(val) || 0;
+    return num.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+}
+
+function getCategoryName(cat) {
+    const names = {
+        geral: "Gerais Familiares",
+        saude: "Saúde",
+        educacao: "Educação",
+        imoveis: "Habitação",
+        restauracao: "Restauração (15% IVA)",
+        reparacao_auto: "Oficinas Auto",
+        cabeleireiros: "Cabeleireiros",
+        passes: "Passes Sociais",
+        veterinarios: "Veterinários",
+        ginasios: "Ginásios",
+        atividade: "Atividade Profissional"
+    };
+    return names[cat] || "Geral";
+}
