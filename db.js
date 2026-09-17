@@ -9,168 +9,45 @@ if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-const DEFAULT_STATE = {
+const EMPTY_STATE = {
     profile: {
-        name: "ApexScorpio",
-        nif: "249817263",
-        niss: "12039485711",
+        name: "",
+        nif: "",
+        niss: "",
         activityType: "independent",
         vatRegime: "normal",
-        directDebitSS: true,
+        directDebitSS: false,
         directDebitAT: false,
-        vehiclePlate: "AA-00-ZZ",
-        vehicleRegMonth: 9,
+        vehiclePlate: "",
+        vehicleRegMonth: null,
         alertDays: [30, 7, 2, 0]
     },
     status: {
         financas: {
-            situation: "regularizada",
-            lastSync: new Date().toISOString(),
-            certidaoValidaAte: "2026-12-31",
+            situation: "nao_configurado",
+            lastSync: null,
+            certidaoValidaAte: null,
             dividasAtivas: 0,
             divergencias: 0
         },
         segurancaSocial: {
-            situation: "regularizada",
-            lastSync: new Date().toISOString(),
-            debitoDiretoAtivo: true,
-            ultimoPagamento: {
-                mes: "Agosto 2026",
-                valor: 184.22,
-                pagoEm: "2026-08-19"
-            },
-            proximoPagamento: {
-                mes: "Setembro 2026",
-                valor: 184.22,
-                limite: "2026-09-20",
-                entidade: "12244",
-                referencia: "512 849 392"
-            }
+            situation: "nao_configurado",
+            lastSync: null,
+            debitoDiretoAtivo: false,
+            ultimoPagamento: null,
+            proximoPagamento: null
         }
     },
-    invoices: [
-        {
-            id: "inv-e1",
-            type: "issued",
-            number: "FR 2026/12",
-            date: "2026-09-02",
-            clientName: "Tech Solutions Portugal Lda",
-            clientNif: "509182736",
-            description: "Prestação de serviços de consultoria informática e desenvolvimento",
-            baseAmount: 2250.00,
-            vatRate: 0.23,
-            vatAmount: 517.50,
-            retentionRate: 0.25,
-            retentionAmount: 562.50,
-            netReceived: 2205.00
-        },
-        {
-            id: "inv-e2",
-            type: "issued",
-            number: "FR 2026/11",
-            date: "2026-08-01",
-            clientName: "Design & Media Studio",
-            clientNif: "512398471",
-            description: "Desenvolvimento de plataforma web e suporte técnico",
-            baseAmount: 1800.00,
-            vatRate: 0.23,
-            vatAmount: 414.00,
-            retentionRate: 0.25,
-            retentionAmount: 450.00,
-            netReceived: 1764.00
-        },
-        {
-            id: "inv-d1",
-            type: "expense",
-            supplierName: "Galp Energia / Combustíveis",
-            supplierNif: "500109741",
-            date: "2026-09-15",
-            baseAmount: 65.00,
-            vatAmount: 14.95,
-            totalAmount: 79.95,
-            efaturaStatus: "pending",
-            suggestedCategory: "atividade",
-            category: null,
-            cae: "47300"
-        },
-        {
-            id: "inv-d2",
-            type: "expense",
-            supplierName: "Farmácia Central de Lisboa",
-            supplierNif: "502391823",
-            date: "2026-09-12",
-            baseAmount: 42.10,
-            vatAmount: 2.53,
-            totalAmount: 44.63,
-            efaturaStatus: "pending",
-            suggestedCategory: "saude",
-            category: null,
-            cae: "47730"
-        },
-        {
-            id: "inv-d3",
-            type: "expense",
-            supplierName: "Restaurante O Solar dos Sabores",
-            supplierNif: "509827361",
-            date: "2026-09-10",
-            baseAmount: 38.00,
-            vatAmount: 4.94,
-            totalAmount: 42.94,
-            efaturaStatus: "pending",
-            suggestedCategory: "restauracao",
-            category: null,
-            cae: "56101"
-        },
-        {
-            id: "inv-d4",
-            type: "expense",
-            supplierName: "Worten Equipamentos",
-            supplierNif: "503630330",
-            date: "2026-09-05",
-            baseAmount: 320.00,
-            vatAmount: 73.60,
-            totalAmount: 393.60,
-            efaturaStatus: "pending",
-            suggestedCategory: "atividade",
-            category: null,
-            cae: "47410"
-        },
-        {
-            id: "inv-d5",
-            type: "expense",
-            supplierName: "Continente Modelo Hipermercados",
-            supplierNif: "501530948",
-            date: "2026-09-01",
-            baseAmount: 145.20,
-            vatAmount: 12.30,
-            totalAmount: 157.50,
-            efaturaStatus: "validated",
-            suggestedCategory: "geral",
-            category: "geral",
-            cae: "47111"
-        },
-        {
-            id: "inv-d6",
-            type: "expense",
-            supplierName: "Vodafone Portugal Comunicações",
-            supplierNif: "502544180",
-            date: "2026-08-28",
-            baseAmount: 48.00,
-            vatAmount: 11.04,
-            totalAmount: 59.04,
-            efaturaStatus: "validated",
-            suggestedCategory: "atividade",
-            category: "atividade",
-            cae: "61100"
-        }
-    ],
+    invoices: [],
     calendarState: {},
     vault: {
-        hasFinancasCredentials: true,
-        hasSSCredentials: true,
-        lastVerified: new Date().toISOString()
+        hasFinancasCredentials: false,
+        hasSSCredentials: false,
+        lastVerified: null
     }
 };
+
+const DEFAULT_STATE = EMPTY_STATE;
 
 class Database {
     constructor() {
@@ -313,6 +190,80 @@ class Database {
         };
         this.save();
         return this.getCalendar();
+    }
+
+    clearAllData() {
+        this.data = JSON.parse(JSON.stringify(EMPTY_STATE));
+        this.save();
+        return this.data;
+    }
+
+    loadDemoData() {
+        this.data = {
+            profile: {
+                name: "Utilizador Demo",
+                nif: "249817263",
+                niss: "12039485711",
+                activityType: "independent",
+                vatRegime: "normal",
+                directDebitSS: true,
+                directDebitAT: false,
+                vehiclePlate: "AA-00-ZZ",
+                vehicleRegMonth: 9,
+                alertDays: [30, 7, 2, 0]
+            },
+            status: {
+                financas: {
+                    situation: "regularizada",
+                    lastSync: new Date().toISOString(),
+                    certidaoValidaAte: "2026-12-31",
+                    dividasAtivas: 0,
+                    divergencias: 0
+                },
+                segurancaSocial: {
+                    situation: "regularizada",
+                    lastSync: new Date().toISOString(),
+                    debitoDiretoAtivo: true,
+                    ultimoPagamento: {
+                        mes: "Agosto 2026",
+                        valor: 184.22,
+                        pagoEm: "2026-08-19"
+                    },
+                    proximoPagamento: {
+                        mes: "Setembro 2026",
+                        valor: 184.22,
+                        limite: "2026-09-20",
+                        entidade: "12244",
+                        referencia: "512 849 392"
+                    }
+                }
+            },
+            invoices: [
+                {
+                    id: "inv-demo-1",
+                    type: "issued",
+                    number: "FR 2026/01",
+                    date: "2026-09-02",
+                    clientName: "Cliente Exemplo Lda",
+                    clientNif: "509182736",
+                    description: "Prestação de serviços de consultoria",
+                    baseAmount: 2000.00,
+                    vatRate: 0.23,
+                    vatAmount: 460.00,
+                    retentionRate: 0.25,
+                    retentionAmount: 500.00,
+                    netReceived: 1960.00
+                }
+            ],
+            calendarState: {},
+            vault: {
+                hasFinancasCredentials: false,
+                hasSSCredentials: false,
+                lastVerified: null
+            }
+        };
+        this.save();
+        return this.data;
     }
 }
 

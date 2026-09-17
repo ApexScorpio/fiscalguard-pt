@@ -1,14 +1,14 @@
 {
   "profile": {
-    "name": "ApexScorpio",
-    "nif": "249817263",
-    "niss": "12039485711",
+    "name": "",
+    "nif": "",
+    "niss": "",
     "activityType": "independent",
     "vatRegime": "normal",
-    "directDebitSS": true,
+    "directDebitSS": false,
     "directDebitAT": false,
-    "vehiclePlate": "AA-00-ZZ",
-    "vehicleRegMonth": 9,
+    "vehiclePlate": "",
+    "vehicleRegMonth": null,
     "alertDays": [
       30,
       7,
@@ -18,171 +18,25 @@
   },
   "status": {
     "financas": {
-      "situation": "regularizada",
-      "lastSync": "2026-09-17T18:06:26.663Z",
-      "certidaoValidaAte": "2026-12-31",
+      "situation": "nao_configurado",
+      "lastSync": null,
+      "certidaoValidaAte": null,
       "dividasAtivas": 0,
       "divergencias": 0
     },
     "segurancaSocial": {
-      "situation": "regularizada",
-      "lastSync": "2026-09-17T18:06:26.665Z",
-      "debitoDiretoAtivo": true,
-      "ultimoPagamento": {
-        "mes": "Agosto 2026",
-        "valor": 184.22,
-        "pagoEm": "2026-08-19"
-      },
-      "proximoPagamento": {
-        "mes": "Setembro 2026",
-        "valor": 184.22,
-        "limite": "2026-09-20",
-        "entidade": "12244",
-        "referencia": "512 849 392"
-      }
+      "situation": "nao_configurado",
+      "lastSync": null,
+      "debitoDiretoAtivo": false,
+      "ultimoPagamento": null,
+      "proximoPagamento": null
     }
   },
-  "invoices": [
-    {
-      "id": "inv-e1",
-      "type": "issued",
-      "number": "FR 2026/12",
-      "date": "2026-09-02",
-      "clientName": "Tech Solutions Portugal Lda",
-      "clientNif": "509182736",
-      "description": "Prestação de serviços de consultoria informática e desenvolvimento",
-      "baseAmount": 2250,
-      "vatRate": 0.23,
-      "vatAmount": 517.5,
-      "retentionRate": 0.25,
-      "retentionAmount": 562.5,
-      "netReceived": 2205
-    },
-    {
-      "id": "inv-e2",
-      "type": "issued",
-      "number": "FR 2026/11",
-      "date": "2026-08-01",
-      "clientName": "Design & Media Studio",
-      "clientNif": "512398471",
-      "description": "Desenvolvimento de plataforma web e suporte técnico",
-      "baseAmount": 1800,
-      "vatRate": 0.23,
-      "vatAmount": 414,
-      "retentionRate": 0.25,
-      "retentionAmount": 450,
-      "netReceived": 1764
-    },
-    {
-      "id": "inv-d1",
-      "type": "expense",
-      "supplierName": "Galp Energia / Combustíveis",
-      "supplierNif": "500109741",
-      "date": "2026-09-15",
-      "baseAmount": 65,
-      "vatAmount": 14.95,
-      "totalAmount": 79.95,
-      "efaturaStatus": "validated",
-      "suggestedCategory": "atividade",
-      "category": "atividade",
-      "cae": "47300"
-    },
-    {
-      "id": "inv-d2",
-      "type": "expense",
-      "supplierName": "Farmácia Central de Lisboa",
-      "supplierNif": "502391823",
-      "date": "2026-09-12",
-      "baseAmount": 42.1,
-      "vatAmount": 2.53,
-      "totalAmount": 44.63,
-      "efaturaStatus": "validated",
-      "suggestedCategory": "saude",
-      "category": "saude",
-      "cae": "47730"
-    },
-    {
-      "id": "inv-d3",
-      "type": "expense",
-      "supplierName": "Restaurante O Solar dos Sabores",
-      "supplierNif": "509827361",
-      "date": "2026-09-10",
-      "baseAmount": 38,
-      "vatAmount": 4.94,
-      "totalAmount": 42.94,
-      "efaturaStatus": "validated",
-      "suggestedCategory": "restauracao",
-      "category": "restauracao",
-      "cae": "56101"
-    },
-    {
-      "id": "inv-d4",
-      "type": "expense",
-      "supplierName": "Worten Equipamentos",
-      "supplierNif": "503630330",
-      "date": "2026-09-05",
-      "baseAmount": 320,
-      "vatAmount": 73.6,
-      "totalAmount": 393.6,
-      "efaturaStatus": "validated",
-      "suggestedCategory": "atividade",
-      "category": "atividade",
-      "cae": "47410"
-    },
-    {
-      "id": "inv-d5",
-      "type": "expense",
-      "supplierName": "Continente Modelo Hipermercados",
-      "supplierNif": "501530948",
-      "date": "2026-09-01",
-      "baseAmount": 145.2,
-      "vatAmount": 12.3,
-      "totalAmount": 157.5,
-      "efaturaStatus": "validated",
-      "suggestedCategory": "geral",
-      "category": "geral",
-      "cae": "47111"
-    },
-    {
-      "id": "inv-d6",
-      "type": "expense",
-      "supplierName": "Vodafone Portugal Comunicações",
-      "supplierNif": "502544180",
-      "date": "2026-08-28",
-      "baseAmount": 48,
-      "vatAmount": 11.04,
-      "totalAmount": 59.04,
-      "efaturaStatus": "validated",
-      "suggestedCategory": "atividade",
-      "category": "atividade",
-      "cae": "61100"
-    }
-  ],
-  "calendarState": {
-    "efatura_validacao": {
-      "completed": true,
-      "completedDate": "2026-09-17T18:33:11.295Z"
-    },
-    "ss_declaracao_t1": {
-      "completed": true,
-      "completedDate": "2026-09-17T18:33:11.296Z"
-    },
-    "imi_prestacao_1": {
-      "completed": true,
-      "completedDate": "2026-09-17T18:33:11.297Z"
-    },
-    "irs_modelo3": {
-      "completed": true,
-      "completedDate": "2026-09-17T18:33:11.297Z"
-    },
-    "ss_declaracao_t2": {
-      "completed": true,
-      "completedDate": "2026-09-17T18:33:11.298Z"
-    }
-  },
+  "invoices": [],
+  "calendarState": {},
   "vault": {
-    "hasFinancasCredentials": true,
-    "hasSSCredentials": true,
-    "lastVerified": "2026-09-17T17:51:45.062Z"
+    "hasFinancasCredentials": false,
+    "hasSSCredentials": false,
+    "lastVerified": null
   }
 }

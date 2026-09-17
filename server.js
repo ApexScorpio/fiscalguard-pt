@@ -4,7 +4,7 @@ const path = require('path');
 const db = require('./db');
 const { calculateNetIncome, simulateSSTrimestral } = require('./rules');
 const { sendNativeToast, checkAndTriggerAlerts } = require('./notifier');
-const { syncPortalFinancas, syncSegurancaSocial, getCredentials, saveCredentials } = require('./sync');
+const { syncPortalFinancas, syncSegurancaSocial, getCredentials, saveCredentials, launchInteractiveLogin } = require('./sync');
 const multiSync = require('./sync-relay');
 const { answerQuestion } = require('./assistant');
 
@@ -70,7 +70,8 @@ app.get('/api/status', (req, res) => {
             const overdue = calendar.filter(c => !c.completed && c.daysRemaining < 0);
             return activeFuture[0] || overdue[0] || null;
         })(),
-        overdueCount: calendar.filter(c => !c.completed && c.daysRemaining < 0).length
+        overdueCount: calendar.filter(c => !c.completed && c.daysRemaining < 0).length,
+        isSynced: Boolean(status.financas.lastSync || status.segurancaSocial.lastSync || invoices.length > 0)
     });
 });
 
@@ -181,6 +182,26 @@ app.post('/api/sync/run', async (req, res) => {
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
+});
+
+app.post('/api/auth/open-portal', async (req, res) => {
+    try {
+        const { portal = 'financas' } = req.body || {};
+        const result = await launchInteractiveLogin(portal);
+        res.json(result);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/demo/clear', (req, res) => {
+    const fresh = db.clearAllData();
+    res.json({ success: true, message: "Todos os dados foram limpos com sucesso.", data: fresh });
+});
+
+app.post('/api/demo/load', (req, res) => {
+    const demo = db.loadDemoData();
+    res.json({ success: true, message: "Dados de demonstração carregados.", data: demo });
 });
 
 app.get('/api/vault/credentials', (req, res) => {

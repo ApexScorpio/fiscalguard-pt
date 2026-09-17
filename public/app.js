@@ -83,17 +83,49 @@ async function loadStatus() {
         const data = await res.json();
 
         // Atualizar Semáforo
-        document.getElementById('at-situation-text').textContent = 
-            data.status.financas.situation === 'regularizada' ? 'Regularizada (OK)' : 'Atenção / Dívida';
-        
-        document.getElementById('ss-situation-text').textContent = 
-            data.status.segurancaSocial.situation === 'regularizada' ? 'Regularizada (OK)' : 'Pendente';
+        const atTextEl = document.getElementById('at-situation-text');
+        const atDotEl = document.getElementById('at-indicator-dot');
+        if (data.status.financas.situation === 'regularizada') {
+            atTextEl.textContent = 'Regularizada (OK)';
+            if (atDotEl) atDotEl.className = 'status-indicator live-pulse';
+        } else if (data.status.financas.situation === 'divida') {
+            atTextEl.textContent = 'Atenção / Dívida';
+            if (atDotEl) atDotEl.className = 'status-indicator live-pulse dot-critical';
+        } else {
+            atTextEl.textContent = 'A Aguardar Login';
+            if (atDotEl) atDotEl.className = 'status-indicator dot-warning';
+        }
+
+        const ssTextEl = document.getElementById('ss-situation-text');
+        const ssDotEl = document.getElementById('ss-indicator-dot');
+        if (data.status.segurancaSocial.situation === 'regularizada') {
+            ssTextEl.textContent = 'Regularizada (OK)';
+            if (ssDotEl) ssDotEl.className = 'status-indicator live-pulse';
+        } else if (data.status.segurancaSocial.situation === 'pendente') {
+            ssTextEl.textContent = 'Pendente';
+            if (ssDotEl) ssDotEl.className = 'status-indicator live-pulse dot-critical';
+        } else {
+            ssTextEl.textContent = 'A Aguardar Login';
+            if (ssDotEl) ssDotEl.className = 'status-indicator dot-warning';
+        }
 
         // Atualizar Métricas Principais
-        document.getElementById('overview-net-amount').textContent = formatCurrency(data.stats.recommendedReserves.netTakeHome);
-        document.getElementById('overview-vat-reserve').textContent = formatCurrency(data.stats.recommendedReserves.vat);
-        document.getElementById('overview-ss-reserve').textContent = formatCurrency(data.stats.recommendedReserves.ss);
-        document.getElementById('overview-irs-reserve').textContent = formatCurrency(data.stats.recommendedReserves.irs);
+        const isFresh = !data.isSynced && (data.stats.totalIssued === 0 && data.stats.totalExpenses === 0);
+        if (isFresh) {
+            document.getElementById('overview-net-amount').textContent = '-- €';
+            document.getElementById('overview-vat-reserve').textContent = '-- €';
+            document.getElementById('overview-ss-reserve').textContent = '-- €';
+            document.getElementById('overview-irs-reserve').textContent = '-- €';
+            const subtext = document.getElementById('overview-net-subtext');
+            if (subtext) subtext.textContent = 'A aguardar primeiro início de sessão nos portais';
+        } else {
+            document.getElementById('overview-net-amount').textContent = formatCurrency(data.stats.recommendedReserves.netTakeHome);
+            document.getElementById('overview-vat-reserve').textContent = formatCurrency(data.stats.recommendedReserves.vat);
+            document.getElementById('overview-ss-reserve').textContent = formatCurrency(data.stats.recommendedReserves.ss);
+            document.getElementById('overview-irs-reserve').textContent = formatCurrency(data.stats.recommendedReserves.irs);
+            const subtext = document.getElementById('overview-net-subtext');
+            if (subtext) subtext.textContent = 'Dinheiro 100% limpo e livre de impostos para gastar';
+        }
 
         // Contador de e-fatura
         const efaturaCounter = document.getElementById('efatura-counter');
@@ -102,12 +134,31 @@ async function loadStatus() {
             efaturaCounter.style.display = data.stats.pendingEfaturaCount > 0 ? 'inline-block' : 'none';
         }
 
-        // Atualizar Banner de Alerta Urgente
+        // Atualizar Banner
         const urgentBanner = document.getElementById('urgent-alert-banner');
         const bannerText = document.getElementById('urgent-banner-text');
         const alertBadge = document.querySelector('.alert-badge');
-        if (data.nextUrgent) {
+        const bannerBtn = document.getElementById('btn-banner-action');
+
+        if (isFresh) {
             urgentBanner.style.display = 'flex';
+            if (alertBadge) {
+                alertBadge.textContent = "🔑 AUTENTICAÇÃO NOS PORTAIS";
+                alertBadge.style.background = "rgba(16, 185, 129, 0.2)";
+                alertBadge.style.borderColor = "rgba(16, 185, 129, 0.4)";
+                alertBadge.style.color = "#34d399";
+            }
+            bannerText.innerHTML = `<strong>Nenhum dado sincronizado ainda:</strong> Como não vais registar nada à mão, inicia sessão no Portal das Finanças e Segurança Social para ler os teus dados reais.`;
+            if (bannerBtn) {
+                bannerBtn.textContent = "Iniciar Sessão Oficial";
+                bannerBtn.onclick = () => openPortalLoginModal();
+            }
+        } else if (data.nextUrgent) {
+            urgentBanner.style.display = 'flex';
+            if (bannerBtn) {
+                bannerBtn.textContent = "Ver Detalhes";
+                bannerBtn.onclick = () => switchTab('tab-overview');
+            }
             const days = data.nextUrgent.daysRemaining;
             let timePhrase = "";
 
@@ -249,6 +300,24 @@ async function loadInvoices(filter = 'all') {
             if (filter === 'expense') return inv.type === 'expense';
             return true;
         });
+
+        if (invoices.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" style="text-align:center;padding:48px 16px;color:var(--text-muted);">
+                        <div style="font-size:32px;margin-bottom:10px;">🔐</div>
+                        <h4 style="color:var(--text-primary);margin-bottom:6px;font-size:16px;">Nenhuma fatura carregada ainda</h4>
+                        <p style="font-size:13px;max-width:540px;margin:0 auto 16px auto;line-height:1.5;">
+                            Como definiste, <strong>não tens de registar faturas manualmente</strong>. O robô vai ler todas as tuas despesas do <strong>e-fatura</strong> e <strong>faturas emitidas</strong> diretamente do Portal das Finanças assim que iniciares sessão.
+                        </p>
+                        <button class="btn btn-emerald" onclick="openPortalLoginModal()">
+                            <span class="btn-icon">🔑</span> Iniciar Sessão Oficial no Portal das Finanças
+                        </button>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
 
         invoices.forEach(inv => {
             const tr = document.createElement('tr');
@@ -444,10 +513,118 @@ async function runPortalSync(options = {}) {
     }
 }
 
+window.openPortalLoginModal = function(portal = null) {
+    const modal = document.getElementById('modal-portal-login');
+    if (modal) modal.classList.add('active');
+};
+
+async function runInteractiveLogin(portal = 'financas') {
+    const consoleModal = document.getElementById('modal-sync-console');
+    const logsEl = document.getElementById('sync-terminal-logs');
+    if (consoleModal && logsEl) {
+        consoleModal.classList.add('active');
+        logsEl.innerHTML = `[${new Date().toLocaleTimeString()}] A abrir o Microsoft Edge para autenticação no ${portal === 'financas' ? 'Portal das Finanças (AT)' : 'Segurança Social Direta'}...\n`;
+    }
+
+    const appendLog = (msg) => {
+        if (logsEl) {
+            logsEl.innerHTML += `${msg}\n`;
+            logsEl.scrollTop = logsEl.scrollHeight;
+        }
+    };
+
+    try {
+        appendLog(`[${new Date().toLocaleTimeString()}] Uma janela do Microsoft Edge vai abrir-se. Por favor introduz os teus dados ou usa Chave Móvel Digital.`);
+        const res = await fetch('/api/auth/open-portal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ portal })
+        });
+        const data = await res.json();
+        if (data.log) {
+            data.log.forEach(l => appendLog(l));
+        }
+        await loadAllData();
+    } catch (err) {
+        appendLog(`[${new Date().toLocaleTimeString()}] ❌ Erro: ${err.message}`);
+    }
+}
+
 /* ==========================================================================
    EVENT LISTENERS & AÇÕES DO UTILIZADOR
    ========================================================================== */
 function initEventListeners() {
+    // 0. Botão de Iniciar Sessão Oficial nos Portais
+    const btnOpenPortalLogin = document.getElementById('btn-open-portal-login');
+    if (btnOpenPortalLogin) {
+        btnOpenPortalLogin.addEventListener('click', () => openPortalLoginModal());
+    }
+
+    const btnClosePortalModal = document.getElementById('btn-close-portal-modal');
+    const btnDismissPortalModal = document.getElementById('btn-dismiss-portal-modal');
+    const modalPortalLogin = document.getElementById('modal-portal-login');
+
+    if (btnClosePortalModal && modalPortalLogin) {
+        btnClosePortalModal.addEventListener('click', () => modalPortalLogin.classList.remove('active'));
+    }
+    if (btnDismissPortalModal && modalPortalLogin) {
+        btnDismissPortalModal.addEventListener('click', () => modalPortalLogin.classList.remove('active'));
+    }
+
+    const btnLoginAtEdge = document.getElementById('btn-login-at-edge');
+    if (btnLoginAtEdge && modalPortalLogin) {
+        btnLoginAtEdge.addEventListener('click', () => {
+            modalPortalLogin.classList.remove('active');
+            runInteractiveLogin('financas');
+        });
+    }
+
+    const btnLoginSsEdge = document.getElementById('btn-login-ss-edge');
+    if (btnLoginSsEdge && modalPortalLogin) {
+        btnLoginSsEdge.addEventListener('click', () => {
+            modalPortalLogin.classList.remove('active');
+            runInteractiveLogin('seg_social');
+        });
+    }
+
+    const linkGotoVault = document.getElementById('link-goto-vault');
+    if (linkGotoVault && modalPortalLogin) {
+        linkGotoVault.addEventListener('click', (e) => {
+            e.preventDefault();
+            modalPortalLogin.classList.remove('active');
+            switchTab('tab-settings');
+        });
+    }
+
+    // Gestão de Dados (Demo & Reset)
+    const btnDemoClear = document.getElementById('btn-demo-clear');
+    if (btnDemoClear) {
+        btnDemoClear.addEventListener('click', async () => {
+            if (!confirm("Tens a certeza que desejas limpar todos os dados e repor o sistema a 100% vazio?")) return;
+            try {
+                await fetch('/api/demo/clear', { method: 'POST' });
+                await loadAllData();
+                alert("✓ O sistema está agora 100% vazio e sem dados fictícios, pronto para a tua primeira autenticação oficial.");
+            } catch (e) {
+                alert("Erro ao limpar dados: " + e.message);
+            }
+        });
+    }
+
+    const btnDemoLoad = document.getElementById('btn-demo-load');
+    if (btnDemoLoad) {
+        btnDemoLoad.addEventListener('click', async () => {
+            if (!confirm("Desejas carregar dados de exemplo apenas para demonstração visual das funcionalidades?")) return;
+            try {
+                await fetch('/api/demo/load', { method: 'POST' });
+                await loadAllData();
+                alert("✓ Dados de exemplo carregados para fins de demonstração.");
+            } catch (e) {
+                alert("Erro ao carregar demonstração: " + e.message);
+            }
+        });
+    }
+
     // 1. Sincronização 100% Automática nos botões do topo e das abas
     const syncAllBtn = document.getElementById('btn-sync-all');
     if (syncAllBtn) {

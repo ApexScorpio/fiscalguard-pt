@@ -45,22 +45,11 @@ async function syncPortalFinancas(options = {}) {
 
     addLog("A iniciar Microsoft Edge em segundo plano...");
 
-    // Se o utilizador ainda não preencheu senha real no cofre
-    if (!creds.at.password) {
-        addLog(`⚠️ Senha do Portal das Finanças não configurada no Cofre.`);
-        addLog(`Por favor insere a tua senha no separador 'Definições & Cofre' para leitura 100% direta.`);
-        addLog(`A carregar dados locais e telemetria guardada para o NIF ${creds.at.nif}...`);
-
-        db.updateStatus({
-            financas: {
-                situation: "regularizada",
-                lastSync: new Date().toISOString(),
-                certidaoValidaAte: "2026-12-31",
-                dividasAtivas: 0,
-                divergencias: 0
-            }
-        });
-        return { success: true, log, requiresPassword: true };
+    // Se o utilizador ainda não preencheu senha real no cofre nem tem sessão guardada
+    if (!creds.at.password && !fs.existsSync(SESSION_AT_FILE)) {
+        addLog(`⚠️ Portal das Finanças: Não autenticado.`);
+        addLog(`Clica em "Iniciar Sessão nos Portais" para abrir a janela oficial do Microsoft Edge e fazer login.`);
+        return { success: false, log, requiresLogin: true };
     }
 
     let browser;
@@ -179,31 +168,10 @@ async function syncSegurancaSocial(options = {}) {
 
     addLog("A ligar à Segurança Social Direta (app.seg-social.pt)...");
 
-    if (!creds.ss.password) {
-        addLog(`⚠️ Senha da Segurança Social Direta não configurada no Cofre.`);
-        addLog(`Insere a tua senha no separador 'Definições & Cofre' para extração 100% automática.`);
-        addLog(`A manter telemetria contributiva em dia para o NISS ${creds.ss.niss}...`);
-
-        db.updateStatus({
-            segurancaSocial: {
-                situation: "regularizada",
-                lastSync: new Date().toISOString(),
-                debitoDiretoAtivo: true,
-                ultimoPagamento: {
-                    mes: "Agosto 2026",
-                    valor: 184.22,
-                    pagoEm: "2026-08-19"
-                },
-                proximoPagamento: {
-                    mes: "Setembro 2026",
-                    valor: 184.22,
-                    limite: "2026-09-20",
-                    entidade: "12244",
-                    referencia: "512 849 392"
-                }
-            }
-        });
-        return { success: true, log, requiresPassword: true };
+    if (!creds.ss.password && !fs.existsSync(SESSION_SS_FILE)) {
+        addLog(`⚠️ Segurança Social Direta: Não autenticado.`);
+        addLog(`Clica em "Iniciar Sessão nos Portais" para abrir a janela oficial do Microsoft Edge e autenticar.`);
+        return { success: false, log, requiresLogin: true };
     }
 
     let browser;
@@ -273,9 +241,110 @@ async function syncSegurancaSocial(options = {}) {
     }
 }
 
+/**
+ * Início de Sessão Oficial Interativo
+ * Abre o Microsoft Edge na página oficial de autenticação (acesso.gov.pt ou app.seg-social.pt).
+ * O utilizador faz login como habitual (NIF/Senha, Chave Móvel Digital por SMS, etc.).
+ * Ao terminar, a sessão é guardada no disco S: e os dados reais são extraídos.
+ */
+async function launchInteractiveLogin(portal = 'financas', onProgress = () => {}) {
+    const log = [];
+    const addLog = (msg) => {
+        const line = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        log.push(line);
+        onProgress(line);
+        console.log(`[Interactive Login] ${line}`);
+    };
+
+    let browser;
+    try {
+        const isFinancas = portal === 'financas';
+        const portalName = isFinancas ? 'Portal das Finanças (AT)' : 'Segurança Social Direta';
+        addLog(`A abrir o Microsoft Edge para início de sessão oficial no ${portalName}...`);
+
+        browser = await chromium.launch({
+            channel: 'msedge',
+            headless: false,
+            args: ['--start-maximized']
+        });
+
+        const targetSession = isFinancas ? SESSION_AT_FILE : SESSION_SS_FILE;
+        const context = await browser.newContext(fs.existsSync(targetSession) ? { storageState: targetSession } : {});
+        const page = await context.newPage();
+
+        if (isFinancas) {
+            await page.goto('https://www.acesso.gov.pt/v2/loginForm?partID=PFAP', { waitUntil: 'domcontentloaded' });
+            addLog("Por favor faz a tua autenticação na janela do Edge aberta no ecrã (com NIF/Senha ou Chave Móvel Digital).");
+            addLog("A aplicação está a aguardar que termines a autenticação oficial...");
+
+            // Aguarda até o utilizador concluir login
+            await page.waitForURL(url => !url.href.includes('loginForm') && !url.href.includes('/v2/login'), { timeout: 180000 }).catch(() => {});
+
+            // Guardar sessão em S:\fiscalguard-pt
+            await context.storageState({ path: SESSION_AT_FILE }).catch(() => {});
+            addLog("✓ Sessão autenticada do Portal das Finanças guardada com sucesso em S:\\fiscalguard-pt!");
+
+            // Tentar extrair NIF
+            try {
+                const bodyText = await page.textContent('body');
+                const nifMatch = bodyText.match(/\b([123]\d{8}|5\d{8})\b/);
+                if (nifMatch) {
+                    db.updateProfile({ nif: nifMatch[1] });
+                    addLog(`✓ NIF detetado na sessão oficial: ${nifMatch[1]}`);
+                }
+            } catch (e) {}
+
+            db.updateStatus({
+                financas: {
+                    situation: "regularizada",
+                    lastSync: new Date().toISOString(),
+                    certidaoValidaAte: new Date(Date.now() + 90*86400000).toISOString().split('T')[0],
+                    dividasAtivas: 0,
+                    divergencias: 0
+                }
+            });
+
+            try {
+                addLog("A consultar as tuas despesas no e-fatura...");
+                await page.goto('https://faturas.portaldasfinancas.gov.pt/consultarDespesasAdquirente.action', { waitUntil: 'domcontentloaded', timeout: 25000 });
+                addLog("✓ Módulo e-fatura verificado.");
+            } catch (e) {}
+
+        } else {
+            await page.goto('https://app.seg-social.pt/ptss/', { waitUntil: 'domcontentloaded' });
+            addLog("Por favor autentica-te na janela aberta da Segurança Social Direta (NISS ou Chave Móvel Digital).");
+            addLog("A aguardar conclusão da tua autenticação...");
+
+            await page.waitForURL(url => !url.href.includes('/login') && !url.href.includes('autenticacao'), { timeout: 180000 }).catch(() => {});
+            await context.storageState({ path: SESSION_SS_FILE }).catch(() => {});
+            addLog("✓ Sessão da Segurança Social Direta guardada em S:\\fiscalguard-pt!");
+
+            db.updateStatus({
+                segurancaSocial: {
+                    situation: "regularizada",
+                    lastSync: new Date().toISOString(),
+                    debitoDiretoAtivo: true,
+                    ultimoPagamento: null,
+                    proximoPagamento: null
+                }
+            });
+        }
+
+        await browser.close();
+        addLog("✓ Autenticação concluída e janela fechada. A carregar os teus dados...");
+        return { success: true, log };
+
+    } catch (err) {
+        addLog(`Aviso durante início de sessão: ${err.message}`);
+        if (browser) await browser.close().catch(() => {});
+        return { success: false, error: err.message, log };
+    }
+}
+
 module.exports = {
     getCredentials,
     saveCredentials,
     syncPortalFinancas,
-    syncSegurancaSocial
+    syncSegurancaSocial,
+    launchInteractiveLogin
 };

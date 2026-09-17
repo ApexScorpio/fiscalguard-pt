@@ -29,18 +29,18 @@
             <div class="header-center">
                 <div class="traffic-lights">
                     <div class="traffic-card status-at" id="status-at-badge" title="Situação Tributária na Autoridade Tributária">
-                        <span class="status-indicator live-pulse"></span>
+                        <span class="status-indicator live-pulse" id="at-indicator-dot"></span>
                         <div class="status-info">
                             <span class="status-label">Autoridade Tributária</span>
-                            <strong class="status-value" id="at-situation-text">Regularizada</strong>
+                            <strong class="status-value" id="at-situation-text">A Aguardar Login</strong>
                         </div>
                     </div>
 
                     <div class="traffic-card status-ss" id="status-ss-badge" title="Situação Contributiva na Segurança Social">
-                        <span class="status-indicator live-pulse"></span>
+                        <span class="status-indicator live-pulse" id="ss-indicator-dot"></span>
                         <div class="status-info">
                             <span class="status-label">Segurança Social</span>
-                            <strong class="status-value" id="ss-situation-text">Regularizada</strong>
+                            <strong class="status-value" id="ss-situation-text">A Aguardar Login</strong>
                         </div>
                     </div>
 
@@ -56,7 +56,11 @@
 
             <!-- BOTÕES DE AÇÃO RÁPIDA -->
             <div class="header-right">
-                <button id="btn-sync-all" class="btn btn-primary" title="Executa sincronização 100% automática de Finanças, SS e Portátil">
+                <button id="btn-open-portal-login" class="btn btn-emerald" title="Iniciar sessão oficial nos portais das Finanças e Segurança Social">
+                    <span class="btn-icon">🔑</span>
+                    <span>Iniciar Sessão Oficial</span>
+                </button>
+                <button id="btn-sync-all" class="btn btn-primary" title="Executa sincronização 100% automática com credenciais locais">
                     <span class="btn-icon">⚡</span>
                     <span>Sincronizar (100% Auto)</span>
                 </button>
@@ -490,12 +494,12 @@
                         <div class="form-grid">
                             <div class="form-group">
                                 <label for="setting-nif">NIF (Número de Identificação Fiscal):</label>
-                                <input type="text" id="setting-nif" class="form-input" value="249817263">
+                                <input type="text" id="setting-nif" class="form-input" placeholder="Preenchido automaticamente ao autenticar ou introduz o teu NIF" value="">
                             </div>
 
                             <div class="form-group">
                                 <label for="setting-niss">NISS (Segurança Social):</label>
-                                <input type="text" id="setting-niss" class="form-input" value="12039485711">
+                                <input type="text" id="setting-niss" class="form-input" placeholder="Preenchido automaticamente ao autenticar ou introduz o teu NISS" value="">
                             </div>
 
                             <div class="form-group">
@@ -518,7 +522,7 @@
 
                             <div class="form-group">
                                 <label for="setting-plate">Matrícula da Viatura (para IUC):</label>
-                                <input type="text" id="setting-plate" class="form-input" value="AA-00-ZZ">
+                                <input type="text" id="setting-plate" class="form-input" placeholder="Ex: 00-AA-00" value="">
                             </div>
 
                             <div class="form-group">
@@ -594,8 +598,81 @@
                         </div>
                     </form>
                 </div>
+
+                <!-- GESTÃO DE DADOS & MODO DEMONSTRAÇÃO -->
+                <div class="settings-card" style="margin-top: 24px; border-color: rgba(239, 68, 68, 0.25);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:10px;">
+                        <h2>⚙️ Gestão de Dados & Transparência</h2>
+                    </div>
+                    <p class="section-desc">
+                        A aplicação funciona em modo 100% limpo &mdash; nenhum dado é inventado nem registado sem autenticação nos teus portais oficiais. Podes carregar dados de exemplo caso queiras apenas explorar visualmente, ou limpar tudo a qualquer momento.
+                    </p>
+                    <div style="display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;">
+                        <button type="button" id="btn-demo-clear" class="btn btn-outline" style="border-color: rgba(239, 68, 68, 0.4); color: #f87171;">
+                            <span class="btn-icon">🗑️</span> Limpar Todos os Dados (Reset a Zero)
+                        </button>
+                        <button type="button" id="btn-demo-load" class="btn btn-secondary">
+                            <span class="btn-icon">🧪</span> Carregar Dados de Demonstração (Demo)
+                        </button>
+                    </div>
+                </div>
             </section>
         </main>
+    </div>
+
+    <!-- MODAL: INICIAR SESSÃO OFICIAL NOS PORTAIS -->
+    <div class="modal-overlay" id="modal-portal-login">
+        <div class="modal-box" style="max-width: 620px;">
+            <div class="modal-header">
+                <h3>🔑 Iniciar Sessão Oficial nos Portais do Estado</h3>
+                <button class="btn-close-modal" id="btn-close-portal-modal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 24px;">
+                <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    Como definiste, <strong>não vais registar nada à mão</strong>. A app abre uma janela oficial do Microsoft Edge diretamente no portal pretendido para autenticares com as tuas credenciais ou Chave Móvel Digital.
+                </p>
+
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <!-- OPÇÃO 1: FINANÇAS -->
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <strong style="font-size: 15px; color: var(--text-primary);">🏛️ Autoridade Tributária (Portal das Finanças)</strong>
+                            <span class="badge badge-pending" id="badge-modal-at">Por Autenticar</span>
+                        </div>
+                        <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
+                            Abre a página oficial <code>acesso.gov.pt</code> no Microsoft Edge. Podes entrar com NIF/Senha ou Chave Móvel Digital. As tuas faturas do e-fatura e recibos emitidos são lidos diretamente para o disco S:.
+                        </p>
+                        <button id="btn-login-at-edge" class="btn btn-emerald" style="width: 100%;">
+                            <span class="btn-icon">🌐</span> Abrir Portal das Finanças no Microsoft Edge
+                        </button>
+                    </div>
+
+                    <!-- OPÇÃO 2: SEGURANÇA SOCIAL -->
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <strong style="font-size: 15px; color: var(--text-primary);">🛡️ Segurança Social Direta</strong>
+                            <span class="badge badge-pending" id="badge-modal-ss">Por Autenticar</span>
+                        </div>
+                        <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
+                            Abre <code>app.seg-social.pt</code> no Microsoft Edge para autenticares com NISS ou Chave Móvel Digital. Permite monitorizar conta corrente, débito direto e valores a pagar.
+                        </p>
+                        <button id="btn-login-ss-edge" class="btn btn-primary" style="width: 100%;">
+                            <span class="btn-icon">🌐</span> Abrir Segurança Social Direta no Microsoft Edge
+                        </button>
+                    </div>
+
+                    <!-- OPÇÃO 3: COFRE LOCAL -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); border-radius: var(--radius-md); padding: 12px; text-align: center;">
+                        <small style="color: var(--text-muted);">
+                            Preferes leitura 100% automática e silenciosa em segundo plano? Configura o teu NIF/Senha no Cofre Local em <a href="#" id="link-goto-vault" style="color: var(--accent-blue); text-decoration: underline;">Definições & Cofre</a>.
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" id="btn-dismiss-portal-modal">Fechar</button>
+            </div>
+        </div>
     </div>
 
     <!-- MODAL: CONSOLE DE TELEMETRIA E SINCRONIZAÇÃO AO VIVO -->
