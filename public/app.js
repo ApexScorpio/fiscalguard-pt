@@ -105,16 +105,31 @@ async function loadStatus() {
         // Atualizar Banner de Alerta Urgente
         const urgentBanner = document.getElementById('urgent-alert-banner');
         const bannerText = document.getElementById('urgent-banner-text');
+        const alertBadge = document.querySelector('.alert-badge');
         if (data.nextUrgent) {
             urgentBanner.style.display = 'flex';
             const days = data.nextUrgent.daysRemaining;
-            let timePhrase = days < 0 
-                ? `<span style="color:#f43f5e;font-weight:700;">Terminou há ${Math.abs(days)} dia(s)!</span>` 
-                : days === 0 
-                ? `<span style="color:#f59e0b;font-weight:700;">TERMINA HOJE!</span>` 
-                : `Faltam <strong>${days} dia(s)</strong> (Prazo: ${data.nextUrgent.deadline})`;
+            let timePhrase = "";
 
-            bannerText.innerHTML = `<strong>${data.nextUrgent.title}</strong> &mdash; ${timePhrase}. ${data.nextUrgent.description}`;
+            if (days < 0) {
+                if (alertBadge) alertBadge.textContent = "🚨 OBRIGAÇÃO PASSADA";
+                timePhrase = `<span style="color:#f43f5e;font-weight:700;">Terminou há ${Math.abs(days)} dia(s)</span>`;
+            } else if (days === 0) {
+                if (alertBadge) alertBadge.textContent = "⚠️ LIMITE HOJE";
+                timePhrase = `<span style="color:#f59e0b;font-weight:700;">TERMINA HOJE!</span>`;
+            } else if (days <= 2) {
+                if (alertBadge) alertBadge.textContent = `🚨 URGENTE (Faltam ${days}d)`;
+                timePhrase = `Faltam apenas <strong>${days} dia(s)</strong> (Prazo: ${data.nextUrgent.deadline})`;
+            } else {
+                if (alertBadge) alertBadge.textContent = "📅 PRÓXIMA OBRIGAÇÃO";
+                timePhrase = `Faltam <strong>${days} dia(s)</strong> (Prazo: ${data.nextUrgent.deadline})`;
+            }
+
+            let overdueNotice = data.overdueCount > 0 
+                ? ` <span style="color:var(--text-muted);font-size:12px;">(${data.overdueCount} de meses anteriores por arquivar)</span>` 
+                : "";
+
+            bannerText.innerHTML = `<strong>${data.nextUrgent.title}</strong> &mdash; ${timePhrase}. ${data.nextUrgent.description}${overdueNotice}`;
         } else {
             urgentBanner.style.display = 'none';
         }
@@ -124,16 +139,42 @@ async function loadStatus() {
     }
 }
 
-async function loadCalendar() {
+let currentCalFilter = 'upcoming';
+
+async function loadCalendar(filter = currentCalFilter) {
+    currentCalFilter = filter;
     try {
         const res = await fetch('/api/calendar');
         const list = await res.json();
         const container = document.getElementById('obligations-container');
         if (!container) return;
 
+        // Atualizar contador de anteriores
+        const overdueCount = list.filter(i => !i.completed && i.daysRemaining < 0).length;
+        const overdueEl = document.getElementById('cal-overdue-count');
+        if (overdueEl) overdueEl.textContent = overdueCount;
+
+        const filteredList = list.filter(item => {
+            if (filter === 'upcoming') return !item.completed && item.daysRemaining >= 0;
+            if (filter === 'overdue') return !item.completed && item.daysRemaining < 0;
+            if (filter === 'completed') return item.completed;
+            return true; // 'all'
+        });
+
         container.innerHTML = '';
 
-        list.forEach(item => {
+        if (filteredList.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center;padding:32px;color:var(--text-muted);">
+                    <div style="font-size:32px;margin-bottom:8px;">✓</div>
+                    <strong>Nenhuma obrigação nesta categoria.</strong>
+                    <p style="font-size:13px;margin-top:4px;">Todas as obrigações deste filtro estão em dia ou concluídas.</p>
+                </div>
+            `;
+            return;
+        }
+
+        filteredList.forEach(item => {
             const card = document.createElement('div');
             card.className = `obligation-card ${item.statusColor}`;
 
@@ -493,6 +534,31 @@ function initEventListeners() {
                 loadStatus();
             } catch (e) {
                 alert("Erro ao auto-classificar: " + e.message);
+            }
+        });
+    }
+
+    // 3.1. Filtros de Obrigações do Calendário Fiscal
+    const calFilterBtns = document.querySelectorAll('.btn-filter-cal');
+    calFilterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            calFilterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            loadCalendar(btn.dataset.calFilter);
+        });
+    });
+
+    // 3.2. Botão de Arquivar / Concluir Obrigações Anteriores
+    const completePastBtn = document.getElementById('btn-complete-all-past');
+    if (completePastBtn) {
+        completePastBtn.addEventListener('click', async () => {
+            try {
+                const res = await fetch('/api/calendar/complete-past', { method: 'POST' });
+                const data = await res.json();
+                loadCalendar();
+                loadStatus();
+            } catch (e) {
+                alert("Erro ao arquivar obrigações anteriores: " + e.message);
             }
         });
     }

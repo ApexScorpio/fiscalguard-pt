@@ -65,7 +65,12 @@ app.get('/api/status', (req, res) => {
                 netTakeHome: profitEstimates.netTakeHome
             }
         },
-        nextUrgent: urgentObligations[0] || calendar.find(c => !c.completed)
+        nextUrgent: (() => {
+            const activeFuture = calendar.filter(c => !c.completed && c.daysRemaining >= 0);
+            const overdue = calendar.filter(c => !c.completed && c.daysRemaining < 0);
+            return activeFuture[0] || overdue[0] || null;
+        })(),
+        overdueCount: calendar.filter(c => !c.completed && c.daysRemaining < 0).length
     });
 });
 
@@ -78,6 +83,16 @@ app.post('/api/calendar/toggle/:id', (req, res) => {
     const { completed } = req.body;
     const updated = db.markObligationComplete(id, completed !== false);
     res.json({ success: true, calendar: updated });
+});
+
+app.post('/api/calendar/complete-past', (req, res) => {
+    const calendar = db.getCalendar();
+    calendar.forEach(item => {
+        if (item.daysRemaining < 0 && !item.completed) {
+            db.markObligationComplete(item.id, true);
+        }
+    });
+    res.json({ success: true, calendar: db.getCalendar() });
 });
 
 app.get('/api/invoices', (req, res) => {

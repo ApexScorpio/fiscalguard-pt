@@ -158,7 +158,28 @@
       "cae": "61100"
     }
   ],
-  "calendarState": {},
+  "calendarState": {
+    "efatura_validacao": {
+      "completed": true,
+      "completedDate": "2026-09-17T18:33:11.295Z"
+    },
+    "ss_declaracao_t1": {
+      "completed": true,
+      "completedDate": "2026-09-17T18:33:11.296Z"
+    },
+    "imi_prestacao_1": {
+      "completed": true,
+      "completedDate": "2026-09-17T18:33:11.297Z"
+    },
+    "irs_modelo3": {
+      "completed": true,
+      "completedDate": "2026-09-17T18:33:11.297Z"
+    },
+    "ss_declaracao_t2": {
+      "completed": true,
+      "completedDate": "2026-09-17T18:33:11.298Z"
+    }
+  },
   "vault": {
     "hasFinancasCredentials": true,
     "hasSSCredentials": true,

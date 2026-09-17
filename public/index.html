@@ -164,6 +164,18 @@
                         </div>
                     </div>
 
+                    <div class="calendar-filters-row">
+                        <div class="calendar-filters">
+                            <button class="btn-filter-cal active" data-cal-filter="upcoming">Próximas Obrigações (Atuais)</button>
+                            <button class="btn-filter-cal" data-cal-filter="all">Todas do Ano</button>
+                            <button class="btn-filter-cal" data-cal-filter="overdue">Obrigações Anteriores (<span id="cal-overdue-count">0</span>)</button>
+                            <button class="btn-filter-cal" data-cal-filter="completed">Já Concluídas</button>
+                        </div>
+                        <button id="btn-complete-all-past" class="btn btn-small btn-secondary" title="Marcar todas as obrigações de meses anteriores como já entregues ou cumpridas">
+                            <span>✓ Arquivar Obrigações Anteriores</span>
+                        </button>
+                    </div>
+
                     <div class="obligations-list" id="obligations-container">
                         <!-- Gerado dinamicamente -->
                     </div>

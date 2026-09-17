@@ -5,3 +5,7 @@ yarn-error.log*
 .env
 .DS_Store
 Thumbs.db
+
+# Cofre local e sessões privadas (NUNCA enviar para o GitHub)
+data/credentials.json
+data/session-*.json
