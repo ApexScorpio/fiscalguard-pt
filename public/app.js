@@ -600,19 +600,20 @@ let currentInteractivePortal = 'financas';
 
 async function openDirectChrome(portal = 'financas') {
     currentInteractivePortal = portal;
+    const targetUrl = portal === 'financas'
+        ? 'https://www.acesso.gov.pt/v2/loginForm?partID=PFAP'
+        : 'https://app.seg-social.pt/ptss/';
     try {
-        const res = await fetch('/api/auth/open-native-chrome', {
+        await fetch('/api/auth/open-native-chrome', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ portal })
         });
-        const data = await res.json();
-        if (data.success) {
-            alert(`✓ Google Chrome oficial aberto diretamente no teu ecrã para o ${portal === 'financas' ? 'Portal das Finanças' : 'Segurança Social Direta'}.\nPodes fazer o teu login oficial à vontade!`);
-        }
     } catch (e) {
-        alert("Erro ao abrir Chrome: " + e.message);
+        console.warn("Aviso ao abrir Chrome nativo via backend:", e.message);
     }
+    // Abre também imediatamente no navegador em nova aba
+    window.open(targetUrl, '_blank');
 }
 
 async function runInteractiveLogin(portal = 'financas') {
@@ -652,10 +653,22 @@ async function runInteractiveLogin(portal = 'financas') {
    EVENT LISTENERS & AÇÕES DO UTILIZADOR
    ========================================================================== */
 function initEventListeners() {
-    // 0. Botão de Iniciar Sessão Oficial nos Portais
+    // 0. Botão e Cards de Iniciar Sessão Oficial nos Portais
     const btnOpenPortalLogin = document.getElementById('btn-open-portal-login');
     if (btnOpenPortalLogin) {
-        btnOpenPortalLogin.addEventListener('click', () => openPortalLoginModal());
+        btnOpenPortalLogin.addEventListener('click', () => openPortalLoginModal('financas'));
+    }
+
+    const badgeAtClick = document.getElementById('status-at-badge');
+    if (badgeAtClick) {
+        badgeAtClick.style.cursor = 'pointer';
+        badgeAtClick.addEventListener('click', () => openPortalLoginModal('financas'));
+    }
+
+    const badgeSsClick = document.getElementById('status-ss-badge');
+    if (badgeSsClick) {
+        badgeSsClick.style.cursor = 'pointer';
+        badgeSsClick.addEventListener('click', () => openPortalLoginModal('seg_social'));
     }
 
     const btnClosePortalModal = document.getElementById('btn-close-portal-modal');

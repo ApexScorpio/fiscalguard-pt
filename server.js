@@ -190,14 +190,25 @@ app.post('/api/sync/run', async (req, res) => {
     }
 });
 
-app.post('/api/auth/open-portal', async (req, res) => {
-    try {
-        const { portal = 'financas' } = req.body || {};
-        const result = await launchInteractiveLogin(portal);
-        res.json(result);
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
+app.post('/api/auth/open-portal', (req, res) => {
+    const { portal = 'financas' } = req.body || {};
+    const portalName = portal === 'financas' ? 'Portal das Finanças' : 'Segurança Social Direta';
+    
+    // Iniciar o Chrome em background sem bloquear o pedido HTTP
+    launchInteractiveLogin(portal).catch(err => {
+        console.error("Aviso na sessão interativa:", err.message);
+    });
+
+    res.json({
+        success: true,
+        message: `Google Chrome a abrir para o ${portalName}...`,
+        log: [
+            `[${new Date().toLocaleTimeString()}] A iniciar o Google Chrome para o ${portalName}...`,
+            `[${new Date().toLocaleTimeString()}] A janela oficial do Google Chrome vai abrir-se maximizada no teu ecrã.`,
+            `[${new Date().toLocaleTimeString()}] Faz o teu login normalmente (com NIF/Senha ou Chave Móvel Digital).`,
+            `[${new Date().toLocaleTimeString()}] A janela ficará aberta enquanto fazes a autenticação!`
+        ]
+    });
 });
 
 app.post('/api/auth/open-native-chrome', (req, res) => {

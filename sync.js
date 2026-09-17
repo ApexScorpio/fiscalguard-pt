@@ -230,15 +230,42 @@ async function syncSegurancaSocial(options = {}) {
 }
 
 /**
+ * Deteta o caminho real do executável do Google Chrome no Windows
+ */
+function getChromeExecutablePath() {
+    const candidates = [
+        'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+        'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+        process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'Google', 'Chrome', 'Application', 'chrome.exe') : null,
+        process.env.PROGRAMFILES ? path.join(process.env.PROGRAMFILES, 'Google', 'Chrome', 'Application', 'chrome.exe') : null
+    ].filter(Boolean);
+
+    for (const p of candidates) {
+        if (fs.existsSync(p)) return p;
+    }
+    return null;
+}
+
+/**
  * Abre o Google Chrome oficial diretamente no Windows com a página de login
  */
 function openNativeChrome(portal = 'financas') {
-    const { exec } = require('child_process');
+    const { spawn, exec } = require('child_process');
     const targetUrl = portal === 'financas'
         ? 'https://www.acesso.gov.pt/v2/loginForm?partID=PFAP'
         : 'https://app.seg-social.pt/ptss/';
-    exec(`powershell -Command "Start-Process 'chrome.exe' -ArgumentList '${targetUrl}'"`);
-    return { success: true, url: targetUrl };
+
+    const chromePath = getChromeExecutablePath();
+    if (chromePath) {
+        const child = spawn(chromePath, ['--new-window', targetUrl], { detached: true, stdio: 'ignore' });
+        child.unref();
+        console.log(`[Native Chrome] Aberto com sucesso via ${chromePath}: ${targetUrl}`);
+        return { success: true, url: targetUrl, path: chromePath };
+    }
+
+    // Fallback: comando de sistema start
+    exec(`cmd /c start "" "${targetUrl}"`);
+    return { success: true, url: targetUrl, fallback: true };
 }
 
 /**
@@ -264,8 +291,10 @@ async function launchInteractiveLogin(portal = 'financas', onProgress = () => {}
 
         const { exec } = require('child_process');
 
+        const chromeExecutable = getChromeExecutablePath();
         browser = await chromium.launch({
             channel: 'chrome',
+            executablePath: chromeExecutable || undefined,
             headless: false,
             args: [
                 '--start-maximized',
