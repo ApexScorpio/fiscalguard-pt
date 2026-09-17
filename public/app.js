@@ -775,6 +775,42 @@ function initEventListeners() {
         dismissConsoleBtn.addEventListener('click', () => consoleModal.classList.remove('active'));
     }
 
+    // Botão: Já fiz Login no Chrome — Sincronizar Agora
+    const btnConfirmLoginNow = document.getElementById('btn-confirm-login-now');
+    if (btnConfirmLoginNow) {
+        btnConfirmLoginNow.addEventListener('click', async () => {
+            const logsEl = document.getElementById('sync-terminal-logs');
+            const appendLog = (msg) => {
+                if (logsEl) {
+                    logsEl.innerHTML += `${msg}\n`;
+                    logsEl.scrollTop = logsEl.scrollHeight;
+                }
+            };
+            btnConfirmLoginNow.disabled = true;
+            btnConfirmLoginNow.textContent = '⏳ A extrair faturas...';
+            appendLog(`[${new Date().toLocaleTimeString()}] ⚡ Confirmação recebida — a extrair faturas e dados reais do portal...`);
+            try {
+                const res = await fetch('/api/auth/confirm-login', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    appendLog(`[${new Date().toLocaleTimeString()}] ✓ ${data.message}`);
+                    appendLog(`[${new Date().toLocaleTimeString()}] A atualizar o painel com os dados reais...`);
+                    await new Promise(r => setTimeout(r, 3000));
+                    await loadAllData();
+                    appendLog(`[${new Date().toLocaleTimeString()}] ✅ Painel atualizado! Verifica as tuas faturas e estado fiscal.`);
+                } else {
+                    appendLog(`[${new Date().toLocaleTimeString()}] ⚠️ ${data.message}`);
+                    appendLog(`[${new Date().toLocaleTimeString()}] Garante que clicaste primeiro em "Iniciar Sessão Oficial" e que o Chrome já abriu.`);
+                }
+            } catch (err) {
+                appendLog(`[${new Date().toLocaleTimeString()}] ❌ Erro: ${err.message}`);
+            } finally {
+                btnConfirmLoginNow.disabled = false;
+                btnConfirmLoginNow.textContent = '⚡ Já fiz Login no Chrome — Sincronizar Faturas Agora';
+            }
+        });
+    }
+
     // Formulário do Cofre de Credenciais
     const vaultForm = document.getElementById('vault-form');
     if (vaultForm) {

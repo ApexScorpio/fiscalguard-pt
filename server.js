@@ -4,7 +4,7 @@ const path = require('path');
 const db = require('./db');
 const { calculateNetIncome, simulateSSTrimestral } = require('./rules');
 const { sendNativeToast, checkAndTriggerAlerts } = require('./notifier');
-const { syncPortalFinancas, syncSegurancaSocial, getCredentials, saveCredentials, launchInteractiveLogin, openNativeChrome } = require('./sync');
+const { syncPortalFinancas, syncSegurancaSocial, getCredentials, saveCredentials, launchInteractiveLogin, openNativeChrome, confirmActiveLogin } = require('./sync');
 const multiSync = require('./sync-relay');
 const { answerQuestion } = require('./assistant');
 
@@ -216,6 +216,15 @@ app.post('/api/auth/open-native-chrome', (req, res) => {
         const { portal = 'financas' } = req.body || {};
         const result = openNativeChrome(portal);
         res.json({ success: true, ...result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/auth/confirm-login', (req, res) => {
+    try {
+        const result = confirmActiveLogin();
+        res.json(result);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }

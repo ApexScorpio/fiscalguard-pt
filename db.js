@@ -114,16 +114,38 @@ class Database {
 
     addInvoice(invoice) {
         this.data = this.load();
+        const baseAmount = Number(invoice.baseAmount) || Number(invoice.total) || 0;
+        const vatAmount = Number(invoice.vatAmount) || 0;
+        const total = Number(invoice.total) || (baseAmount + vatAmount);
+
         const newInv = {
-            id: "inv-" + Date.now(),
-            date: new Date().toISOString().split('T')[0],
-            efaturaStatus: invoice.type === 'expense' ? 'pending' : undefined,
-            suggestedCategory: invoice.type === 'expense' ? predictCategory(invoice.supplierName, invoice.supplierNif) : undefined,
-            category: null,
+            id: invoice.id || ("inv-" + Date.now() + "-" + Math.random().toString(36).substr(2, 5)),
+            date: invoice.date || new Date().toISOString().split('T')[0],
+            entity: invoice.entity || invoice.supplierName || 'Entidade',
+            supplierName: invoice.supplierName || invoice.entity || 'Entidade',
+            supplierNif: invoice.supplierNif || invoice.nif || '',
+            baseAmount,
+            vatRate: Number(invoice.vatRate) || 0.23,
+            vatAmount,
+            total,
+            type: invoice.type || 'expense',
+            efaturaStatus: invoice.type === 'expense' ? (invoice.efaturaStatus || 'pending') : undefined,
+            suggestedCategory: invoice.type === 'expense' ? (invoice.suggestedCategory || predictCategory(invoice.supplierName || invoice.entity, invoice.supplierNif)) : undefined,
+            category: invoice.category || null,
             ...invoice
         };
-        this.data.invoices.unshift(newInv);
-        this.save();
+
+        // Evitar faturas duplicadas
+        if (!this.data.invoices) this.data.invoices = [];
+        const exists = this.data.invoices.some(i => 
+            (i.id === newInv.id) ||
+            (i.supplierNif && i.supplierNif === newInv.supplierNif && i.date === newInv.date && Math.abs((i.total || 0) - newInv.total) < 0.01)
+        );
+
+        if (!exists) {
+            this.data.invoices.unshift(newInv);
+            this.save();
+        }
         return newInv;
     }
 
