@@ -409,6 +409,22 @@ function initEventListeners() {
         cancelModalBtn.addEventListener('click', () => modal.classList.remove('active'));
     }
 
+    const modalBase = document.getElementById('modal-inv-base');
+    const modalVatRate = document.getElementById('modal-inv-vat-rate');
+    const modalVat = document.getElementById('modal-inv-vat');
+
+    const updateModalVat = () => {
+        if (!modalBase || !modalVatRate || !modalVat) return;
+        const b = parseFloat(modalBase.value) || 0;
+        const r = parseFloat(modalVatRate.value) || 0;
+        modalVat.value = (Math.round(b * r * 100) / 100).toFixed(2);
+    };
+
+    if (modalBase && modalVatRate) {
+        modalBase.addEventListener('input', updateModalVat);
+        modalVatRate.addEventListener('change', updateModalVat);
+    }
+
     const formNewInvoice = document.getElementById('form-new-invoice');
     if (formNewInvoice) {
         formNewInvoice.addEventListener('submit', async (e) => {
@@ -559,21 +575,65 @@ function initSimulators() {
         ssSlider.addEventListener('input', updateSSSim);
     }
 
-    // Simulador de Lucro Real no Bolso
+    // Simulador de Lucro Real no Bolso (Avançado: IVA, SS e IRS variáveis)
     const profitInput = document.getElementById('sim-invoice-amount');
-    const profitActivity = document.getElementById('sim-activity-type');
-    const profitVatExempt = document.getElementById('sim-vat-exempt');
+    const vatRateSelect = document.getElementById('sim-vat-rate');
+    const ssModeSelect = document.getElementById('sim-ss-mode');
+    const irsRetentionSelect = document.getElementById('sim-irs-retention');
+
+    const customRatesRow = document.getElementById('custom-rates-row');
+    const customVatGroup = document.getElementById('custom-vat-group');
+    const customSsGroup = document.getElementById('custom-ss-group');
+    const customVatInput = document.getElementById('sim-custom-vat');
+    const customSsInput = document.getElementById('sim-custom-ss');
 
     const updateProfitSim = async () => {
         const amount = parseFloat(profitInput.value) || 0;
-        const activityType = profitActivity.value;
-        const vatExempt = profitVatExempt.checked;
+        const vatVal = vatRateSelect.value;
+        const ssMode = ssModeSelect.value;
+        const irsRetentionRate = parseFloat(irsRetentionSelect.value) || 0;
+
+        let vatRate = 0.23;
+        let vatExemptReason = "none";
+
+        if (vatVal.startsWith("exempt_")) {
+            vatRate = 0;
+            vatExemptReason = vatVal.replace("exempt_", "");
+        } else if (vatVal === "reverse_charge") {
+            vatRate = 0;
+            vatExemptReason = "reverse_charge";
+        } else if (vatVal === "custom") {
+            vatRate = (parseFloat(customVatInput.value) || 0) / 100;
+        } else {
+            vatRate = parseFloat(vatVal) || 0;
+        }
+
+        let customSSRate = 0;
+        if (ssMode === "custom") {
+            customSSRate = (parseFloat(customSsInput.value) || 0) / 100;
+        }
+
+        // Mostrar / Esconder campos personalizados
+        const isCustomVat = vatVal === "custom";
+        const isCustomSs = ssMode === "custom";
+        if (customRatesRow) {
+            customRatesRow.style.display = (isCustomVat || isCustomSs) ? 'flex' : 'none';
+            if (customVatGroup) customVatGroup.style.display = isCustomVat ? 'block' : 'none';
+            if (customSsGroup) customSsGroup.style.display = isCustomSs ? 'block' : 'none';
+        }
 
         try {
             const res = await fetch('/api/simulator/profit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount, activityType, vatExempt })
+                body: JSON.stringify({ 
+                    amount, 
+                    vatRate, 
+                    vatExemptReason, 
+                    ssMode, 
+                    customSSRate,
+                    irsRetentionRate 
+                })
             });
             const data = await res.json();
 
@@ -583,12 +643,47 @@ function initSimulators() {
             document.getElementById('profit-calc-irs').textContent = formatCurrency(data.irsReserve);
 
             document.getElementById('profit-percent-net').textContent = `${data.breakdownPercentages.net}% do rendimento`;
-            document.getElementById('profit-percent-vat').textContent = vatExempt ? "Isento (Art. 53)" : "23% (Do Estado)";
+            
+            let vatBadgeText = `${Math.round(data.effectiveVatRate * 100)}% de IVA`;
+            if (data.isVatExempt) {
+                if (data.vatExemptReason === "53" || data.vatExemptReason === "art53") vatBadgeText = "Isento (Art. 53.º)";
+                else if (data.vatExemptReason === "9" || data.vatExemptReason === "art9") vatBadgeText = "Isento (Art. 9.º)";
+                else if (data.vatExemptReason === "reverse_charge") vatBadgeText = "Autoliquidação";
+                else vatBadgeText = "Isento de IVA";
+            }
+            document.getElementById('profit-percent-vat').textContent = vatBadgeText;
+
+            let ssBadgeText = `~${data.ssEffectivePercent}% efetivo`;
+            if (data.ssMode === "exempt_tco") ssBadgeText = "Isento por TCO (0€)";
+            document.getElementById('profit-percent-ss').textContent = ssBadgeText;
+
+            let irsBadgeText = `Retenção: ${Math.round(data.irsRetentionRate * 100)}%`;
+            document.getElementById('profit-percent-irs').textContent = irsBadgeText;
 
             const adviceBox = document.getElementById('profit-advice-text');
             if (adviceBox) {
+                let vatNote = data.isVatExempt 
+                    ? `Esta fatura é <strong>isenta de IVA (${vatBadgeText})</strong>, logo não há IVA a entregar ao Estado.` 
+                    : `Cobras <strong>${formatCurrency(data.vatAmount)}</strong> de IVA (${Math.round(data.effectiveVatRate*100)}%) que pertence ao Estado e deve ser guardado.`;
+
+                let ssNote = data.ssMode === "exempt_tco"
+                    ? `Como tens <strong>isenção por Trabalho por Conta de Outrem</strong>, não tens de descontar nada para a Segurança Social nesta fatura.`
+                    : data.ssMode === "sales"
+                    ? `Para venda de mercadorias, a base de incidência da SS é de apenas 20%, resultando numa reserva de <strong>${formatCurrency(data.ssReserve)}</strong>.`
+                    : `Para prestação de serviços, a base relevante é 70% (21,4%), exigindo uma reserva de <strong>${formatCurrency(data.ssReserve)}</strong>.`;
+
+                let irsNote = data.irsWithheld > 0
+                    ? `O cliente retém imediatamente <strong>${formatCurrency(data.irsWithheld)}</strong> na fonte (${Math.round(data.irsRetentionRate*100)}%), pelo que esse valor já não entra na tua conta.`
+                    : `Sem retenção na fonte: deves guardar <strong>${formatCurrency(data.irsReserve)}</strong> para o acerto do Modelo 3 do IRS.`;
+
                 adviceBox.innerHTML = `
-                    Ao cobrares <strong>${formatCurrency(data.grossAmount)}</strong> ${vatExempt ? '(Isento de IVA)' : `com IVA (Total cobrado: <strong>${formatCurrency(data.totalWithVat)}</strong>)`}, deves transferir imediatamente <strong>${formatCurrency(data.vatAmount)}</strong> para a reserva de IVA e guardar <strong>${formatCurrency(data.ssReserve + data.irsReserve)}</strong> para Segurança Social e IRS. O teu dinheiro limpo e livre para desfrutares é de <strong>${formatCurrency(data.netTakeHome)}</strong>.
+                    <p style="margin-bottom:6px;"><strong>Análise da Fatura (${formatCurrency(data.grossAmount)}):</strong></p>
+                    <ul style="padding-left:18px;margin-bottom:8px;">
+                        <li>${vatNote}</li>
+                        <li>${ssNote}</li>
+                        <li>${irsNote}</li>
+                    </ul>
+                    <p>👉 <strong>Resultado Final:</strong> O teu dinheiro limpo e livre para gastares no bolso é de <strong>${formatCurrency(data.netTakeHome)}</strong>.</p>
                 `;
             }
         } catch (e) {
@@ -596,10 +691,14 @@ function initSimulators() {
         }
     };
 
-    if (profitInput && profitActivity && profitVatExempt) {
+    if (profitInput && vatRateSelect && ssModeSelect && irsRetentionSelect) {
         profitInput.addEventListener('input', updateProfitSim);
-        profitActivity.addEventListener('change', updateProfitSim);
-        profitVatExempt.addEventListener('change', updateProfitSim);
+        vatRateSelect.addEventListener('change', updateProfitSim);
+        ssModeSelect.addEventListener('change', updateProfitSim);
+        irsRetentionSelect.addEventListener('change', updateProfitSim);
+
+        if (customVatInput) customVatInput.addEventListener('input', updateProfitSim);
+        if (customSsInput) customSsInput.addEventListener('input', updateProfitSim);
     }
 }
 

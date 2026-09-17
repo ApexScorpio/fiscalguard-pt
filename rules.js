@@ -209,40 +209,67 @@ function getIucDeadline() {
 
 function calculateNetIncome(grossAmount, options = {}) {
     const {
-        vatExempt = false,
         vatRate = 0.23,
+        vatExemptReason = "none", // "none", "art53", "art9", "reverse_charge"
+        ssMode = "services", // "services" (70%), "sales" (20%), "exempt_tco" (0%), "custom"
+        customSSRate = 0,
         irsRetentionRate = 0.25,
-        estimatedIRSFinalRate = 0.20,
-        ssExempt = false,
-        activityType = "services"
+        estimatedIRSFinalRate = 0.20
     } = options;
 
     const baseAmount = Number(grossAmount) || 0;
-    const vatAmount = vatExempt ? 0 : Math.round(baseAmount * vatRate * 100) / 100;
+    const isVatExempt = vatExemptReason !== "none" || vatRate === 0;
+    const effectiveVatRate = isVatExempt ? 0 : Number(vatRate) || 0;
+    const vatAmount = Math.round(baseAmount * effectiveVatRate * 100) / 100;
     const totalWithVat = baseAmount + vatAmount;
-    const irsWithheld = Math.round(baseAmount * irsRetentionRate * 100) / 100;
 
+    // Retenção na fonte de IRS
+    const irsWithheld = Math.round(baseAmount * (Number(irsRetentionRate) || 0) * 100) / 100;
+
+    // Segurança Social
     let ssReserve = 0;
-    if (!ssExempt) {
-        const relevantFactor = activityType === "services" ? 0.70 : 0.20;
-        const relevantIncome = baseAmount * relevantFactor;
-        ssReserve = Math.round(relevantIncome * 0.214 * 100) / 100;
+    let ssEffectivePercent = 0;
+    if (ssMode === "services") {
+        // 70% de rendimento relevante * 21,4% taxa
+        ssReserve = Math.round(baseAmount * 0.70 * 0.214 * 100) / 100;
+        ssEffectivePercent = 14.98;
+    } else if (ssMode === "sales") {
+        // 20% de rendimento relevante * 21,4% taxa
+        ssReserve = Math.round(baseAmount * 0.20 * 0.214 * 100) / 100;
+        ssEffectivePercent = 4.28;
+    } else if (ssMode === "exempt_tco") {
+        // Isento por acumulação com TCO (Trabalhador por Conta de Outrem)
+        ssReserve = 0;
+        ssEffectivePercent = 0;
+    } else if (ssMode === "custom") {
+        ssReserve = Math.round(baseAmount * (Number(customSSRate) || 0) * 100) / 100;
+        ssEffectivePercent = Math.round((Number(customSSRate) || 0) * 10000) / 100;
     }
 
-    const taxableIRSIngress = activityType === "services" ? baseAmount * 0.75 : baseAmount * 0.15;
+    // Provisão de IRS (Regime Simplificado: 75% coef. serviços ou 15% mercadorias)
+    const coefficient = (ssMode === "sales") ? 0.15 : 0.75;
+    const taxableIRSIngress = baseAmount * coefficient;
     const estimatedTotalIRSLiability = Math.round(taxableIRSIngress * estimatedIRSFinalRate * 100) / 100;
     const irsReserve = Math.max(irsWithheld, estimatedTotalIRSLiability);
-    const cashInHandGross = baseAmount;
-    const netTakeHome = Math.max(0, Math.round((cashInHandGross - ssReserve - (irsReserve - irsWithheld)) * 100) / 100);
+
+    // Dinheiro líquido real disponível no bolso:
+    // Dinheiro em mão imediato = baseAmount - retenção (se retido na fonte)
+    // Líquido livre de todas as obrigações:
+    const netTakeHome = Math.max(0, Math.round((baseAmount - ssReserve - (irsReserve - irsWithheld)) * 100) / 100);
 
     return {
         grossAmount: baseAmount,
         totalWithVat,
+        effectiveVatRate,
         vatAmount,
-        vatExempt,
+        isVatExempt,
+        vatExemptReason,
+        ssMode,
+        ssEffectivePercent,
+        ssReserve,
+        irsRetentionRate,
         irsWithheld,
         irsReserve,
-        ssReserve,
         netTakeHome,
         breakdownPercentages: {
             vat: Math.round((vatAmount / (totalWithVat || 1)) * 100),

@@ -128,11 +128,23 @@ app.post('/api/ss/simulate', (req, res) => {
 });
 
 app.post('/api/simulator/profit', (req, res) => {
-    const { amount, vatExempt, activityType, irsRate } = req.body;
+    const { 
+        amount, 
+        vatRate, 
+        vatExemptReason, 
+        ssMode, 
+        customSSRate, 
+        irsRetentionRate, 
+        estimatedIRSFinalRate 
+    } = req.body;
+
     const result = calculateNetIncome(Number(amount) || 0, {
-        vatExempt: Boolean(vatExempt),
-        activityType: activityType || 'services',
-        estimatedIRSFinalRate: Number(irsRate) || 0.20
+        vatRate: vatRate !== undefined ? Number(vatRate) : 0.23,
+        vatExemptReason: vatExemptReason || "none",
+        ssMode: ssMode || "services",
+        customSSRate: Number(customSSRate) || 0,
+        irsRetentionRate: irsRetentionRate !== undefined ? Number(irsRetentionRate) : 0.25,
+        estimatedIRSFinalRate: Number(estimatedIRSFinalRate) || 0.20
     });
     res.json(result);
 });
