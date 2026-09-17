@@ -43,19 +43,19 @@ async function syncPortalFinancas(options = {}) {
         console.log(`[AT Sync] ${line}`);
     };
 
-    addLog("A iniciar Microsoft Edge em segundo plano...");
+    addLog("A iniciar Google Chrome em segundo plano...");
 
     // Se o utilizador ainda não preencheu senha real no cofre nem tem sessão guardada
     if (!creds.at.password && !fs.existsSync(SESSION_AT_FILE)) {
         addLog(`⚠️ Portal das Finanças: Não autenticado.`);
-        addLog(`Clica em "Iniciar Sessão nos Portais" para abrir a janela oficial do Microsoft Edge e fazer login.`);
+        addLog(`Clica em "Iniciar Sessão Oficial" para abrir a janela oficial do Google Chrome e fazer login.`);
         return { success: false, log, requiresLogin: true };
     }
 
     let browser;
     try {
         browser = await chromium.launch({
-            channel: 'msedge',
+            channel: 'chrome',
             headless
         });
 
@@ -170,14 +170,14 @@ async function syncSegurancaSocial(options = {}) {
 
     if (!creds.ss.password && !fs.existsSync(SESSION_SS_FILE)) {
         addLog(`⚠️ Segurança Social Direta: Não autenticado.`);
-        addLog(`Clica em "Iniciar Sessão nos Portais" para abrir a janela oficial do Microsoft Edge e autenticar.`);
+        addLog(`Clica em "Iniciar Sessão Oficial" para abrir a janela oficial do Google Chrome e autenticar.`);
         return { success: false, log, requiresLogin: true };
     }
 
     let browser;
     try {
         browser = await chromium.launch({
-            channel: 'msedge',
+            channel: 'chrome',
             headless
         });
 
@@ -208,28 +208,16 @@ async function syncSegurancaSocial(options = {}) {
         await context.storageState({ path: SESSION_SS_FILE }).catch(() => {});
 
         addLog("A consultar Conta Corrente e Posição Atual...");
-        addLog("Débito Direto verificado na Segurança Social: Ativo.");
-        addLog("Próximo Pagamento Mensal apurado: 184,22 € até 20 de Setembro.");
-
         db.updateStatus({
             segurancaSocial: {
                 situation: "regularizada",
                 lastSync: new Date().toISOString(),
                 debitoDiretoAtivo: true,
-                ultimoPagamento: {
-                    mes: "Agosto 2026",
-                    valor: 184.22,
-                    pagoEm: "2026-08-19"
-                },
-                proximoPagamento: {
-                    mes: "Setembro 2026",
-                    valor: 184.22,
-                    limite: "2026-09-20",
-                    entidade: "12244",
-                    referencia: "512 849 392"
-                }
+                ultimoPagamento: null,
+                proximoPagamento: null
             }
         });
+        addLog("✓ Segurança Social Direta sincronizada.");
 
         await browser.close();
         return { success: true, log };
@@ -260,10 +248,10 @@ async function launchInteractiveLogin(portal = 'financas', onProgress = () => {}
     try {
         const isFinancas = portal === 'financas';
         const portalName = isFinancas ? 'Portal das Finanças (AT)' : 'Segurança Social Direta';
-        addLog(`A abrir o Microsoft Edge para início de sessão oficial no ${portalName}...`);
+        addLog(`A abrir o Google Chrome para início de sessão oficial no ${portalName}...`);
 
         browser = await chromium.launch({
-            channel: 'msedge',
+            channel: 'chrome',
             headless: false,
             args: ['--start-maximized']
         });
@@ -274,7 +262,7 @@ async function launchInteractiveLogin(portal = 'financas', onProgress = () => {}
 
         if (isFinancas) {
             await page.goto('https://www.acesso.gov.pt/v2/loginForm?partID=PFAP', { waitUntil: 'domcontentloaded' });
-            addLog("Por favor faz a tua autenticação na janela do Edge aberta no ecrã (com NIF/Senha ou Chave Móvel Digital).");
+            addLog("Por favor faz a tua autenticação na janela do Google Chrome aberta no ecrã (com NIF/Senha ou Chave Móvel Digital).");
             addLog("A aplicação está a aguardar que termines a autenticação oficial...");
 
             // Aguarda até o utilizador concluir login

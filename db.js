@@ -141,6 +141,12 @@ class Database {
     }
 
     getCalendar() {
+        const isConfigured = Boolean(this.data.status.financas.lastSync || this.data.status.segurancaSocial.lastSync || (this.data.invoices && this.data.invoices.length > 0));
+        // Se ainda não iniciou sessão, não assume nem inventa obrigações fiscais
+        if (!isConfigured) {
+            return [];
+        }
+
         const fiscalList = getFiscalCalendar();
         const savedStates = this.data.calendarState || {};
 

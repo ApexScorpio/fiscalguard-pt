@@ -214,6 +214,22 @@ async function loadCalendar(filter = currentCalFilter) {
 
         container.innerHTML = '';
 
+        if (list.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center;padding:56px 20px;color:var(--text-muted);background:rgba(255,255,255,0.02);border:1px dashed var(--border-color);border-radius:var(--radius-lg);">
+                    <div style="font-size:44px;margin-bottom:14px;">📅</div>
+                    <h3 style="color:var(--text-primary);margin-bottom:8px;font-size:18px;">Agenda Fiscal Vazia (Aguardando Autenticação)</h3>
+                    <p style="font-size:14px;max-width:540px;margin:0 auto 20px auto;line-height:1.6;">
+                        Nenhuma obrigação atribuída. O FiscalGuard não assume pagamentos nem inventa prazos sem aceder à tua situação real. Inicia sessão com o <strong>Google Chrome</strong> para carregar apenas as tuas obrigações verdadeiras da AT e Segurança Social.
+                    </p>
+                    <button class="btn btn-emerald" onclick="openPortalLoginModal()">
+                        <span class="btn-icon">🔑</span> Iniciar Sessão com o Google Chrome
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
         if (filteredList.length === 0) {
             container.innerHTML = `
                 <div style="text-align:center;padding:32px;color:var(--text-muted);">
@@ -523,7 +539,7 @@ async function runInteractiveLogin(portal = 'financas') {
     const logsEl = document.getElementById('sync-terminal-logs');
     if (consoleModal && logsEl) {
         consoleModal.classList.add('active');
-        logsEl.innerHTML = `[${new Date().toLocaleTimeString()}] A abrir o Microsoft Edge para autenticação no ${portal === 'financas' ? 'Portal das Finanças (AT)' : 'Segurança Social Direta'}...\n`;
+        logsEl.innerHTML = `[${new Date().toLocaleTimeString()}] A abrir o Google Chrome para autenticação no ${portal === 'financas' ? 'Portal das Finanças (AT)' : 'Segurança Social Direta'}...\n`;
     }
 
     const appendLog = (msg) => {
@@ -534,7 +550,7 @@ async function runInteractiveLogin(portal = 'financas') {
     };
 
     try {
-        appendLog(`[${new Date().toLocaleTimeString()}] Uma janela do Microsoft Edge vai abrir-se. Por favor introduz os teus dados ou usa Chave Móvel Digital.`);
+        appendLog(`[${new Date().toLocaleTimeString()}] Uma janela do Google Chrome vai abrir-se no teu ecrã. Por favor introduz os teus dados ou usa Chave Móvel Digital.`);
         const res = await fetch('/api/auth/open-portal', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
