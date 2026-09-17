@@ -231,7 +231,7 @@ async function syncSegurancaSocial(options = {}) {
 
 /**
  * Início de Sessão Oficial Interativo
- * Abre o Microsoft Edge na página oficial de autenticação (acesso.gov.pt ou app.seg-social.pt).
+ * Abre o Google Chrome na página oficial de autenticação (acesso.gov.pt ou app.seg-social.pt).
  * O utilizador faz login como habitual (NIF/Senha, Chave Móvel Digital por SMS, etc.).
  * Ao terminar, a sessão é guardada no disco S: e os dados reais são extraídos.
  */

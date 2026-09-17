@@ -241,21 +241,25 @@
                         </div>
                         <div class="ss-status-row">
                             <span>Estado da Conta Corrente:</span>
-                            <span class="badge badge-success">Regularizada (Sem Dívidas)</span>
+                            <span class="badge badge-pending" id="ss-cc-status">A Aguardar Autenticação</span>
                         </div>
                         <div class="ss-status-row">
                             <span>Débito Direto Ativo:</span>
-                            <span class="badge badge-info" id="ss-debito-direto-text">Sim (Automático)</span>
+                            <span class="badge badge-outline" id="ss-debito-direto-text">--</span>
                         </div>
                         <div class="ss-status-row">
                             <span>Próximo Pagamento Mensal:</span>
-                            <strong class="text-highlight">184,22 € até 20 de Setembro</strong>
+                            <strong class="text-highlight" id="ss-proximo-pagamento-text">--</strong>
                         </div>
-                        <div class="payment-slip">
+                        <div class="payment-slip" id="ss-payment-slip-box" style="display: none;">
                             <div class="slip-header">Dados de Pagamento Multibanco:</div>
-                            <div class="slip-row"><span>Entidade:</span> <strong>12244</strong></div>
-                            <div class="slip-row"><span>Referência:</span> <strong>512 849 392</strong></div>
-                            <div class="slip-row"><span>Montante:</span> <strong>184,22 €</strong></div>
+                            <div class="slip-row"><span>Entidade:</span> <strong id="ss-slip-entidade">--</strong></div>
+                            <div class="slip-row"><span>Referência:</span> <strong id="ss-slip-referencia">--</strong></div>
+                            <div class="slip-row"><span>Montante:</span> <strong id="ss-slip-montante">--</strong></div>
+                        </div>
+                        <div id="ss-unauth-notice" style="text-align: center; padding: 18px 12px; margin-top: 14px; background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); border-radius: var(--radius-md); font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+                            Nenhum dado contributivo assumido ou inventado.<br>
+                            Inicia sessão oficial no <strong>Google Chrome</strong> para consultar a tua situação real na Segurança Social Direta.
                         </div>
                     </div>
 
@@ -267,7 +271,7 @@
                         
                         <div class="sim-input-group">
                             <label for="ss-quarter-income">Faturação Total do Trimestre (€):</label>
-                            <input type="number" id="ss-quarter-income" class="form-input" value="6500" step="50">
+                            <input type="number" id="ss-quarter-income" class="form-input" placeholder="Ex: 6000" value="" step="50">
                         </div>
 
                         <div class="sim-variation-slider">
@@ -282,18 +286,18 @@
                         <div class="sim-results-box" id="ss-sim-results">
                             <div class="sim-result-row">
                                 <span>Rendimento Relevante (70%):</span>
-                                <strong id="ss-sim-relevant">4.550,00 €</strong>
+                                <strong id="ss-sim-relevant">-- €</strong>
                             </div>
                             <div class="sim-result-row">
                                 <span>Base Mensal Ajustada:</span>
-                                <strong id="ss-sim-base">1.516,67 €</strong>
+                                <strong id="ss-sim-base">-- €</strong>
                             </div>
                             <div class="sim-result-row highlight">
                                 <span>Contribuição Mensal a Pagar:</span>
-                                <strong class="text-emerald" id="ss-sim-monthly">324,57 € / mês</strong>
+                                <strong class="text-emerald" id="ss-sim-monthly">-- € / mês</strong>
                             </div>
                             <div class="sim-explanation" id="ss-sim-explanation">
-                                Pagamento padrão correspondente aos rendimentos médios do trimestre.
+                                Introduz o valor da faturação trimestral acima para simular as tuas contribuições mensais.
                             </div>
                         </div>
                     </div>
@@ -313,12 +317,12 @@
                             <div class="form-row">
                                 <div class="form-group flex-2">
                                     <label for="sim-invoice-amount">Valor da Fatura / Rendimento Bruto (€):</label>
-                                    <input type="number" id="sim-invoice-amount" class="form-input form-input-lg" value="2500" step="100">
+                                    <input type="number" id="sim-invoice-amount" class="form-input form-input-lg" placeholder="Ex: 2000" value="" step="100">
                                 </div>
                                 <div class="form-group flex-1">
                                     <label for="sim-vat-rate">Taxa / Enquadramento de IVA:</label>
                                     <select id="sim-vat-rate" class="form-select">
-                                        <option value="0.23" selected>23% — Taxa Normal (Continente)</option>
+                                        <option value="0.23" selected>23% — Taxa Normal (Portugal Continental)</option>
                                         <option value="0.13">13% — Taxa Intermédia</option>
                                         <option value="0.06">6% — Taxa Reduzida</option>
                                         <option value="exempt_53">0% — Isenção Artigo 53.º (Regime Especial)</option>
@@ -366,36 +370,36 @@
                             <div class="dist-card dist-net">
                                 <div class="dist-icon">💰</div>
                                 <div class="dist-title">Dinheiro Limpo no Bolso</div>
-                                <div class="dist-amount text-emerald" id="profit-calc-net">1.340,00 €</div>
-                                <div class="dist-percent" id="profit-percent-net">54% do total</div>
+                                <div class="dist-amount text-emerald" id="profit-calc-net">-- €</div>
+                                <div class="dist-percent" id="profit-percent-net">--</div>
                             </div>
 
                             <div class="dist-card dist-vat">
                                 <div class="dist-icon">🏛️</div>
                                 <div class="dist-title">Reserva de IVA</div>
-                                <div class="dist-amount text-amber" id="profit-calc-vat">575,00 €</div>
-                                <div class="dist-percent" id="profit-percent-vat">23% (Do Estado)</div>
+                                <div class="dist-amount text-amber" id="profit-calc-vat">-- €</div>
+                                <div class="dist-percent" id="profit-percent-vat">23% de IVA</div>
                             </div>
 
                             <div class="dist-card dist-ss">
                                 <div class="dist-icon">🛡️</div>
                                 <div class="dist-title">Segurança Social</div>
-                                <div class="dist-amount text-blue" id="profit-calc-ss">374,50 €</div>
-                                <div class="dist-percent" id="profit-percent-ss">21,4% s/ 70%</div>
+                                <div class="dist-amount text-blue" id="profit-calc-ss">-- €</div>
+                                <div class="dist-percent" id="profit-percent-ss">~14.98% efetivo</div>
                             </div>
 
                             <div class="dist-card dist-irs">
                                 <div class="dist-icon">📑</div>
                                 <div class="dist-title">Provisão de IRS</div>
-                                <div class="dist-amount text-purple" id="profit-calc-irs">375,00 €</div>
-                                <div class="dist-percent" id="profit-percent-irs">Escalão Médio</div>
+                                <div class="dist-amount text-purple" id="profit-calc-irs">-- €</div>
+                                <div class="dist-percent" id="profit-percent-irs">Retenção: 25%</div>
                             </div>
                         </div>
 
                         <div class="profit-advice-box">
                             <strong>💡 Conselho do Teu Contabilista:</strong>
                             <p id="profit-advice-text">
-                                Ao cobrares 2.500,00 € com IVA (total cobrado ao cliente: 3.075,00 €), deves transferir imediatamente <strong>575,00 €</strong> para uma conta poupança de impostos para o IVA trimestral e reservar <strong>749,50 €</strong> para IRS e Segurança Social. O montante que podes gastar com total tranquilidade é de <strong>1.340,00 €</strong>.
+                                Introduz o valor do rendimento bruto da fatura acima para calcular exatamente a fatia que pertence ao Estado (IVA, IRS e SS) e o teu rendimento líquido livre para gastar.
                             </p>
                         </div>
                     </div>
@@ -418,7 +422,7 @@
                     <div class="pairing-box">
                         <div class="pairing-details">
                             <span class="pairing-label">Código de Emparelhamento Deste Dispositivo:</span>
-                            <div class="pairing-code-badge" id="display-pairing-code">FG-849201</div>
+                            <div class="pairing-code-badge" id="display-pairing-code">Carregando...</div>
                             <p class="pairing-instructions">No teu portátil (ou outro computador), abre a app e introduz este código para ligares ambos os dispositivos de forma instantânea e encriptada.</p>
                         </div>
                         <div class="pairing-action-form">
@@ -528,6 +532,7 @@
                             <div class="form-group">
                                 <label for="setting-reg-month">Mês da Matrícula (IUC):</label>
                                 <select id="setting-reg-month" class="form-select">
+                                    <option value="" selected disabled>Seleciona o mês da matrícula...</option>
                                     <option value="1">Janeiro</option>
                                     <option value="2">Fevereiro</option>
                                     <option value="3">Março</option>
@@ -536,7 +541,7 @@
                                     <option value="6">Junho</option>
                                     <option value="7">Julho</option>
                                     <option value="8">Agosto</option>
-                                    <option value="9" selected>Setembro</option>
+                                    <option value="9">Setembro</option>
                                     <option value="10">Outubro</option>
                                     <option value="11">Novembro</option>
                                     <option value="12">Dezembro</option>
@@ -557,7 +562,7 @@
                         <span class="badge badge-success">Armazenamento Local em S:\</span>
                     </div>
                     <p class="section-desc">
-                        A aplicação lê diretamente as tuas faturas, situação fiscal e Segurança Social através do Microsoft Edge em segundo plano. As tuas senhas ficam guardadas encriptadas neste computador e nunca saem da tua máquina.
+                        A aplicação lê diretamente as tuas faturas, situação fiscal e Segurança Social através do Google Chrome em segundo plano. As tuas senhas ficam guardadas encriptadas neste computador e nunca saem da tua máquina.
                     </p>
 
                     <form id="vault-form" style="margin-top: 20px;">
@@ -611,9 +616,6 @@
                         <button type="button" id="btn-demo-clear" class="btn btn-outline" style="border-color: rgba(239, 68, 68, 0.4); color: #f87171;">
                             <span class="btn-icon">🗑️</span> Limpar Todos os Dados (Reset a Zero)
                         </button>
-                        <button type="button" id="btn-demo-load" class="btn btn-secondary">
-                            <span class="btn-icon">🧪</span> Carregar Dados de Demonstração (Demo)
-                        </button>
                     </div>
                 </div>
             </section>
@@ -642,7 +644,7 @@
                         <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
                             Abre a página oficial <code>acesso.gov.pt</code> no Google Chrome. Podes entrar com NIF/Senha ou Chave Móvel Digital. As tuas faturas do e-fatura e recibos emitidos são lidos diretamente para o disco S:.
                         </p>
-                        <button id="btn-login-at-edge" class="btn btn-emerald" style="width: 100%;">
+                        <button id="btn-login-at-chrome" class="btn btn-emerald" style="width: 100%;">
                             <span class="btn-icon">🌐</span> Abrir Portal das Finanças no Google Chrome
                         </button>
                     </div>
@@ -656,7 +658,7 @@
                         <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
                             Abre <code>app.seg-social.pt</code> no Google Chrome para autenticares com NISS ou Chave Móvel Digital. Permite monitorizar conta corrente, débito direto e valores a pagar.
                         </p>
-                        <button id="btn-login-ss-edge" class="btn btn-primary" style="width: 100%;">
+                        <button id="btn-login-ss-chrome" class="btn btn-primary" style="width: 100%;">
                             <span class="btn-icon">🌐</span> Abrir Segurança Social Direta no Google Chrome
                         </button>
                     </div>
@@ -723,7 +725,7 @@
                     <div class="form-row">
                         <div class="form-group flex-1">
                             <label for="modal-inv-base">Valor Base (€):</label>
-                            <input type="number" id="modal-inv-base" class="form-input" step="0.01" required value="100.00">
+                            <input type="number" id="modal-inv-base" class="form-input" step="0.01" required placeholder="0.00" value="">
                         </div>
                         <div class="form-group flex-1">
                             <label for="modal-inv-vat-rate">Taxa de IVA:</label>
@@ -736,7 +738,7 @@
                         </div>
                         <div class="form-group flex-1">
                             <label for="modal-inv-vat">IVA (€):</label>
-                            <input type="number" id="modal-inv-vat" class="form-input" step="0.01" value="23.00">
+                            <input type="number" id="modal-inv-vat" class="form-input" step="0.01" placeholder="0.00" value="">
                         </div>
                     </div>
                 </div>

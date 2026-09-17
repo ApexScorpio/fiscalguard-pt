@@ -139,11 +139,7 @@ function getFiscalCalendar(year = new Date().getFullYear()) {
             frequency: "Mensal",
             urgency: "critica",
             actionUrl: "https://app.seg-social.pt/",
-            paymentDetails: {
-                entidade: "12244",
-                referencia: "512 849 392",
-                nota: "Referência Multibanco Segurança Social"
-            },
+            paymentDetails: null,
             penaltyWarning: "Juros de mora diários e perda do direito a certidão de situação contributiva regularizada."
         },
         {

@@ -200,8 +200,7 @@ app.post('/api/demo/clear', (req, res) => {
 });
 
 app.post('/api/demo/load', (req, res) => {
-    const demo = db.loadDemoData();
-    res.json({ success: true, message: "Dados de demonstração carregados.", data: demo });
+    res.status(403).json({ success: false, error: "O modo com dados fictícios foi permanentemente desativado. O FiscalGuard opera exclusivamente com dados oficiais extraídos via Google Chrome." });
 });
 
 app.get('/api/vault/credentials', (req, res) => {

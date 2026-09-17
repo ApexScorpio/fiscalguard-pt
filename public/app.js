@@ -109,6 +109,68 @@ async function loadStatus() {
             if (ssDotEl) ssDotEl.className = 'status-indicator dot-warning';
         }
 
+        // Atualizar Card de Segurança Social na Aba SS
+        const ssCcStatusEl = document.getElementById('ss-cc-status');
+        const ssDebitoDiretoEl = document.getElementById('ss-debito-direto-text');
+        const ssProximoPagamentoEl = document.getElementById('ss-proximo-pagamento-text');
+        const ssSlipBox = document.getElementById('ss-payment-slip-box');
+        const ssUnauthNotice = document.getElementById('ss-unauth-notice');
+
+        if (ssCcStatusEl) {
+            const ssData = data.status.segurancaSocial;
+            if (ssData.situation === 'regularizada') {
+                ssCcStatusEl.className = 'badge badge-success';
+                ssCcStatusEl.textContent = 'Regularizada (Sem Dívidas)';
+            } else if (ssData.situation === 'pendente') {
+                ssCcStatusEl.className = 'badge badge-critical';
+                ssCcStatusEl.textContent = 'Pendente / Regularização Necessária';
+            } else {
+                ssCcStatusEl.className = 'badge badge-pending';
+                ssCcStatusEl.textContent = 'A Aguardar Autenticação';
+            }
+
+            if (ssDebitoDiretoEl) {
+                if (ssData.debitoDiretoAtivo) {
+                    ssDebitoDiretoEl.className = 'badge badge-info';
+                    ssDebitoDiretoEl.textContent = 'Ativo (Automático)';
+                } else if (ssData.lastSync) {
+                    ssDebitoDiretoEl.className = 'badge badge-warning';
+                    ssDebitoDiretoEl.textContent = 'Inativo / Pagamento Manual';
+                } else {
+                    ssDebitoDiretoEl.className = 'badge badge-outline';
+                    ssDebitoDiretoEl.textContent = '--';
+                }
+            }
+
+            if (ssProximoPagamentoEl) {
+                if (ssData.proximoPagamento && ssData.proximoPagamento.valor) {
+                    ssProximoPagamentoEl.textContent = `${formatCurrency(ssData.proximoPagamento.valor)} até ${ssData.proximoPagamento.limite || 'dia 20'}`;
+                } else if (ssData.lastSync) {
+                    ssProximoPagamentoEl.textContent = 'Nenhum pagamento pendente registado';
+                } else {
+                    ssProximoPagamentoEl.textContent = '--';
+                }
+            }
+
+            if (ssSlipBox) {
+                if (ssData.proximoPagamento && ssData.proximoPagamento.referencia) {
+                    ssSlipBox.style.display = 'block';
+                    const entEl = document.getElementById('ss-slip-entidade');
+                    const refEl = document.getElementById('ss-slip-referencia');
+                    const montEl = document.getElementById('ss-slip-montante');
+                    if (entEl) entEl.textContent = ssData.proximoPagamento.entidade || '12244';
+                    if (refEl) refEl.textContent = ssData.proximoPagamento.referencia;
+                    if (montEl) montEl.textContent = formatCurrency(ssData.proximoPagamento.valor);
+                } else {
+                    ssSlipBox.style.display = 'none';
+                }
+            }
+
+            if (ssUnauthNotice) {
+                ssUnauthNotice.style.display = ssData.lastSync ? 'none' : 'block';
+            }
+        }
+
         // Atualizar Métricas Principais
         const isFresh = !data.isSynced && (data.stats.totalIssued === 0 && data.stats.totalExpenses === 0);
         if (isFresh) {
@@ -445,7 +507,7 @@ async function loadSettings() {
         document.getElementById('setting-activity').value = p.activityType || 'independent';
         document.getElementById('setting-vat').value = p.vatRegime || 'normal';
         document.getElementById('setting-plate').value = p.vehiclePlate || '';
-        document.getElementById('setting-reg-month').value = p.vehicleRegMonth || '9';
+        document.getElementById('setting-reg-month').value = p.vehicleRegMonth || '';
 
         await loadVaultStatus();
 
@@ -587,17 +649,17 @@ function initEventListeners() {
         btnDismissPortalModal.addEventListener('click', () => modalPortalLogin.classList.remove('active'));
     }
 
-    const btnLoginAtEdge = document.getElementById('btn-login-at-edge');
-    if (btnLoginAtEdge && modalPortalLogin) {
-        btnLoginAtEdge.addEventListener('click', () => {
+    const btnLoginAtChrome = document.getElementById('btn-login-at-chrome');
+    if (btnLoginAtChrome && modalPortalLogin) {
+        btnLoginAtChrome.addEventListener('click', () => {
             modalPortalLogin.classList.remove('active');
             runInteractiveLogin('financas');
         });
     }
 
-    const btnLoginSsEdge = document.getElementById('btn-login-ss-edge');
-    if (btnLoginSsEdge && modalPortalLogin) {
-        btnLoginSsEdge.addEventListener('click', () => {
+    const btnLoginSsChrome = document.getElementById('btn-login-ss-chrome');
+    if (btnLoginSsChrome && modalPortalLogin) {
+        btnLoginSsChrome.addEventListener('click', () => {
             modalPortalLogin.classList.remove('active');
             runInteractiveLogin('seg_social');
         });
@@ -612,7 +674,7 @@ function initEventListeners() {
         });
     }
 
-    // Gestão de Dados (Demo & Reset)
+    // Gestão de Dados (Reset)
     const btnDemoClear = document.getElementById('btn-demo-clear');
     if (btnDemoClear) {
         btnDemoClear.addEventListener('click', async () => {
@@ -623,20 +685,6 @@ function initEventListeners() {
                 alert("✓ O sistema está agora 100% vazio e sem dados fictícios, pronto para a tua primeira autenticação oficial.");
             } catch (e) {
                 alert("Erro ao limpar dados: " + e.message);
-            }
-        });
-    }
-
-    const btnDemoLoad = document.getElementById('btn-demo-load');
-    if (btnDemoLoad) {
-        btnDemoLoad.addEventListener('click', async () => {
-            if (!confirm("Desejas carregar dados de exemplo apenas para demonstração visual das funcionalidades?")) return;
-            try {
-                await fetch('/api/demo/load', { method: 'POST' });
-                await loadAllData();
-                alert("✓ Dados de exemplo carregados para fins de demonstração.");
-            } catch (e) {
-                alert("Erro ao carregar demonstração: " + e.message);
             }
         });
     }
@@ -922,6 +970,14 @@ function initSimulators() {
 
         variationDisplay.textContent = `Variação: ${variation > 0 ? '+' : ''}${variation}%`;
 
+        if (!ssIncomeInput.value || amount <= 0) {
+            document.getElementById('ss-sim-relevant').textContent = '-- €';
+            document.getElementById('ss-sim-base').textContent = '-- €';
+            document.getElementById('ss-sim-monthly').textContent = '-- € / mês';
+            document.getElementById('ss-sim-explanation').textContent = 'Introduz o valor da faturação trimestral acima para simular as tuas contribuições mensais.';
+            return;
+        }
+
         try {
             const res = await fetch('/api/ss/simulate', {
                 method: 'POST',
@@ -962,6 +1018,31 @@ function initSimulators() {
         const ssMode = ssModeSelect.value;
         const irsRetentionRate = parseFloat(irsRetentionSelect.value) || 0;
 
+        // Mostrar / Esconder campos personalizados
+        const isCustomVat = vatVal === "custom";
+        const isCustomSs = ssMode === "custom";
+        if (customRatesRow) {
+            customRatesRow.style.display = (isCustomVat || isCustomSs) ? 'flex' : 'none';
+            if (customVatGroup) customVatGroup.style.display = isCustomVat ? 'block' : 'none';
+            if (customSsGroup) customSsGroup.style.display = isCustomSs ? 'block' : 'none';
+        }
+
+        if (!profitInput.value || amount <= 0) {
+            document.getElementById('profit-calc-net').textContent = '-- €';
+            document.getElementById('profit-calc-vat').textContent = '-- €';
+            document.getElementById('profit-calc-ss').textContent = '-- €';
+            document.getElementById('profit-calc-irs').textContent = '-- €';
+            document.getElementById('profit-percent-net').textContent = '--';
+            document.getElementById('profit-percent-vat').textContent = '23% de IVA';
+            document.getElementById('profit-percent-ss').textContent = '~14.98% efetivo';
+            document.getElementById('profit-percent-irs').textContent = 'Retenção: 25%';
+            const adviceBox = document.getElementById('profit-advice-text');
+            if (adviceBox) {
+                adviceBox.innerHTML = `Introduz o valor do rendimento bruto da fatura acima para calcular exatamente a fatia que pertence ao Estado (IVA, IRS e SS) e o teu rendimento líquido livre para gastar.`;
+            }
+            return;
+        }
+
         let vatRate = 0.23;
         let vatExemptReason = "none";
 
@@ -980,15 +1061,6 @@ function initSimulators() {
         let customSSRate = 0;
         if (ssMode === "custom") {
             customSSRate = (parseFloat(customSsInput.value) || 0) / 100;
-        }
-
-        // Mostrar / Esconder campos personalizados
-        const isCustomVat = vatVal === "custom";
-        const isCustomSs = ssMode === "custom";
-        if (customRatesRow) {
-            customRatesRow.style.display = (isCustomVat || isCustomSs) ? 'flex' : 'none';
-            if (customVatGroup) customVatGroup.style.display = isCustomVat ? 'block' : 'none';
-            if (customSsGroup) customSsGroup.style.display = isCustomSs ? 'block' : 'none';
         }
 
         try {
