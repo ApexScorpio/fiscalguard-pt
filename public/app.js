@@ -800,15 +800,12 @@ function initEventListeners() {
             try {
                 const res = await fetch('/api/auth/confirm-login', { method: 'POST' });
                 const data = await res.json();
-                if (data.success) {
-                    appendLog(`[${new Date().toLocaleTimeString()}] ✓ ${data.message}`);
-                    appendLog(`[${new Date().toLocaleTimeString()}] A atualizar o painel com os dados reais...`);
-                    await new Promise(r => setTimeout(r, 3000));
-                    await loadAllData();
-                    appendLog(`[${new Date().toLocaleTimeString()}] ✅ Painel atualizado! Verifica as tuas faturas e estado fiscal.`);
+                if (data.pending === true) {
+                    appendLog(`[${new Date().toLocaleTimeString()}] ⏳ ${data.message}`);
+                    appendLog(`[${new Date().toLocaleTimeString()}] A recolha decorre na janela oficial. Confirma os dados efetivamente importados; esta mensagem não significa sucesso.`);
                 } else {
-                    appendLog(`[${new Date().toLocaleTimeString()}] ⚠️ ${data.message}`);
-                    appendLog(`[${new Date().toLocaleTimeString()}] Garante que clicaste primeiro em "Iniciar Sessão Oficial" e que o Chrome já abriu.`);
+                    appendLog(`[${new Date().toLocaleTimeString()}] ⚠️ ${data.message || 'Sessão não confirmada'}`);
+                    appendLog(`[${new Date().toLocaleTimeString()}] Usa «Iniciar Sessão Oficial» dentro do FiscalGuard para associar o navegador à aplicação.`);
                 }
             } catch (err) {
                 appendLog(`[${new Date().toLocaleTimeString()}] ❌ Erro: ${err.message}`);
