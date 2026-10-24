@@ -41,3 +41,5 @@ jobs:
           exit 1
       - name: Verificar botões, estados e importação simulada no Chromium
         run: node test/ui-browser.cjs
+      - name: Testar extensao no Chromium com sessao e cookies simuladas
+        run: node test/ui-extension.cjs
