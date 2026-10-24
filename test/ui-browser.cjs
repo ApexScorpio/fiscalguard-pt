@@ -97,7 +97,10 @@ const { chromium } = require('playwright');
     assert.equal(managedRefreshes,1);
     assert.equal(await page.evaluate(()=>window.__fgUsingManagedAT),true);
     const chromeBefore=await page.evaluate(()=>window.__testBridgeChecks);
-    await page.locator('#btn-official-refresh').click();
+    await Promise.all([
+      page.waitForResponse(r=>r.url().endsWith('/api/at/refresh'),{timeout:12000}),
+      page.locator('#btn-official-refresh').click()
+    ]);
     assert.equal(managedRefreshes,2);
     assert.equal(await page.evaluate(()=>window.__testBridgeChecks),chromeBefore);
     console.log('UI: PASSOU — cofre configurado envia atualizacao ao gestor AT, sem abrir outro login Chrome');
