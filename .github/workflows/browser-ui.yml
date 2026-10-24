@@ -43,3 +43,12 @@ jobs:
         run: node test/ui-browser.cjs
       - name: Testar extensao no Chromium com sessao e cookies simuladas
         run: node test/ui-extension.cjs
+      - name: Preparar extensao Chrome para instalacao local em D
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fiscalguard-chrome-bridge
+          path: chrome-bridge/
+          retention-days: 14
+          if-no-files-found: error
+
