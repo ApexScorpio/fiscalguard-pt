@@ -191,6 +191,21 @@ async function runScenario(mode){
       assert.equal(observations.launches,1);
       assert.equal(observations.authedPages>=2,true);
       console.log('PASSOU E2E gestor: primeira entrada e reentrada AT apos expiracao simulada; consultas JSON validadas');
+
+      // Caso real descrito pelo titular: ao fechar o navegador, a AT pode
+      // terminar a sessao. O perfil/cookies isoladamente NAO servem como prova.
+      // Encerrar inteiramente o Chromium e destruir a autorizacao no servidor mock.
+      await managed.closeContext();
+      authorized=false;
+      const afterBrowserClose=await managed.refresh();
+      assert.equal(afterBrowserClose.phase,'synced',
+        'Nova abertura deve repetir login e verificar respostas autenticadas');
+      assert.equal(observations.launches,2,'deve abrir outro navegador real Chromium');
+      assert.equal(observations.vaultReads,3,
+        'tem de ler novamente o cofre apos o encerramento do site');
+      assert.equal(observations.authedPages>=3,true);
+      assert.equal(JSON.parse(fs.readFileSync(snapshot,'utf8')).summary.atMessages,2);
+      console.log('PASSOU E2E gestor: FECHO TOTAL do browser, sessao perdida, novo Chromium, NOVO LOGIN e importacao confirmada');
     }
   }finally{
     if(managed)await managed.closeContext();
