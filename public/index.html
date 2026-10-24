@@ -588,51 +588,48 @@
                     </form>
                 </div>
 
-                <!-- COFRE LOCAL DE CREDENCIAIS DOS PORTAIS -->
+                <!-- COFRE LOCAL DE CREDENCIAIS: ESTADO TRANSPARENTE -->
                 <div class="settings-card" style="margin-top: 24px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:10px;">
-                        <h2>🔐 Cofre Local dos Portais Oficiais (Leitura 100% Automática)</h2>
-                        <span class="badge badge-success">Armazenamento Local em S:\</span>
+                        <h2>🔐 Cofre local das Finanças</h2>
+                        <span class="badge badge-warning">Login automático em desenvolvimento</span>
                     </div>
                     <p class="section-desc">
-                        A aplicação lê diretamente as tuas faturas, situação fiscal e Segurança Social através do Google Chrome em segundo plano. As tuas senhas ficam guardadas encriptadas neste computador e nunca saem da tua máquina.
+                        O NIF e a senha são guardados cifrados pelo Windows (DPAPI) em D:. Não são enviados ao GitHub.
+                        Guardar as credenciais não significa que o login automático esteja já operacional.
                     </p>
-
-                    <form id="vault-form" style="margin-top: 20px;">
+                    <p class="section-desc" style="margin-top:8px;">
+                        O cofre funciona apenas no Windows, com o mesmo utilizador que o configurou.
+                        Não introduzas credenciais enquanto a instalação local não tiver sido atualizada e validada.
+                    </p>
+                    <form id="vault-form" style="margin-top:20px;">
                         <div class="form-grid">
                             <div class="form-group">
-                                <label for="vault-at-password">
-                                    Senha do Portal das Finanças (AT):
-                                    <span id="badge-at-status" class="badge badge-warning" style="margin-left: 8px;">A verificar...</span>
-                                </label>
-                                <input type="password" id="vault-at-password" class="form-input" placeholder="Introduz a senha da AT para leitura automática">
-                                <small style="color:var(--text-muted);margin-top:4px;display:block;">Usada para aceder ao e-fatura, faturas emitidas e certidões.</small>
+                                <label for="vault-at-nif">NIF das Finanças (AT)</label>
+                                <input type="text" id="vault-at-nif" class="form-input"
+                                    inputmode="numeric" pattern="[0-9]{9}" maxlength="9"
+                                    autocomplete="off" placeholder="9 algarismos" required>
                             </div>
-
                             <div class="form-group">
-                                <label for="vault-ss-password">
-                                    Senha da Segurança Social Direta (SSD):
-                                    <span id="badge-ss-status" class="badge badge-warning" style="margin-left: 8px;">A verificar...</span>
+                                <label for="vault-at-password">
+                                    Senha das Finanças (AT)
+                                    <span id="badge-at-status" class="badge badge-warning">Por verificar</span>
                                 </label>
-                                <input type="password" id="vault-ss-password" class="form-input" placeholder="Introduz a senha da SS para leitura automática">
-                                <small style="color:var(--text-muted);margin-top:4px;display:block;">Usada para ler a conta corrente, pagamentos e declarações trimestrais.</small>
+                                <input type="password" id="vault-at-password" class="form-input"
+                                    autocomplete="new-password" maxlength="256"
+                                    placeholder="Guardada cifrada apenas em D:" required>
                             </div>
                         </div>
-
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;flex-wrap:wrap;gap:12px;">
-                            <label class="checkbox-label" style="margin-bottom:0;">
-                                <input type="checkbox" id="vault-headed-mode">
-                                <span>Abrir navegador em modo visível (caso seja necessário validar Chave Móvel Digital / 2FA)</span>
-                            </label>
-
-                            <div style="display:flex;gap:10px;">
-                                <button type="submit" class="btn btn-primary">
-                                    <span>💾 Guardar Senhas no Cofre</span>
-                                </button>
-                                <button type="button" id="btn-test-scrape-now" class="btn btn-emerald">
-                                    <span>⚡ Iniciar Leitura Direta Agora</span>
-                                </button>
-                            </div>
+                        <p class="section-desc" id="vault-save-status" aria-live="polite">
+                            A guardar credenciais, não a testar autenticação.
+                        </p>
+                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;">
+                            <button type="submit" class="btn btn-primary">
+                                <span>💾 Guardar cifrado no Windows</span>
+                            </button>
+                            <span id="badge-ss-status" class="badge badge-warning">
+                                Segurança Social: cofre separado por implementar
+                            </span>
                         </div>
                     </form>
                 </div>
