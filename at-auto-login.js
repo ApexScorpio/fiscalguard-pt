@@ -54,7 +54,7 @@ function makeAutoLogin({vault,now=()=>Date.now(),cooldownMs=15*60*1000}={}) {
       const namedSubmit=typeof page.getByRole==='function'
         ? page.getByRole('button',{name:'Autenticar',exact:true}).first() : null;
       const fallbackSubmit=page.locator('#sbmt-btn:visible, button[type="submit"]:visible, input[type="submit"]:visible').first();
-      const button=namedSubmit && await namedSubmit.count() ? namedSubmit : fallbackSubmit;
+      let button=fallbackSubmit;
       let [userPresent,passPresent,buttonPresent]=await Promise.all([
         user.count(),pass.count(),button.count()
       ]);
@@ -69,6 +69,12 @@ function makeAutoLogin({vault,now=()=>Date.now(),cooldownMs=15*60*1000}={}) {
             user.count(),pass.count(),button.count()
           ]);
         }
+      }
+      // Avaliar DEPOIS de selecionar o separador NIF: os controlos
+      // React/radix podem ainda nem existir quando se abre a pagina.
+      if(namedSubmit && await namedSubmit.count()) {
+        button=namedSubmit;
+        buttonPresent=await button.count();
       }
       if(!userPresent||!passPresent||!buttonPresent) {
         return {phase:'form_unrecognized'};
