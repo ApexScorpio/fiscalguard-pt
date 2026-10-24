@@ -25,6 +25,7 @@ test('só contar arrays comprovados, nunca assumir dívida zero por ausência', 
 function fakeEngine({authorized = false, recognized = 0} = {}) {
   let mainUrl = 'https://www.acesso.gov.pt/v2/loginForm';
   let closed = 0;
+  let launched = 0;
   const main = {
     goto: async() => {},
     url: () => mainUrl,
@@ -49,7 +50,8 @@ function fakeEngine({authorized = false, recognized = 0} = {}) {
     close: async () => {closed++;},
   };
   return {
-    browser: {launchPersistentContext: async () => context},
+    browser: {launchPersistentContext: async () => { launched++; return context; }},
+    launches: () => launched,
     setLoggedIn: () => {mainUrl='https://www.portaldasfinancas.gov.pt/pt/home.action';},
     closed: () => closed
   };
@@ -84,8 +86,18 @@ test('login real simulado: só importa depois de resposta autenticada e validada
     assert.equal(data.verifiedBy,'authenticated-json-endpoint');
     assert.equal(data.summary.atMessages,0);
     assert.equal(data.summary.atFines,null);
-    assert.ok(f.closed() >= 1);
+    // Uma recolha com sucesso NUNCA deve terminar a sessao no browser.
+    assert.equal(f.closed(),0);
+    assert.equal(f.launches(),1);
     assert.equal(JSON.stringify(data).includes('password'),false);
+    const next=await m.refresh();
+    assert.equal(next.phase,'synced');
+    assert.equal(f.closed(),0);
+    assert.equal(f.launches(),1);
+    await m.startLogin();
+    assert.equal(f.launches(),1);
+    await m.closeContext();
+    assert.equal(f.closed(),1);
   } finally {fs.rmSync(dir,{recursive:true,force:true});}
 });
 
@@ -115,6 +127,24 @@ test('JSON inesperado não pode validar sessão nem ser convertido em número ze
     const result=await m.confirmLogin();
     assert.equal(result.phase,'unverified');
     assert.equal(fs.existsSync(path.join(dir,'overview.json')),false);
+    await m.closeContext();
+  } finally {fs.rmSync(dir,{recursive:true,force:true});}
+});
+
+test('dez atualizacoes sobre a mesma sessão não provocam dez novos logins', async () => {
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'fiscalguard-test-'));
+  const fake=fakeEngine({authorized:true,recognized:2});
+  try {
+    const m=makeManager({engine:fake.browser,dir,profile:path.join(dir,'profile'),
+      snapshot:path.join(dir,'overview.json')});
+    await m.startLogin();
+    fake.setLoggedIn();
+    assert.equal((await m.confirmLogin()).phase,'synced');
+    for (let i=0; i<10; i++) {
+      assert.equal((await m.refresh()).phase,'synced');
+    }
+    assert.equal(fake.launches(),1);
+    assert.equal(fake.closed(),0);
     await m.closeContext();
   } finally {fs.rmSync(dir,{recursive:true,force:true});}
 });
