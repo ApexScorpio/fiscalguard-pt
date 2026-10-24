@@ -551,10 +551,11 @@ async function loadVaultStatus() {
  * Executa a sincronização e extração direta dos portais com terminal ao vivo
  */
 async function runPortalSync(options = {}) {
-    // Nunca arrancar um perfil AT paralelo para atualizar. A sessão existente
-    // do Chrome é consultada pela extensão instalada UMA única vez.
-    if (typeof fgCheckChromeSession === 'function') {
-        await fgCheckChromeSession();
+    // Todos os botões de sincronização da AT utilizam a mesma decisão:
+    // cofre cifrado configurado => gestor de autenticação; caso contrário,
+    // extensão Chrome. Nunca ignorar o cofre por existir a extensão.
+    if (typeof refreshConfiguredAT === 'function') {
+        await refreshConfiguredAT();
         return;
     }
 
@@ -632,8 +633,8 @@ async function openDirectChrome(portal = 'financas') {
 }
 
 async function runInteractiveLogin(portal = 'financas') {
-    if (portal === 'financas' && typeof fgCheckChromeSession === 'function') {
-        await fgCheckChromeSession();
+    if (portal === 'financas' && typeof refreshConfiguredAT === 'function') {
+        await refreshConfiguredAT();
         return;
     }
 
@@ -799,8 +800,8 @@ function initEventListeners() {
     const btnConfirmLoginNow = document.getElementById('btn-confirm-login-now');
     if (btnConfirmLoginNow) {
         btnConfirmLoginNow.addEventListener('click', async () => {
-            if (typeof fgCheckChromeSession === 'function') {
-                await fgCheckChromeSession();
+            if (typeof refreshConfiguredAT === 'function') {
+                await refreshConfiguredAT();
                 return;
             }
             const logsEl = document.getElementById('sync-terminal-logs');
