@@ -7,6 +7,7 @@ const { sendNativeToast, checkAndTriggerAlerts } = require('./notifier');
 const { syncPortalFinancas, syncSegurancaSocial, getCredentials, saveCredentials, launchInteractiveLogin, openNativeChrome, confirmActiveLogin } = require('./sync');
 const multiSync = require('./sync-relay');
 const { readOverview } = require('./official-overview');
+const { summarizeSync } = require('./sync-status');
 const { answerQuestion } = require('./assistant');
 
 const app = express();
@@ -187,7 +188,7 @@ app.post('/api/sync/run', async (req, res) => {
         const multiSyncResult = multiSync.syncViaSharedFolder();
 
         res.json({
-            success: true,
+            ...summarizeSync(atResult, ssResult),
             at: atResult,
             ss: ssResult,
             multiSync: multiSyncResult,
