@@ -1,0 +1,27 @@
+name: Teste Windows do cofre DPAPI (sem credenciais reais)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  dpapi-windows:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Testar cofre cifrado com NIF e senha fictícios em D
+        shell: pwsh
+        run: |
+          if (-not (Test-Path 'D:\\')) {
+            Write-Error 'Disco D indisponível no runner'
+            exit 1
+          }
+          node test/at-vault-windows.cjs
