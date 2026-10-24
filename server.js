@@ -10,6 +10,7 @@ const { readOverview } = require('./official-overview');
 const { summarizeSync } = require('./sync-status');
 const { answerQuestion } = require('./assistant');
 const { atManager } = require('./at-managed');
+const { importChromeReport } = require('./chrome-bridge-import');
 
 const app = express();
 const PORT = process.env.PORT || 4848;
@@ -83,6 +84,20 @@ app.get('/api/status', (req, res) => {
         overdueCount: calendar.filter(c => !c.completed && c.daysRemaining < 0).length,
         isSynced: Boolean(status.financas.lastSync || status.segurancaSocial.lastSync || invoices.length > 0)
     });
+});
+
+// A pagina FiscalGuard so envia contagens de um content script do Chrome local.
+app.post('/api/at/browser-result', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    try {
+        const outcome = importChromeReport(req.body);
+        return res.status(outcome.success ? 200 : 422).json(outcome);
+    } catch {
+        return res.status(500).json({
+            success: false,
+            message: 'Não foi possível importar as contagens locais das Finanças'
+        });
+    }
 });
 
 // Estado do navegador autenticado do FiscalGuard, sem cookies nem identificadores.
