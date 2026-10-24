@@ -338,19 +338,24 @@ app.post('/api/settings', (req, res) => {
     res.json({ success: true, profile: updated });
 });
 
-setInterval(() => {
-    checkAndTriggerAlerts().catch(err => console.error("Erro no agendador de alertas:", err.message));
+if (require.main === module) {
+    setInterval(() => {
+        checkAndTriggerAlerts().catch(err => console.error("Erro no agendador de alertas:", err.message));
+        multiSync.syncViaSharedFolder();
+    }, 1000 * 60 * 60);
+    
+    checkAndTriggerAlerts().catch(() => {});
     multiSync.syncViaSharedFolder();
-}, 1000 * 60 * 60);
+    
+    app.listen(PORT, '127.0.0.1', () => {
+        console.log(`=======================================================`);
+        console.log(`🛡️ FiscalGuard PT - Contabilista & Sentinela Pessoal`);
+        console.log(`🚀 Servidor ativo em: http://localhost:${PORT}`);
+        console.log(`💻 Multi-Dispositivo: Sincronização PC & Portátil pronta`);
+        console.log(`📂 Armazenamento Seguro: S:\\fiscalguard-pt`);
+        console.log(`=======================================================`);
+    });
+    
+}
 
-checkAndTriggerAlerts().catch(() => {});
-multiSync.syncViaSharedFolder();
-
-app.listen(PORT, '127.0.0.1', () => {
-    console.log(`=======================================================`);
-    console.log(`🛡️ FiscalGuard PT - Contabilista & Sentinela Pessoal`);
-    console.log(`🚀 Servidor ativo em: http://localhost:${PORT}`);
-    console.log(`💻 Multi-Dispositivo: Sincronização PC & Portátil pronta`);
-    console.log(`📂 Armazenamento Seguro: S:\\fiscalguard-pt`);
-    console.log(`=======================================================`);
-});
+module.exports = app;
