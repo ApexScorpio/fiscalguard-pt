@@ -76,6 +76,31 @@ const { chromium } = require('playwright');
     assert.equal(legacyLoginCalls,0);
     assert.ok(bridgeImports>=1);
     console.log('UI: PASSOU — reutiliza sessao simulada do Chrome, sem abrir login novo');
+
+    // Passar agora ao cofre DPAPI simulado: o botao deve chamar o
+    // gestor automatizado, NAO repetir a consulta da extensao Chrome.
+    let managedRefreshes=0;
+    await page.route('**/api/vault/credentials',route=>route.fulfill({
+      contentType:'application/json',
+      body:JSON.stringify({at:{hasPassword:true},ss:{hasPassword:false}})
+    }));
+    await page.route('**/api/at/refresh',route=>{
+      managedRefreshes++;
+      return route.fulfill({
+        contentType:'application/json',
+        body:JSON.stringify({phase:'synced',message:'AT autenticada (mock)',
+          lastVerifiedAt:new Date().toISOString(),verifiedEndpoints:2,
+          counts:{atMessages:2,atDebts:0,atFines:null}})
+      });
+    });
+    await page.evaluate(()=>refreshConfiguredAT());
+    assert.equal(managedRefreshes,1);
+    assert.equal(await page.evaluate(()=>window.__fgUsingManagedAT),true);
+    const chromeBefore=await page.evaluate(()=>window.__testBridgeChecks);
+    await page.locator('#btn-official-refresh').click();
+    assert.equal(managedRefreshes,2);
+    assert.equal(await page.evaluate(()=>window.__testBridgeChecks),chromeBefore);
+    console.log('UI: PASSOU — cofre configurado envia atualizacao ao gestor AT, sem abrir outro login Chrome');
     console.log('IMPORTANTE: testes de interface NAO provam consulta autenticada real');
   } finally {
     await browser.close();
