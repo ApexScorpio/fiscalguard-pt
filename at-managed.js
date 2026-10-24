@@ -39,6 +39,27 @@ function fiscalHost(raw) {
   } catch { return false; }
 }
 
+// Uma etapa em acesso.gov.pt depois do submit nao equivale a sessao expirada.
+// Pode ser uma autorizacao ou outro passo oficial. Nunca a aceitar por
+// automatismo; esperar primeiro por eventuais redirects do proprio portal.
+function accessHost(raw) {
+  try {
+    const u = new URL(raw);
+    return u.protocol === 'https:' &&
+      (u.hostname === 'acesso.gov.pt' || u.hostname === 'www.acesso.gov.pt');
+  } catch { return false; }
+}
+async function waitForLoginForward(page, timeoutMs=12000) {
+  if (!accessHost(page.url()) || isATLoginURL(page.url()) ||
+      typeof page.waitForURL !== 'function')return;
+  await page.waitForURL(raw=>{
+    const destination=String(raw);
+    return fiscalHost(destination) ||
+      isATLoginURL(destination) ||
+      isChallengeURL(destination);
+  },{timeout:timeoutMs}).catch(()=>{});
+}
+
 function countFromPayload(kind, payload) {
   if (Array.isArray(payload)) return payload.length;
   if (!payload || typeof payload !== 'object') return null;
@@ -268,6 +289,21 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
           return setState('login_required',
             'Autenticacao pendente: '+String(attempt.phase||'nao_confirmada'));
         }
+        // O formulario pode ter redirecionado para outra pagina de
+        // acesso.gov.pt, onde o portal faz um segundo redirect ou
+        // apresenta uma autorizacao. A mudanca de URL nao e sucesso.
+        await waitForLoginForward(verificationPage);
+      }
+      if (accessHost(verificationPage.url()) && !isATLoginURL(verificationPage.url())) {
+        if (browserMode === 'visible') {
+          loginPage=verificationPage;
+          verificationPage=null; // Preservar a pagina para a decisao do titular.
+          try { await loginPage.bringToFront(); } catch {}
+        }
+        return setState('verification_required',
+          browserMode === 'visible'
+            ? 'A AT apresenta outra etapa oficial; confirma-a na janela aberta'
+            : 'A AT apresenta outra etapa oficial; abre o navegador visivel para confirmar');
       }
       if (isChallengeURL(verificationPage.url())) {
         if (browserMode === 'visible') {
