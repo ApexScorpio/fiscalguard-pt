@@ -43,6 +43,9 @@ jobs:
         run: node test/ui-browser.cjs
       - name: Testar login AT num Chromium real com portais totalmente simulados
         run: node test/ui-at-login.cjs
+      - name: Diagnosticar formulario publico AT REAL sem credenciais
+        continue-on-error: true
+        run: node test/at-public-form.cjs
       - name: Testar gestor AT completo no Chromium virtual com login, expiracao e OTP simulados
         timeout-minutes: 3
         run: node test/ui-at-managed-e2e.cjs
