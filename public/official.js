@@ -195,22 +195,37 @@ async function atOperation(route) {
   }
 }
 
+// Sempre que o cofre DPAPI local existir, usar o motor AT integrado.
+ // Sem credenciais cifradas, preservar a extensao para sessao Chrome existente.
+async function refreshConfiguredAT() {
+  try {
+    const response=await fetch('/api/vault/credentials',{cache:'no-store'});
+    if(response.ok && (await response.json())?.at?.hasPassword===true) {
+      window.__fgUsingManagedAT=true;
+      return atOperation('/api/at/refresh');
+    }
+  }catch{/* fallback nao altera a sessao Chrome */}
+  window.__fgUsingManagedAT=false;
+  return fgCheckChromeSession();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   loadOfficialOverview();
   readATSession();
-  const useExistingChrome = () => fgCheckChromeSession();
+  const useExistingChrome = () => {void refreshConfiguredAT();};
   document.getElementById('btn-official-login')
     ?.addEventListener('click', useExistingChrome);
   document.getElementById('btn-official-verify')
     ?.addEventListener('click', useExistingChrome);
   document.getElementById('btn-official-refresh')
     ?.addEventListener('click', useExistingChrome);
-  // Perguntar a extensão existente: não abre login, não altera cookies.
+  // O motor com cofre e preferido. Sem cofre, a extensao usa sessao Chrome.
+  void refreshConfiguredAT();
   window.postMessage({channel:FG_AT_CHANNEL,action:'PING'},window.location.origin);
   setTimeout(() => {
-    if (!fgChromeBridgeReady) {
+    if (!fgChromeBridgeReady && !window.__fgUsingManagedAT) {
       officialElement('official-at-session',
-        'Sessão do Chrome não ligada ao FiscalGuard. Não é necessário repetir o login.');
+        'Chrome sem extensao FiscalGuard. Guarda credenciais AT no cofre local para ativar consulta automatica.');
     }
   },2500);
   setInterval(() => {
