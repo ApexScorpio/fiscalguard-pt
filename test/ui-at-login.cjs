@@ -16,11 +16,17 @@ function fakeLoginHTML(mode) {
     ' && document.querySelector("#password").value === '+JSON.stringify(PASSWORD);
   return [
     '<!doctype html><html lang="pt"><body><h1>AT MOCK — CI</h1>',
+    '<div role="tablist"><button role="tab" id="nif-tab" type="button" aria-selected="false">NIF</button></div>',
     '<form id="login" autocomplete="off">',
+    '<div id="nif-fields" hidden>',
     '<input id="username" name="username" autocomplete="username" />',
     '<input id="password" name="password" type="password" />',
     '<button id="sbmt-btn" type="submit">Entrar</button>',
-    '<p id="login-error"></p></form><script>',
+    '</div><p id="login-error"></p></form><script>',
+    'document.querySelector("#nif-tab").addEventListener("click",()=>{',
+    'document.querySelector("#nif-fields").hidden=false;',
+    'document.querySelector("#nif-tab").setAttribute("aria-selected","true");',
+    '});',
     'document.querySelector("#login").addEventListener("submit", e=>{',
     'e.preventDefault();',
     'if ('+valid+') { location.assign('+JSON.stringify(destination)+'); }',
@@ -65,6 +71,8 @@ async function scenario(browser,mode) {
       await page.goto(LOGIN+'/v2/loginForm?partID=PFAP',
         {waitUntil:'domcontentloaded'});
       assert.equal(new URL(page.url()).origin,LOGIN);
+      assert.equal(await page.locator('#username:visible').count(),0,
+        'o formulario de credenciais so deve ser exposto apos seleccionar NIF');
       const result=await engine.run(page);
       if(mode==='challenge'){
         assert.equal(result.phase,'verification_required');
