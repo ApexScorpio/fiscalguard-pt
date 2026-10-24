@@ -4,10 +4,8 @@ const fs=require('node:fs');
 const path=require('node:path');
 const {spawn}=require('node:child_process');
 
-const BASE=process.platform==='win32'
-  ? 'D:\\AssistenteFiscal\\Dados\\FiscalGuard'
-  : path.join(__dirname,'data');
-const DEFAULT_FILE=path.join(BASE,'AT-credenciais.dpapi');
+const BASE='D:\\AssistenteFiscal\\Dados\\FiscalGuard';
+const DEFAULT_FILE=path.win32.join(BASE,'AT-credenciais.dpapi');
 const TEMP='D:\\AssistenteFiscal\\Temporarios';
 
 function validCredentials(v) {
@@ -65,6 +63,7 @@ function makeVault({filename=DEFAULT_FILE,runner=executePs}={}) {
       const script=[
         "$ErrorActionPreference='Stop'",
         "$file="+file,
+        "[Console]::InputEncoding=New-Object Text.UTF8Encoding($false)",
         "$data=[Console]::In.ReadToEnd()",
         "$clear=[Text.Encoding]::UTF8.GetBytes($data)",
         "try {",
