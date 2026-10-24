@@ -1,17 +1,22 @@
 const express = require('express');
-const cors = require('cors');
+const { localOnlyGuard } = require('./security');
 const path = require('path');
 const db = require('./db');
 const { calculateNetIncome, simulateSSTrimestral } = require('./rules');
 const { sendNativeToast, checkAndTriggerAlerts } = require('./notifier');
 const { syncPortalFinancas, syncSegurancaSocial, getCredentials, saveCredentials, launchInteractiveLogin, openNativeChrome, confirmActiveLogin } = require('./sync');
 const multiSync = require('./sync-relay');
+const { readOverview } = require('./official-overview');
+const { summarizeSync } = require('./sync-status');
 const { answerQuestion } = require('./assistant');
+const { atManager } = require('./at-managed');
+const { importChromeReport } = require('./chrome-bridge-import');
 
 const app = express();
 const PORT = process.env.PORT || 4848;
 
-app.use(cors());
+app.disable('x-powered-by');
+app.use(localOnlyGuard(PORT));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'), {
     etag: false,
@@ -79,6 +84,50 @@ app.get('/api/status', (req, res) => {
         overdueCount: calendar.filter(c => !c.completed && c.daysRemaining < 0).length,
         isSynced: Boolean(status.financas.lastSync || status.segurancaSocial.lastSync || invoices.length > 0)
     });
+});
+
+// A pagina FiscalGuard so envia contagens de um content script do Chrome local.
+app.post('/api/at/browser-result', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    try {
+        const outcome = importChromeReport(req.body);
+        return res.status(outcome.success ? 200 : 422).json(outcome);
+    } catch {
+        return res.status(500).json({
+            success: false,
+            message: 'Não foi possível importar as contagens locais das Finanças'
+        });
+    }
+});
+
+// Estado do navegador autenticado do FiscalGuard, sem cookies nem identificadores.
+app.get('/api/at/session', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.json(atManager.status());
+});
+
+app.post('/api/at/login', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    try { res.json(await atManager.startLogin()); }
+    catch { res.status(500).json({ phase:'error', message:'Erro ao iniciar navegador AT' }); }
+});
+
+app.post('/api/at/verify', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    try { res.json(await atManager.confirmLogin()); }
+    catch { res.status(500).json({ phase:'error', message:'Erro na verificação da sessão AT' }); }
+});
+
+app.post('/api/at/refresh', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    try { res.json(await atManager.refresh()); }
+    catch { res.status(500).json({ phase:'error', message:'Erro ao reutilizar sessão AT' }); }
+});
+
+// Snapshot de dados fiscais locais. Nao supoe valores inexistentes.
+app.get('/api/official/overview', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.json(readOverview());
 });
 
 app.get('/api/calendar', (req, res) => {
@@ -171,44 +220,39 @@ app.post('/api/simulator/profit', (req, res) => {
     res.json(result);
 });
 
+// Botão principal: consultar exclusivamente a sessão AT gerida.
+// Não executar o motor antigo de senhas ou sincronização de pastas por engano.
 app.post('/api/sync/run', async (req, res) => {
     try {
-        const { headless = true } = req.body || {};
-        const atResult = await syncPortalFinancas({ headless });
-        const ssResult = await syncSegurancaSocial({ headless });
-        const multiSyncResult = multiSync.syncViaSharedFolder();
-
+        const result = await atManager.refresh();
+        res.set('Cache-Control', 'no-store');
         res.json({
-            success: true,
-            at: atResult,
-            ss: ssResult,
-            multiSync: multiSyncResult,
-            syncedAt: new Date().toISOString()
+            success: result.phase === 'synced',
+            at: { success: result.phase === 'synced', requiresLogin: result.phase === 'login_required',
+                log: [result.message] },
+            ss: { success: false, requiresLogin: true, log: ['Segurança Social: autenticação separada necessária'] },
+            requiresLogin: result.phase === 'login_required',
+            partialSuccess: result.phase === 'synced',
+            phase: result.phase,
+            message: result.message
         });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
+    } catch {
+        res.status(500).json({ success:false, message:'Falha ao consultar sessão AT' });
     }
 });
 
-app.post('/api/auth/open-portal', (req, res) => {
-    const { portal = 'financas' } = req.body || {};
-    const portalName = portal === 'financas' ? 'Portal das Finanças' : 'Segurança Social Direta';
-    
-    // Iniciar o Chrome em background sem bloquear o pedido HTTP
-    launchInteractiveLogin(portal).catch(err => {
-        console.error("Aviso na sessão interativa:", err.message);
-    });
-
-    res.json({
-        success: true,
-        message: `Google Chrome a abrir para o ${portalName}...`,
-        log: [
-            `[${new Date().toLocaleTimeString()}] A iniciar o Google Chrome para o ${portalName}...`,
-            `[${new Date().toLocaleTimeString()}] A janela oficial do Google Chrome vai abrir-se maximizada no teu ecrã.`,
-            `[${new Date().toLocaleTimeString()}] Faz o teu login normalmente (com NIF/Senha ou Chave Móvel Digital).`,
-            `[${new Date().toLocaleTimeString()}] A janela ficará aberta enquanto fazes a autenticação!`
-        ]
-    });
+app.post('/api/auth/open-portal', async (req, res) => {
+    const portal = req.body?.portal === 'seg_social' ? 'seg_social' : 'financas';
+    if (portal === 'financas') {
+        const result = await atManager.startLogin();
+        res.set('Cache-Control', 'no-store');
+        return res.json({
+            success: result.phase !== 'error', phase: result.phase, message: result.message,
+            log: [result.message]
+        });
+    }
+    launchInteractiveLogin(portal).catch(() => {});
+    res.json({ success:true, message:'A abrir sessão oficial da Segurança Social' });
 });
 
 app.post('/api/auth/open-native-chrome', (req, res) => {
@@ -221,12 +265,18 @@ app.post('/api/auth/open-native-chrome', (req, res) => {
     }
 });
 
-app.post('/api/auth/confirm-login', (req, res) => {
+app.post('/api/auth/confirm-login', async (req, res) => {
     try {
-        const result = confirmActiveLogin();
-        res.json(result);
-    } catch (e) {
-        res.status(500).json({ error: e.message });
+        const result = await atManager.confirmLogin();
+        res.set('Cache-Control', 'no-store');
+        res.json({
+            success: result.phase === 'synced',
+            pending: ['waiting_login','verifying'].includes(result.phase),
+            phase: result.phase,
+            message: result.message
+        });
+    } catch {
+        res.status(500).json({ success:false, message:'Não foi possível confirmar o login AT' });
     }
 });
 
@@ -330,19 +380,39 @@ app.post('/api/settings', (req, res) => {
     res.json({ success: true, profile: updated });
 });
 
-setInterval(() => {
-    checkAndTriggerAlerts().catch(err => console.error("Erro no agendador de alertas:", err.message));
-    multiSync.syncViaSharedFolder();
-}, 1000 * 60 * 60);
+if (require.main === module) {
+    // Segurança: iniciar apenas a interface e API local. Nunca importar nem
+    // exportar dados de uma pasta partilhada automaticamente ao abrir a app.
+    // A sincronização externa precisa de ativação expressa e revisão separada.
+    if (process.env.FISCALGUARD_ENABLE_BACKGROUND_SYNC === '1') {
+        setInterval(() => {
+            checkAndTriggerAlerts().catch(() => {});
+            multiSync.syncViaSharedFolder();
+        }, 1000 * 60 * 60);
+    }
 
-checkAndTriggerAlerts().catch(() => {});
-multiSync.syncViaSharedFolder();
+    // A sessão preferencial é a sessão JA EXISTENTE no Chrome normal
+    // (atraves da extensao). Nunca abrir outro perfil automaticamente.
+    // O motor Playwright alternativo so pode arrancar por ativacao explicita.
+    if (process.env.FISCALGUARD_USE_MANAGED_AT === '1') {
+        const periodic = setInterval(() => {
+            void atManager.refresh().catch(() => {});
+        }, 6 * 60 * 60 * 1000);
+        periodic.unref?.();
+        setTimeout(() => {
+            void atManager.refresh().catch(() => {});
+        }, 1500).unref?.();
+    }
 
-app.listen(PORT, () => {
-    console.log(`=======================================================`);
-    console.log(`🛡️ FiscalGuard PT - Contabilista & Sentinela Pessoal`);
-    console.log(`🚀 Servidor ativo em: http://localhost:${PORT}`);
-    console.log(`💻 Multi-Dispositivo: Sincronização PC & Portátil pronta`);
-    console.log(`📂 Armazenamento Seguro: S:\\fiscalguard-pt`);
-    console.log(`=======================================================`);
-});
+    app.listen(PORT, '127.0.0.1', () => {
+        console.log(`=======================================================`);
+        console.log(`🛡️ FiscalGuard PT - Contabilista & Sentinela Pessoal`);
+        console.log(`🚀 Servidor ativo em: http://localhost:${PORT}`);
+        console.log(`💻 Multi-Dispositivo: Sincronização PC & Portátil pronta`);
+        console.log(`📂 Armazenamento Seguro: S:\\fiscalguard-pt`);
+        console.log(`=======================================================`);
+    });
+    
+}
+
+module.exports = app;

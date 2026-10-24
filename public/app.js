@@ -551,16 +551,23 @@ async function loadVaultStatus() {
  * Executa a sincronização e extração direta dos portais com terminal ao vivo
  */
 async function runPortalSync(options = {}) {
+    // Nunca arrancar um perfil AT paralelo para atualizar. A sessão existente
+    // do Chrome é consultada pela extensão instalada UMA única vez.
+    if (typeof fgCheckChromeSession === 'function') {
+        await fgCheckChromeSession();
+        return;
+    }
+
     const consoleModal = document.getElementById('modal-sync-console');
     const logsEl = document.getElementById('sync-terminal-logs');
     if (consoleModal && logsEl) {
         consoleModal.classList.add('active');
-        logsEl.innerHTML = `[${new Date().toLocaleTimeString()}] A iniciar robô de extração do FiscalGuard PT...\n`;
+        logsEl.textContent = `[${new Date().toLocaleTimeString()}] A iniciar robô de extração do FiscalGuard PT...\n`;
     }
 
     const appendLog = (msg) => {
         if (logsEl) {
-            logsEl.innerHTML += `${msg}\n`;
+            logsEl.textContent += `${msg}\n`;
             logsEl.scrollTop = logsEl.scrollHeight;
         }
     };
@@ -583,7 +590,15 @@ async function runPortalSync(options = {}) {
             data.ss.log.forEach(l => appendLog(l));
         }
 
-        appendLog(`[${new Date().toLocaleTimeString()}] ✓ Leitura dos Portais 100% Concluída com Sucesso.`);
+        if (data.success === true) {
+            appendLog(`[${new Date().toLocaleTimeString()}] ✓ Consultas concluídas nos dois portais.`);
+        } else if (data.requiresLogin) {
+            appendLog(`[${new Date().toLocaleTimeString()}] ⚠ Autenticação necessária num ou mais portais. Utiliza o botão de início de sessão.`);
+        } else if (data.partialSuccess) {
+            appendLog(`[${new Date().toLocaleTimeString()}] ⚠ Sincronização parcial. Verifica os erros dos portais acima.`);
+        } else {
+            appendLog(`[${new Date().toLocaleTimeString()}] ❌ Não foi possível confirmar a sincronização oficial.`);
+        }
         await loadAllData();
 
     } catch (err) {
@@ -617,17 +632,22 @@ async function openDirectChrome(portal = 'financas') {
 }
 
 async function runInteractiveLogin(portal = 'financas') {
+    if (portal === 'financas' && typeof fgCheckChromeSession === 'function') {
+        await fgCheckChromeSession();
+        return;
+    }
+
     currentInteractivePortal = portal;
     const consoleModal = document.getElementById('modal-sync-console');
     const logsEl = document.getElementById('sync-terminal-logs');
     if (consoleModal && logsEl) {
         consoleModal.classList.add('active');
-        logsEl.innerHTML = `[${new Date().toLocaleTimeString()}] A abrir o Google Chrome para autenticação no ${portal === 'financas' ? 'Portal das Finanças (AT)' : 'Segurança Social Direta'}...\n`;
+        logsEl.textContent = `[${new Date().toLocaleTimeString()}] A abrir o Google Chrome para autenticação no ${portal === 'financas' ? 'Portal das Finanças (AT)' : 'Segurança Social Direta'}...\n`;
     }
 
     const appendLog = (msg) => {
         if (logsEl) {
-            logsEl.innerHTML += `${msg}\n`;
+            logsEl.textContent += `${msg}\n`;
             logsEl.scrollTop = logsEl.scrollHeight;
         }
     };
@@ -779,10 +799,14 @@ function initEventListeners() {
     const btnConfirmLoginNow = document.getElementById('btn-confirm-login-now');
     if (btnConfirmLoginNow) {
         btnConfirmLoginNow.addEventListener('click', async () => {
+            if (typeof fgCheckChromeSession === 'function') {
+                await fgCheckChromeSession();
+                return;
+            }
             const logsEl = document.getElementById('sync-terminal-logs');
             const appendLog = (msg) => {
                 if (logsEl) {
-                    logsEl.innerHTML += `${msg}\n`;
+                    logsEl.textContent += `${msg}\n`;
                     logsEl.scrollTop = logsEl.scrollHeight;
                 }
             };
@@ -792,15 +816,12 @@ function initEventListeners() {
             try {
                 const res = await fetch('/api/auth/confirm-login', { method: 'POST' });
                 const data = await res.json();
-                if (data.success) {
-                    appendLog(`[${new Date().toLocaleTimeString()}] ✓ ${data.message}`);
-                    appendLog(`[${new Date().toLocaleTimeString()}] A atualizar o painel com os dados reais...`);
-                    await new Promise(r => setTimeout(r, 3000));
-                    await loadAllData();
-                    appendLog(`[${new Date().toLocaleTimeString()}] ✅ Painel atualizado! Verifica as tuas faturas e estado fiscal.`);
+                if (data.pending === true) {
+                    appendLog(`[${new Date().toLocaleTimeString()}] ⏳ ${data.message}`);
+                    appendLog(`[${new Date().toLocaleTimeString()}] A recolha decorre na janela oficial. Confirma os dados efetivamente importados; esta mensagem não significa sucesso.`);
                 } else {
-                    appendLog(`[${new Date().toLocaleTimeString()}] ⚠️ ${data.message}`);
-                    appendLog(`[${new Date().toLocaleTimeString()}] Garante que clicaste primeiro em "Iniciar Sessão Oficial" e que o Chrome já abriu.`);
+                    appendLog(`[${new Date().toLocaleTimeString()}] ⚠️ ${data.message || 'Sessão não confirmada'}`);
+                    appendLog(`[${new Date().toLocaleTimeString()}] Usa «Iniciar Sessão Oficial» dentro do FiscalGuard para associar o navegador à aplicação.`);
                 }
             } catch (err) {
                 appendLog(`[${new Date().toLocaleTimeString()}] ❌ Erro: ${err.message}`);

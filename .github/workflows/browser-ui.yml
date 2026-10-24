@@ -1,0 +1,78 @@
+name: Testes de interface web (sem credenciais)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      FISCALGUARD_ENABLE_BACKGROUND_SYNC: '0'
+      PORT: '4848'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Preparar dependências de código
+        run: npm ci --ignore-scripts
+      - name: Instalar navegador de testes
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Garantir que não existem dados reais nos testes
+        run: |
+          rm -f data/database.json data/sync-config.json data/credentials.json data/session-at.json data/session-ss.json data/official-import.json
+      - name: Iniciar servidor de testes
+        run: |
+          node server.js > /tmp/fiscalguard-web-test.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4848/api/official/overview > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          echo "Servidor web não respondeu"
+          exit 1
+      - name: Verificar botões, estados e importação simulada no Chromium
+        run: node test/ui-browser.cjs
+      - name: Testar extensao no Chromium com sessao e cookies simuladas
+        run: node test/ui-extension.cjs
+      - name: Preparar extensao Chrome para instalacao local em D
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fiscalguard-chrome-bridge
+          path: chrome-bridge/
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Empacotar apenas codigo web, SEM dados fiscais nem sessoes
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fiscalguard-web-sem-dados
+          path: |
+            server.js
+            at-managed.js
+            chrome-bridge-import.js
+            official-overview.js
+            security.js
+            db.js
+            rules.js
+            assistant.js
+            notifier.js
+            sync.js
+            sync-relay.js
+            sync-status.js
+            public/
+            chrome-bridge/
+            package.json
+            package-lock.json
+          retention-days: 14
+          if-no-files-found: error

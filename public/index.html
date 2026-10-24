@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="official.css">
 </head>
 <body>
     <div class="app-layout">
@@ -48,7 +49,7 @@
                         <span class="status-indicator live-pulse-blue"></span>
                         <div class="status-info">
                             <span class="status-label">Multi-Dispositivo</span>
-                            <strong class="status-value" id="sync-situation-text">PC ↔ Portátil OK</strong>
+                            <strong class="status-value" id="sync-situation-text">Ligação por verificar</strong>
                         </div>
                     </div>
                 </div>
@@ -62,7 +63,7 @@
                 </button>
                 <button id="btn-sync-all" class="btn btn-primary" title="Executa sincronização 100% automática com credenciais locais">
                     <span class="btn-icon">⚡</span>
-                    <span>Sincronizar (100% Auto)</span>
+                    <span>Atualizar Finanças</span>
                 </button>
                 <button id="btn-notify-test" class="btn btn-secondary" title="Disparar notificação de teste nativa do Windows">
                     <span class="btn-icon">🔔</span>
@@ -154,6 +155,38 @@
                         <div class="metric-footnote">Para evitar surpresas na entrega de Abril/Junho</div>
                     </div>
                 </div>
+
+                <!-- Resumo real de importações locais, sem dados fictícios -->
+                <section class="official-overview" aria-labelledby="official-overview-title">
+                    <div class="official-overview-header">
+                        <div>
+                            <p class="official-eyebrow">DADOS IMPORTADOS · ESTADO REAL</p>
+                            <h2 id="official-overview-title">Finanças, Segurança Social e IUC</h2>
+                            <p class="official-muted" id="official-import-state" aria-live="polite">A verificar importações locais…</p>
+                            <p class="official-muted" id="official-at-session" aria-live="polite">Sessão AT por verificar</p>
+                        </div>
+                        <div class="official-actions">
+                            <button class="btn btn-emerald" id="btn-official-login">Entrar nas Finanças</button>
+                            <button class="btn btn-secondary" id="btn-official-verify">Já entrei — Verificar</button>
+                            <button class="btn btn-secondary" id="btn-official-refresh">Atualizar Finanças</button>
+                        </div>
+                    </div>
+                    <div class="official-status-grid">
+                        <div class="official-status-card"><span>Dívidas AT</span><strong id="official-at-debts">Por consultar</strong></div>
+                        <div class="official-status-card"><span>Coimas AT</span><strong id="official-at-fines">Por consultar</strong></div>
+                        <div class="official-status-card"><span>Mensagens AT</span><strong id="official-at-messages">Por consultar</strong></div>
+                        <div class="official-status-card"><span>Segurança Social</span><strong id="official-ss-status">Por consultar</strong></div>
+                    </div>
+                    <div class="official-vehicle-box">
+                        <div class="official-vehicle-title">
+                            <h3>Viaturas e próximos IUC</h3>
+                            <span>Ordenação por data oficial de vencimento, quando disponível</span>
+                        </div>
+                        <div id="official-vehicles-list" class="official-vehicle-list" aria-live="polite">
+                            <p class="official-muted">Ainda não existem viaturas importadas e verificadas.</p>
+                        </div>
+                    </div>
+                </section>
 
                 <div class="calendar-section">
                     <div class="section-header">
@@ -755,5 +788,6 @@
 
     <!-- SCRIPT DA APLICAÇÃO -->
     <script src="app.js?v=2.0.3"></script>
+    <script src="official.js"></script>
 </body>
 </html>

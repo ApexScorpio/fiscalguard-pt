@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "FiscalGuard PT — Ligação local às Finanças",
+  "description": "Utiliza a sessão já autenticada no Chrome para consultar somente contagens agregadas da AT. Não lê senhas, não exporta cookies e não envia dados para servidores externos.",
+  "version": "0.1.0",
+  "permissions": ["tabs"],
+  "host_permissions": [
+    "https://sitfiscal.portaldasfinancas.gov.pt/*",
+    "http://127.0.0.1/*"
+  ],
+  "background": {"service_worker": "background.js"},
+  "content_scripts": [
+    {
+      "matches": ["https://sitfiscal.portaldasfinancas.gov.pt/*"],
+      "js": ["at-probe.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["http://127.0.0.1/*"],
+      "js": ["local-bridge.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
