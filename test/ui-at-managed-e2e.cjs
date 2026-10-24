@@ -17,7 +17,9 @@ const FAKE_NIF='123456789';
 const FAKE_PASSWORD='SENHA_DE_TESTE_APENAS_CI';
 
 function loginForm(mode){
-  const dest=mode==='otp'?OTP+'/autenticar':AT+'/geral?autenticado_teste=1';
+  const dest=mode==='otp'?OTP+'/autenticar':
+    ['intermediate','authorization'].includes(mode)
+      ?LOGIN+'/v2/intermediate':AT+'/geral?autenticado_teste=1';
   return [
     '<!doctype html><html><body>',
     '<div role="tablist"><button type="button" role="tab" id="nif-tab">NIF</button></div>',
@@ -79,6 +81,18 @@ async function runScenario(mode){
       if(u.origin===LOGIN && u.pathname==='/v2/loginForm'){
         observations.loginPages++;
         return route.fulfill({status:200,contentType:'text/html',body:loginForm(mode)});
+      }
+      if(u.origin===LOGIN && u.pathname==='/v2/intermediate'){
+        const forwarding=mode==='intermediate';
+        const next=AT+'/geral?autenticado_teste=1';
+        // Simular etapa oficial de acesso.gov.pt depois do submit.
+        // A primeira redireciona automaticamente; a segunda exige
+        // consentimento humano. Nunca clicar no botao no teste.
+        const html=forwarding
+          ? '<!doctype html><html><body><script>setTimeout(()=>location.replace('+
+            JSON.stringify(next)+'),400)</script></body></html>'
+          : '<!doctype html><html><body><button>Autorizo</button></body></html>';
+        return route.fulfill({status:200,contentType:'text/html',body:html});
       }
       if(u.origin===OTP){
         return route.fulfill({status:200,contentType:'text/html',
@@ -163,11 +177,14 @@ async function runScenario(mode){
     });
     assert.equal(fs.existsSync(profile),false);
     const result=await managed.refresh();
-    if(mode==='otp'){
+    if(mode==='otp' || mode==='authorization'){
       assert.equal(result.phase,'verification_required');
       assert.equal(observations.vaultReads,1);
       assert.equal(fs.existsSync(snapshot),false);
-      console.log('PASSOU E2E gestor: desafio OTP detetado sem criar dados fiscais');
+      if(mode==='otp')
+        console.log('PASSOU E2E gestor: desafio OTP detetado sem criar dados fiscais');
+      else
+        console.log('PASSOU E2E gestor: autorizacao AT preservada sem clique e sem importar dados');
     }else{
       assert.equal(result.phase,'synced',result.message);
       assert.equal(result.counts.atDebts,0);
@@ -178,6 +195,10 @@ async function runScenario(mode){
       assert.equal(observations.vaultReads,1);
       const data=JSON.parse(fs.readFileSync(snapshot,'utf8'));
       assert.equal(data.summary.atMessages,2);
+      if(mode==='intermediate') {
+        console.log('PASSOU E2E gestor: redirecionamento AT oficial intermédio aguardado e comprovado');
+        return;
+      }
       assert.equal(data.summary.atDebts,0);
       assert.equal(JSON.stringify(data).includes(FAKE_NIF),false);
       assert.equal(JSON.stringify(data).includes(FAKE_PASSWORD),false);
@@ -214,6 +235,8 @@ async function runScenario(mode){
 }
 (async()=>{
   await runScenario('normal');
+  await runScenario('intermediate');
+  await runScenario('authorization');
   await runScenario('otp');
   console.log('Gestor AT E2E: motor real Playwright + Chromium, portais integralmente simulados');
 })().catch(error=>{
