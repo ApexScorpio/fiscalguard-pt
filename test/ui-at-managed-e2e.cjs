@@ -102,9 +102,30 @@ async function runScenario(mode){
     return context;
   }};
   try{
+    const realAuto=makeAutoLogin({vault:fakeVault});
+    const observedAuto={
+      markAuthenticatedResult:value=>realAuto.markAuthenticatedResult(value),
+      run:async page=>{
+        const outcome=await realAuto.run(page);
+        if(outcome.phase==='form_unrecognized'){
+          // Somente presenca de campos e URL publica; nunca valores.
+          console.log('E2E_FORM_DIAGNOSTICO',JSON.stringify({
+            host:(()=>{try{return new URL(page.url()).hostname;}catch{return 'invalid';}})(),
+            nifTabs:await page.getByRole('tab',{name:'NIF',exact:true}).count(),
+            nifButtons:await page.getByRole('button',{name:'NIF',exact:true}).count(),
+            userInputs:await page.locator('input[name="username"]').count(),
+            userVisible:await page.locator('input[name="username"]:visible').count(),
+            passInputs:await page.locator('input[name="password"]').count(),
+            passVisible:await page.locator('input[name="password"]:visible').count(),
+            submitVisible:await page.locator('button[type="submit"]:visible').count()
+          }));
+        }
+        return outcome;
+      }
+    };
     managed=makeManager({
       engine,dir,profile,snapshot,vault:fakeVault,
-      autoLogin:makeAutoLogin({vault:fakeVault})
+      autoLogin:observedAuto
     });
     assert.equal(fs.existsSync(profile),false);
     const result=await managed.refresh();
