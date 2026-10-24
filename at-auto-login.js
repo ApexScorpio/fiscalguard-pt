@@ -40,7 +40,9 @@ function makeAutoLogin({vault,now=()=>Date.now(),cooldownMs=15*60*1000}={}) {
     inFlight=(async()=>{
       // Redirecionar para acesso.gov.pt nao significa que o React da pagina
       // ja terminou de montar o formulario; aguardar DOM antes de procurar.
-      await page.waitForLoadState?.('domcontentloaded',{timeout:10000}).catch(()=>{});
+      if(typeof page.waitForLoadState==='function') {
+        await page.waitForLoadState('domcontentloaded',{timeout:10000}).catch(()=>{});
+      }
       if(!isATLoginURL(page.url()))return {phase:'not_login_page'};
       const creds=await vault.read();
       if(!validCredentials(creds))return {phase:'credentials_missing'};
