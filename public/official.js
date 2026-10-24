@@ -47,7 +47,7 @@ async function loadOfficialOverview() {
     const response = await fetch('/api/official/overview', { cache: 'no-store' });
     if (!response.ok) throw new Error('HTTP ' + response.status);
     const data = await response.json();
-    if (data.status !== 'imported_unverified') {
+    if (!['imported_unverified','verified_local'].includes(data.status)) {
       officialElement('official-import-state', 'Por importar · Nenhuma consulta oficial comprovada neste módulo');
       officialElement('official-at-debts', 'Por consultar');
       officialElement('official-at-fines', 'Por consultar');
@@ -58,7 +58,7 @@ async function loadOfficialOverview() {
     }
     const time = data.capturedAt ? new Date(data.capturedAt).toLocaleString('pt-PT') : 'desconhecida';
     officialElement('official-import-state',
-      'Importação local de ' + time + ' · Autenticidade e atualização por confirmar');
+      (data.status === 'verified_local' ? 'Respostas JSON oficiais confirmadas localmente em ' : 'Importação local de ') + time + (data.status === 'verified_local' ? ' · Outras obrigações por consultar' : ' · Autenticidade e atualização por confirmar'));
     const summary = data.summary || {};
     officialElement('official-at-debts', officialStat(summary.atDebts, ' registos'));
     officialElement('official-at-fines', officialStat(summary.atFines, ' registos'));
@@ -72,13 +72,59 @@ async function loadOfficialOverview() {
   }
 }
 
+// Separar o estado do login da existência de dados fiscais importados.
+async function readATSession() {
+  try {
+    const r = await fetch('/api/at/session', { cache: 'no-store' });
+    if (!r.ok) throw new Error('API_AT_UNAVAILABLE');
+    const session = await r.json();
+    const state = document.getElementById('official-at-session');
+    if (state) state.textContent = session.message || 'A verificar sessão';
+    const label = document.getElementById('at-situation-text');
+    const dot = document.getElementById('at-indicator-dot');
+    if (session.phase === 'synced') {
+      if (label) label.textContent = 'Sessão AT validada';
+      if (dot) dot.className = 'status-indicator live-pulse';
+    } else if (['waiting_login','opening','verifying'].includes(session.phase)) {
+      if (label) label.textContent = 'A confirmar sessão';
+      if (dot) dot.className = 'status-indicator dot-warning';
+    } else {
+      if (label) label.textContent = 'Por verificar';
+      if (dot) dot.className = 'status-indicator dot-warning';
+    }
+    return session;
+  } catch {
+    officialElement('official-at-session', 'Serviço de autenticação AT indisponível');
+    return null;
+  }
+}
+
+async function atOperation(route) {
+  const buttons = ['btn-official-login','btn-official-verify','btn-official-refresh']
+    .map(id => document.getElementById(id)).filter(Boolean);
+  buttons.forEach(b => { b.disabled = true; });
+  try {
+    officialElement('official-at-session', 'A contactar o FiscalGuard local…');
+    const r = await fetch(route, { method:'POST', cache:'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const state = await r.json();
+    officialElement('official-at-session', state.message || 'Sem resposta da AT');
+    await Promise.all([readATSession(), loadOfficialOverview()]);
+  } catch {
+    officialElement('official-at-session', 'Falha ao contactar o servidor local (consulta não confirmada)');
+  } finally {
+    buttons.forEach(b => { b.disabled = false; });
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   loadOfficialOverview();
-  document.getElementById('btn-official-refresh')
-    ?.addEventListener('click', loadOfficialOverview);
+  readATSession();
   document.getElementById('btn-official-login')
-    ?.addEventListener('click', () => {
-      if (typeof openPortalLoginModal === 'function') openPortalLoginModal('financas');
-    });
-  setInterval(loadOfficialOverview, 30000);
+    ?.addEventListener('click', () => atOperation('/api/at/login'));
+  document.getElementById('btn-official-verify')
+    ?.addEventListener('click', () => atOperation('/api/at/verify'));
+  document.getElementById('btn-official-refresh')
+    ?.addEventListener('click', () => atOperation('/api/at/refresh'));
+  setInterval(() => { void readATSession(); void loadOfficialOverview(); }, 5000);
 });
