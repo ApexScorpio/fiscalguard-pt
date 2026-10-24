@@ -396,17 +396,25 @@ async function extractSegurancaSocialData(page, context, addLog = console.log) {
 // Ponteiro para a sessão interativa ativa
 let activeInteractiveSession = null;
 
+// Confirmação de login nao é confirmação de importação.
+// Sem um navegador gerido pelo FiscalGuard nao temos acesso aos cookies de
+// uma aba normal do Chrome, mesmo que o utilizador ja se tenha autenticado.
 function confirmActiveLogin() {
     if (activeInteractiveSession && activeInteractiveSession.triggerExtraction) {
         activeInteractiveSession.triggerExtraction();
-        return { success: true, message: "A extrair faturas e dados do portal agora..." };
+        return {
+            accepted: true,
+            success: false,
+            pending: true,
+            message: "Pedido de verificação enviado. A importação ainda não foi confirmada."
+        };
     }
-    // Se não há sessão Playwright ativa, lançar extração direta com cookies guardados
-    // (para quando o utilizador fez login no Chrome nativo via openNativeChrome)
-    launchInteractiveLoginAndExtract('financas').catch(err =>
-        console.error('[confirmActiveLogin] Erro na extração direta:', err.message)
-    );
-    return { success: true, message: "A iniciar extração dos portais com o perfil do Chrome..." };
+    return {
+        accepted: false,
+        success: false,
+        requiresLogin: true,
+        message: "Não existe uma sessão interativa do FiscalGuard ativa. Abre «Iniciar Sessão Oficial» para autenticação no Chrome gerido pela aplicação."
+    };
 }
 
 /**
