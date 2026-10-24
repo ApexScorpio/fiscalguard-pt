@@ -46,11 +46,13 @@ function recordsFromPayload(kind,data) {
     }
   }
   if(!list)return {status:'unverified',count:null,records:[]};
+  const originalCount=Number.isSafeInteger(data._captureTotal) &&
+    data._captureTotal>=list.length?data._captureTotal:list.length;
   return {
-    status:list.length?'records':'empty',
-    count:list.length,
+    status:originalCount?'records':'empty',
+    count:originalCount,
     records:list.slice(0,MAX_RECORDS).map(x=>safeValue(x)),
-    truncated:list.length>MAX_RECORDS
+    truncated:originalCount>list.length||originalCount>MAX_RECORDS
   };
 }
 function bundleFromInspection(inspected,capturedAt=new Date().toISOString()){
