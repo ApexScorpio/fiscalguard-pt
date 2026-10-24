@@ -6,7 +6,7 @@
   "permissions": ["tabs"],
   "host_permissions": [
     "https://sitfiscal.portaldasfinancas.gov.pt/*",
-    "http://127.0.0.1:4848/*"
+    "http://127.0.0.1/*"
   ],
   "background": {"service_worker": "background.js"},
   "content_scripts": [
@@ -16,7 +16,7 @@
       "run_at": "document_idle"
     },
     {
-      "matches": ["http://127.0.0.1:4848/*"],
+      "matches": ["http://127.0.0.1/*"],
       "js": ["local-bridge.js"],
       "run_at": "document_idle"
     }
