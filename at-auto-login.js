@@ -1,0 +1,70 @@
+'use strict';
+// Preenche APENAS o formulário oficial de autenticação da AT.
+// Não contorna SMS/2FA, bloqueios, CAPTCHA, limites nem anti-bot.
+const {validCredentials}=require('./at-vault');
+
+function isATLoginURL(raw) {
+  try {
+    const u=new URL(raw);
+    return u.protocol==='https:' &&
+      ['www.acesso.gov.pt','acesso.gov.pt'].includes(u.hostname) &&
+      u.pathname.startsWith('/v2/loginForm') &&
+      (u.searchParams.get('partID')==='PFAP' ||
+       u.searchParams.get('partID')===null);
+  } catch {return false;}
+}
+function isChallengeURL(raw) {
+  try {
+    const u=new URL(raw);
+    return u.protocol==='https:' &&
+      (u.hostname==='autenticacao.gov.pt' ||
+       u.hostname.endsWith('.autenticacao.gov.pt'));
+  } catch {return false;}
+}
+
+function makeAutoLogin({vault,now=()=>Date.now(),cooldownMs=15*60*1000}={}) {
+  let lastAttemptAt=0;
+  let inFlight=null;
+  async function run(page) {
+    if (!isATLoginURL(page.url())) {
+      return {phase:isChallengeURL(page.url())?'verification_required':'not_login_page'};
+    }
+    if (!vault || !vault.available?.() || !vault.has?.()) {
+      return {phase:'credentials_missing'};
+    }
+    if(lastAttemptAt>0 && now()-lastAttemptAt<cooldownMs) {
+      return {phase:'cooldown',retryAfterSeconds:Math.ceil((cooldownMs-(now()-lastAttemptAt))/1000)};
+    }
+    // Never attempt duplicate submits while a navigation is in progress.
+    if(inFlight)return inFlight;
+    inFlight=(async()=>{
+      const creds=await vault.read();
+      if(!validCredentials(creds))return {phase:'credentials_missing'};
+      const user=page.locator('#username, input[name="username"], input[name="nif"], input[autocomplete="username"]').first();
+      const pass=page.locator('#password, input[type="password"]').first();
+      const button=page.locator('#sbmt-btn, button[type="submit"], input[type="submit"]').first();
+      const [userPresent,passPresent,buttonPresent]=await Promise.all([
+        user.count(),pass.count(),button.count()
+      ]);
+      if(!userPresent||!passPresent||!buttonPresent) {
+        return {phase:'form_unrecognized'};
+      }
+      if(!isATLoginURL(page.url()))return {phase:'not_login_page'};
+      // Definir cooldown ANTES de submeter evita repetição involuntária.
+      lastAttemptAt=now();
+      await user.fill(creds.nif,{timeout:10000});
+      await pass.fill(creds.password,{timeout:10000});
+      await button.click({timeout:10000});
+      await page.waitForURL(url=>!isATLoginURL(String(url)),{timeout:18000}).catch(()=>{});
+      if(isChallengeURL(page.url()))return {phase:'verification_required'};
+      const challenge=page.locator('input[autocomplete="one-time-code"],input[name*="otp" i],input[id*="otp" i],input[name*="sms" i]');
+      if(await challenge.count().catch(()=>0))return {phase:'verification_required'};
+      if(isATLoginURL(page.url()))return {phase:'login_unconfirmed'};
+      return {phase:'submitted'};
+    })().catch(error=>({phase:'technical_error',type:error?.constructor?.name||'Error'}))
+      .finally(()=>{inFlight=null;});
+    return inFlight;
+  }
+  return {run,isATLoginURL,isChallengeURL};
+}
+module.exports={makeAutoLogin,isATLoginURL,isChallengeURL};
