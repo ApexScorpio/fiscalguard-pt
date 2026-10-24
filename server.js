@@ -340,14 +340,16 @@ app.post('/api/settings', (req, res) => {
 });
 
 if (require.main === module) {
-    setInterval(() => {
-        checkAndTriggerAlerts().catch(err => console.error("Erro no agendador de alertas:", err.message));
-        multiSync.syncViaSharedFolder();
-    }, 1000 * 60 * 60);
-    
-    checkAndTriggerAlerts().catch(() => {});
-    multiSync.syncViaSharedFolder();
-    
+    // Segurança: iniciar apenas a interface e API local. Nunca importar nem
+    // exportar dados de uma pasta partilhada automaticamente ao abrir a app.
+    // A sincronização externa precisa de ativação expressa e revisão separada.
+    if (process.env.FISCALGUARD_ENABLE_BACKGROUND_SYNC === '1') {
+        setInterval(() => {
+            checkAndTriggerAlerts().catch(() => {});
+            multiSync.syncViaSharedFolder();
+        }, 1000 * 60 * 60);
+    }
+
     app.listen(PORT, '127.0.0.1', () => {
         console.log(`=======================================================`);
         console.log(`🛡️ FiscalGuard PT - Contabilista & Sentinela Pessoal`);
