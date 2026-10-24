@@ -63,7 +63,8 @@ function publicState(state) {
     lastVerifiedAt: state.lastVerifiedAt,
     lastImportedAt: state.lastImportedAt,
     verifiedEndpoints: state.verifiedEndpoints,
-    counts: state.counts
+    counts: state.counts,
+    endpointDiagnostics: state.endpointDiagnostics
   };
 }
 
@@ -81,7 +82,8 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
     lastVerifiedAt: null,
     lastImportedAt: null,
     verifiedEndpoints: 0,
-    counts: { atMessages: null, atDebts: null, atFines: null }
+    counts: { atMessages: null, atDebts: null, atFines: null },
+    endpointDiagnostics: {}
   };
 
   const setState = (phase, message) => {
@@ -164,7 +166,7 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
     // Nunca devolver ao Node o corpo das respostas fiscais: apenas contagens,
     // estado HTTP e forma geral do JSON para os endpoints permitidos.
     return page.evaluate(async endpoints => {
-      const out = { verifiedEndpoints: 0, counts: {} };
+      const out = { verifiedEndpoints: 0, counts: {}, diagnostics: {} };
       for (const [key, endpoint] of Object.entries(endpoints)) {
         try {
           const controller = new AbortController();
@@ -182,10 +184,19 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
             clearTimeout(deadline);
           }
           const destination = new URL(response.url);
-          if (!response.ok ||
-              destination.protocol !== 'https:' ||
-              destination.hostname !== 'sitfiscal.portaldasfinancas.gov.pt' ||
-              !/json/i.test(response.headers.get('content-type') || '')) continue;
+          if (!response.ok) {
+            out.diagnostics[key]={http:response.status,result:'http_error'};
+            continue;
+          }
+          if(destination.protocol !== 'https:' ||
+             destination.hostname !== 'sitfiscal.portaldasfinancas.gov.pt') {
+            out.diagnostics[key]={http:response.status,result:'redirected'};
+            continue;
+          }
+          if(!/json/i.test(response.headers.get('content-type') || '')) {
+            out.diagnostics[key]={http:response.status,result:'unexpected_type'};
+            continue;
+          }
           const data = await response.json();
           const props = {
             atMessages: ['listaMensagens', 'mensagens', 'messages', 'dataFromResponseList'],
@@ -205,9 +216,13 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
           if (count !== null) {
             out.verifiedEndpoints += 1;
             out.counts[key] = count;
+            out.diagnostics[key]={http:response.status,result:'verified'};
+          } else {
+            out.diagnostics[key]={http:response.status,result:'unexpected_json_shape'};
           }
         } catch {
-          // Falha isolada de consulta: não assume zero.
+          // Apenas códigos de erro técnicos; nunca URLs, payloads ou cookies.
+          out.diagnostics[key]={http:null,result:'technical_error'};
         }
       }
       return out;
@@ -256,6 +271,7 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
             'Portal redirecionou; nao foi possivel confirmar a sessao. Nao e necessario novo login por enquanto');
       }
       const response = await inspectOfficialPage(verificationPage);
+      state.endpointDiagnostics=response?.diagnostics||{};
       const verified = Number(response?.verifiedEndpoints || 0);
       if (!Number.isSafeInteger(verified) || verified < 1) {
         return setState('unverified', 'A página abriu, mas nenhuma resposta fiscal JSON foi validada');
