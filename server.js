@@ -1,5 +1,5 @@
 const express = require('express');
-const cors = require('cors');
+const { localOnlyGuard } = require('./security');
 const path = require('path');
 const db = require('./db');
 const { calculateNetIncome, simulateSSTrimestral } = require('./rules');
@@ -11,7 +11,8 @@ const { answerQuestion } = require('./assistant');
 const app = express();
 const PORT = process.env.PORT || 4848;
 
-app.use(cors());
+app.disable('x-powered-by');
+app.use(localOnlyGuard(PORT));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'), {
     etag: false,
@@ -338,7 +339,7 @@ setInterval(() => {
 checkAndTriggerAlerts().catch(() => {});
 multiSync.syncViaSharedFolder();
 
-app.listen(PORT, () => {
+app.listen(PORT, '127.0.0.1', () => {
     console.log(`=======================================================`);
     console.log(`🛡️ FiscalGuard PT - Contabilista & Sentinela Pessoal`);
     console.log(`🚀 Servidor ativo em: http://localhost:${PORT}`);
