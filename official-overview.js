@@ -53,11 +53,14 @@ function normalizeSnapshot(raw) {
   unique.sort((a,b) => (a.dueDate || '9999-12-31').localeCompare(b.dueDate || '9999-12-31') ||
     a.plate.localeCompare(b.plate));
   return {
-    status: raw.verifiedBy === 'authenticated-json-endpoint' ? 'verified_local' : 'imported_unverified',
+    status: raw.verifiedBy === 'authenticated-json-endpoint' ? 'verified_local' :
+      raw.verifiedBy === 'chrome-extension-same-origin' ? 'browser_reported' : 'imported_unverified',
     capturedAt: new Date(raw.capturedAt).toISOString(),
     origin: raw.verifiedBy === 'authenticated-json-endpoint'
-      ? 'Contagens obtidas de respostas JSON oficiais na sessão autenticada'
-      : 'Importação local - confirmar origem e atualização',
+      ? 'Contagens obtidas no navegador gerido pela aplicação'
+      : raw.verifiedBy === 'chrome-extension-same-origin'
+        ? 'Contagens comunicadas pela extensão local do Chrome existente'
+        : 'Importação local - confirmar origem e atualização',
     vehicles: unique,
     summary: {
       atDebts: count(overview.atDebts),
