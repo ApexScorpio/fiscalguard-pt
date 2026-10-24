@@ -40,12 +40,24 @@ function makeAutoLogin({vault,now=()=>Date.now(),cooldownMs=15*60*1000}={}) {
     inFlight=(async()=>{
       const creds=await vault.read();
       if(!validCredentials(creds))return {phase:'credentials_missing'};
-      const user=page.locator('#username, input[name="username"], input[name="nif"], input[autocomplete="username"]').first();
-      const pass=page.locator('#password, input[type="password"]').first();
-      const button=page.locator('#sbmt-btn, button[type="submit"], input[type="submit"]').first();
-      const [userPresent,passPresent,buttonPresent]=await Promise.all([
+      const user=page.locator('#username:visible, input[name="username"]:visible, input[name="nif"]:visible, input[autocomplete="username"]:visible').first();
+      const pass=page.locator('#password:visible, input[type="password"]:visible').first();
+      const button=page.locator('#sbmt-btn:visible, button[type="submit"]:visible, input[type="submit"]:visible').first();
+      let [userPresent,passPresent,buttonPresent]=await Promise.all([
         user.count(),pass.count(),button.count()
       ]);
+      // A pagina real apresenta inicialmente separadores CC/CMD, NIF e EORI.
+      // Apenas selecionar o separador NIF, sem submeter dados nem mudar URL.
+      if((!userPresent||!passPresent) && isATLoginURL(page.url())) {
+        const nifTab=page.getByRole('tab',{name:'NIF',exact:true}).first();
+        if(await nifTab.count()) {
+          await nifTab.click({timeout:10000});
+          await user.waitFor({state:'visible',timeout:7000}).catch(()=>{});
+          [userPresent,passPresent,buttonPresent]=await Promise.all([
+            user.count(),pass.count(),button.count()
+          ]);
+        }
+      }
       if(!userPresent||!passPresent||!buttonPresent) {
         return {phase:'form_unrecognized'};
       }
