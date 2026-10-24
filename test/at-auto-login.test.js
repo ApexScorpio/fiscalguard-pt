@@ -64,3 +64,39 @@ test('sem cofre não tenta fazer login, não envia identificadores',async()=>{
   assert.equal((await login.run(page)).phase,'credentials_missing');
   assert.equal(page.clicks.length,0);
 });
+
+test('repetir consulta depois de login comprovado não obriga a esperar 15 minutos',async()=>{
+  let now=2500000;
+  let reads=0;
+  const vault={
+    available:()=>true,has:()=>true,
+    read:async()=>{reads++;return {nif:'123456789',password:'SENHA_DE_TESTE'};}
+  };
+  const engine=makeAutoLogin({vault,now:()=>now});
+  assert.equal((await engine.run(fakePage())).phase,'submitted');
+  assert.equal((await engine.run(fakePage())).phase,'cooldown');
+  engine.markAuthenticatedResult(false);
+  assert.equal((await engine.run(fakePage())).phase,'cooldown');
+  engine.markAuthenticatedResult(true);
+  assert.equal((await engine.run(fakePage())).phase,'submitted');
+  assert.equal(reads,2);
+});
+
+test('pedidos paralelos partilham a mesma tentativa de login',async()=>{
+  let reads=0;
+  const vault={
+    available:()=>true,has:()=>true,
+    read:async()=>{
+      reads++;
+      await new Promise(resolve=>setImmediate(resolve));
+      return {nif:'123456789',password:'SENHA_DE_TESTE'};
+    }
+  };
+  const login=makeAutoLogin({vault,now:()=>1000000});
+  const page=fakePage();
+  const [one,two]=await Promise.all([login.run(page),login.run(page)]);
+  assert.equal(one.phase,'submitted');
+  assert.equal(two.phase,'submitted');
+  assert.equal(reads,1);
+  assert.equal(page.clicks.length,1);
+});
