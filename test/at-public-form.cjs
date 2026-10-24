@@ -13,6 +13,12 @@ const LOGIN='https://www.acesso.gov.pt/v2/loginForm?partID=PFAP';
      ['acesso.gov.pt','www.acesso.gov.pt','autenticacao.gov.pt',
        'www.autenticacao.gov.pt'].includes(at.hostname);
    if(!allowed)throw Error('Redirecionamento para origem inesperada');
+   // A AT abre por omissao o separador CC/CMD; so depois de NIF
+   // e que monta os campos no React. Sem preencher nem submeter dados.
+   const nifTab=page.getByRole('tab',{name:'NIF',exact:true}).first();
+   if(await nifTab.count())await nifTab.click({timeout:8000});
+   await page.locator('input[name="username"]:visible').first()
+     .waitFor({state:'visible',timeout:6000}).catch(()=>{});
    const fields=await page.evaluate(()=>{
      const count=selector=>document.querySelectorAll(selector).length;
      return {
