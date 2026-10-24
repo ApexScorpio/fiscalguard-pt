@@ -6,6 +6,7 @@ const { calculateNetIncome, simulateSSTrimestral } = require('./rules');
 const { sendNativeToast, checkAndTriggerAlerts } = require('./notifier');
 const { syncPortalFinancas, syncSegurancaSocial, getCredentials, saveCredentials, launchInteractiveLogin, openNativeChrome, confirmActiveLogin } = require('./sync');
 const multiSync = require('./sync-relay');
+const { readOverview } = require('./official-overview');
 const { answerQuestion } = require('./assistant');
 
 const app = express();
@@ -80,6 +81,12 @@ app.get('/api/status', (req, res) => {
         overdueCount: calendar.filter(c => !c.completed && c.daysRemaining < 0).length,
         isSynced: Boolean(status.financas.lastSync || status.segurancaSocial.lastSync || invoices.length > 0)
     });
+});
+
+// Snapshot de dados fiscais locais. Nao supoe valores inexistentes.
+app.get('/api/official/overview', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.json(readOverview());
 });
 
 app.get('/api/calendar', (req, res) => {
