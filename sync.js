@@ -73,7 +73,7 @@ async function syncPortalFinancas(options = {}) {
         // Verificar se já tem sessão ativa ou precisa de preencher credenciais
         const usernameInput = await page.$('#username');
         if (usernameInput) {
-            addLog(`A autenticar com NIF ${creds.at.nif}...`);
+            addLog("A autenticar no Portal das Finanças (identificador ocultado).");
             await page.fill('#username', creds.at.nif);
             await page.fill('#password', creds.at.password);
             await page.click('#sbmt-btn');
@@ -139,7 +139,7 @@ async function syncSegurancaSocial(options = {}) {
         // Tentar autenticar se encontrar campos
         const nissInput = await page.$('input[name="username"], #username, input[type="text"]');
         if (nissInput && creds.ss.password) {
-            addLog(`A autenticar com NISS ${creds.ss.niss}...`);
+            addLog("A autenticar na Segurança Social (identificador ocultado).");
             await nissInput.fill(creds.ss.niss);
             const passInput = await page.$('input[name="password"], #password, input[type="password"]');
             if (passInput) await passInput.fill(creds.ss.password);
@@ -211,7 +211,7 @@ async function extractFinancasData(page, context, addLog = console.log) {
         if (match) {
             detectedNif = match[1];
             db.updateProfile({ nif: detectedNif });
-            addLog(`✓ NIF detetado na sessão oficial: ${detectedNif}`);
+            addLog("Identificador fiscal reconhecido na sessão (valor não registado no log).");
         }
     } catch (e) {}
 
@@ -319,8 +319,8 @@ async function extractFinancasData(page, context, addLog = console.log) {
     }
 
     // 5. Verificar situação tributária e dívidas
-    let situation = "regularizada";
-    let activeDebts = 0;
+    let situation = "nao_confirmada";
+    let activeDebts = null;
     try {
         addLog("A verificar situação tributária na AT...");
         await page.goto('https://sitfiscal.portaldasfinancas.gov.pt/dividas/consultar.action', { waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => {});
@@ -330,15 +330,15 @@ async function extractFinancasData(page, context, addLog = console.log) {
             activeDebts = 1;
             addLog("⚠️ Situação Tributária: Detetada dívida ativa em cobrança.");
         } else {
-            addLog("✓ Situação Tributária: Regularizada (Inexistência de Dívidas).");
+            addLog("Situação tributária não confirmada por resposta oficial inequívoca.");
         }
     } catch (e) {}
 
     db.updateStatus({
         financas: {
             situation,
-            lastSync: new Date().toISOString(),
-            certidaoValidaAte: new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0],
+            lastSync: situation === "nao_confirmada" ? null : new Date().toISOString(),
+            certidaoValidaAte: null, // Nunca atribuir 90 dias sem certidão oficial.
             dividasAtivas: activeDebts,
             divergencias: 0
         }
@@ -360,13 +360,13 @@ async function extractSegurancaSocialData(page, context, addLog = console.log) {
         const nissMatch = bodyText.match(/\b(1\d{10})\b/);
         if (nissMatch) {
             db.updateProfile({ niss: nissMatch[1] });
-            addLog(`✓ NISS detetado na sessão oficial: ${nissMatch[1]}`);
+            addLog("Identificador contributivo reconhecido na sessão (valor não registado no log).");
         }
     } catch (e) {}
 
     // 2. Consultar Conta Corrente
-    let situation = "regularizada";
-    let debitoDiretoAtivo = false;
+    let situation = "nao_confirmada";
+    let debitoDiretoAtivo = null;
     try {
         addLog("A consultar conta corrente e posição atual na Segurança Social Direta...");
         await page.goto('https://app.seg-social.pt/ptss/cas/cc/conta-corrente', { waitUntil: 'domcontentloaded', timeout: 25000 }).catch(() => {});
@@ -377,13 +377,13 @@ async function extractSegurancaSocialData(page, context, addLog = console.log) {
         if (/dívida|regularizar pagamento|em mora/i.test(body)) {
             situation = "pendente";
         }
-        addLog(`✓ Conta corrente consultada: Situação ${situation === 'regularizada' ? 'Regularizada' : 'Pendente'}.`);
+        addLog(situation === "pendente" ? "Indicação de pendência identificada; confirmar no portal." : "Situação contributiva ainda não confirmada.");
     } catch (e) {}
 
     db.updateStatus({
         segurancaSocial: {
             situation,
-            lastSync: new Date().toISOString(),
+            lastSync: situation === "nao_confirmada" ? null : new Date().toISOString(),
             debitoDiretoAtivo,
             ultimoPagamento: null,
             proximoPagamento: null
