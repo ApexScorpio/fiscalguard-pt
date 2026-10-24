@@ -17,12 +17,14 @@ const extensionPath=path.join(__dirname,'../chrome-bridge');
     if(!sw) sw=await context.waitForEvent('serviceworker',{timeout:15000});
     assert.ok(sw.url().startsWith('chrome-extension://'));
     let cookiesSeen=0;
+    let atRequests=0;
     await context.addCookies([{
       name:'FG_AT_SESSION_TEST',value:'TEST_COOKIE_NOT_REAL',
       domain:'sitfiscal.portaldasfinancas.gov.pt',path:'/',
       secure:true,httpOnly:true,sameSite:'Lax'
     }]);
-    await context.route('https://sitfiscal.portaldasfinancas.gov.pt/**',route=>{
+    await context.route(/^https:\/\/sitfiscal\.portaldasfinancas\.gov\.pt\//,route=>{
+      atRequests++;
       const u=new URL(route.request().url());
       const cookie=route.request().headers()['cookie']||'';
       if(cookie.includes('FG_AT_SESSION_TEST=TEST_COOKIE_NOT_REAL'))cookiesSeen++;
@@ -49,6 +51,14 @@ const extensionPath=path.join(__dirname,'../chrome-bridge');
         body:JSON.stringify({error:'endpoint nao implementado na simulacao'})
       });
     });
+    // Abrir uma aba AT ja existente antes de pedir nova consulta ao
+    // background. Isto reproduz o utilizador com login no Chrome normal.
+    const atPage=await context.newPage();
+    await atPage.goto('https://sitfiscal.portaldasfinancas.gov.pt/geral',{
+      waitUntil:'domcontentloaded',timeout:15000
+    });
+    assert.equal(new URL(atPage.url()).hostname,'sitfiscal.portaldasfinancas.gov.pt');
+    assert.ok(atRequests>0,'o teste tem de intercetar o site AT, sem tocar no real');
     const page=await context.newPage();
     await page.goto('http://127.0.0.1:4848/',{waitUntil:'domcontentloaded'});
     try {
@@ -62,7 +72,7 @@ const extensionPath=path.join(__dirname,'../chrome-bridge');
         status:document.querySelector('#at-situation-text')?.textContent
       }));
       console.log('DIAGNOSTICO_EXTENSAO_CI:',JSON.stringify({
-        state,openTabs:context.pages().map(p=>p.url()),cookiesSeen,
+        state,openTabs:context.pages().map(p=>p.url()),cookiesSeen,atRequests,
         serviceWorker:sw.url()
       }));
       throw error;
