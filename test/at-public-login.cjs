@@ -30,8 +30,30 @@ const safeURL=raw=>{
       submitButton:(await publicSubmit.count())>0,
       frameCount:page.frames().length
     };
+    // A estrutura publica e segura; nunca ler .value nem cookies/tokens.
+    const structure=await page.evaluate(()=>({
+      forms:[...document.querySelectorAll('form')].slice(0,6).map(e=>({
+        id:e.id,method:e.getAttribute('method'),action:(()=>{
+          try {return new URL(e.getAttribute('action')||location.href).pathname;}
+          catch{return 'invalid';}
+        })()
+      })),
+      inputs:[...document.querySelectorAll('input')].slice(0,30).map(e=>({
+        id:e.id,name:e.getAttribute('name'),type:e.getAttribute('type'),
+        autocomplete:e.getAttribute('autocomplete'),hidden:e.hidden,
+        rendered:!!(e.offsetWidth||e.offsetHeight||e.getClientRects().length)
+      })),
+      buttons:[...document.querySelectorAll('button')].slice(0,18).map(e=>({
+        id:e.id,name:e.getAttribute('name'),type:e.getAttribute('type'),
+        label:(e.innerText||'').trim().slice(0,45)
+      })),
+      headings:[...document.querySelectorAll('h1,h2,h3')].slice(0,8).map(e=>(e.innerText||'').trim().slice(0,70)),
+      frames:[...document.querySelectorAll('iframe')].slice(0,6).map(e=>({
+        id:e.id,src:(()=>{try{return new URL(e.src).hostname;}catch{return null;}})()
+      }))
+    }));
     console.log('AT_PUBLICA:',JSON.stringify({
-      page:safeURL(target),status:response?.status()??null,found
+      page:safeURL(target),status:response?.status()??null,found,structure
     }));
     assert.equal(found.loginUrl,true,
       'Redirecionamento nao corresponde a URL de login reconhecida; necessita revisao de dominios');
