@@ -73,6 +73,7 @@ function makeVault({filename=DEFAULT_FILE,runner=executePs}={}) {
       if(!validCredentials(credentials))throw new Error('Credenciais AT inválidas');
       const script=[
         "$ErrorActionPreference='Stop'",
+        "Add-Type -AssemblyName System.Security",
         "$file="+file,
         "$stdin=[Console]::OpenStandardInput()",
         "$memory=New-Object IO.MemoryStream",
@@ -102,6 +103,7 @@ function makeVault({filename=DEFAULT_FILE,runner=executePs}={}) {
       if(!this.has())return null;
       const script=[
         "$ErrorActionPreference='Stop'",
+        "Add-Type -AssemblyName System.Security",
         "$file="+file,
         "$blob=[IO.File]::ReadAllBytes($file)",
         "$clear=[Security.Cryptography.ProtectedData]::Unprotect(",
