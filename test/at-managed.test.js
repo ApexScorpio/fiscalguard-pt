@@ -148,3 +148,26 @@ test('dez atualizacoes sobre a mesma sessão não provocam dez novos logins', as
     await m.closeContext();
   } finally {fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+
+test('ACEITACAO: gestor deve acionar o motor automatico quando AT redireciona para login',async()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'fiscalguard-test-'));
+  const fake=fakeEngine({authorized:false,recognized:0});
+  let calls=0;
+  const autoLogin={
+    run:async()=>{calls++;return {phase:'verification_required'};},
+    markAuthenticatedResult:()=>{}
+  };
+  try{
+    const m=makeManager({
+      engine:fake.browser,dir,profile:path.join(dir,'profile'),
+      snapshot:path.join(dir,'overview.json'),autoLogin
+    });
+    await m.startLogin();
+    const result=await m.confirmLogin();
+    assert.equal(calls,1,'O motor de login automatico tem de ser chamado no redirecionamento');
+    assert.equal(result.phase,'verification_required');
+    assert.equal(fs.existsSync(path.join(dir,'overview.json')),false);
+    await m.closeContext();
+  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
