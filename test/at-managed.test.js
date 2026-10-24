@@ -228,3 +228,44 @@ test('ACEITACAO: primeira sincronizacao autonoma funciona sem perfil se o cofre 
     await manager.closeContext();
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('ACEITACAO: codigo OTP permanece visivel e a aba nao e fechada pelo gestor',async()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'fiscalguard-test-'));
+  let challenge=false,closed=0,shown=0;
+  const main={
+    url:()=> 'https://www.acesso.gov.pt/v2/loginForm?partID=PFAP',
+    isClosed:()=>false,bringToFront:async()=>{},goto:async()=>{}
+  };
+  const verification={
+    url:()=>challenge?'https://autenticacao.gov.pt/autenticar':
+      'https://www.acesso.gov.pt/v2/loginForm?partID=PFAP',
+    goto:async()=>{},isClosed:()=>false,
+    close:async()=>{closed++;},
+    bringToFront:async()=>{shown++;}
+  };
+  const context={
+    pages:()=>[main],newPage:async()=>verification,on:()=>{},
+    close:async()=>{}
+  };
+  const manager=makeManager({
+    engine:{launchPersistentContext:async()=>context},dir,
+    profile:path.join(dir,'profile'),snapshot:path.join(dir,'snapshot.json'),
+    vault:{has:()=>true,available:()=>true},
+    autoLogin:{
+      run:async()=>{challenge=true;return {phase:'verification_required'};},
+      markAuthenticatedResult:()=>{}
+    }
+  });
+  try{
+    await manager.startLogin();
+    // O temporizador de leitura iniciou o teste ao abrir o navegador.
+    const result=await manager.confirmLogin();
+    assert.equal(result.phase,'verification_required');
+    assert.equal(closed,0,'nunca fechar a aba que contem o desafio OTP');
+    assert.ok(shown>=1,'deixar o desafio visivel para o titular');
+    assert.equal(fs.existsSync(path.join(dir,'snapshot.json')),false);
+  }finally{
+    await manager.closeContext();
+    fs.rmSync(dir,{recursive:true,force:true});
+  }
+});
