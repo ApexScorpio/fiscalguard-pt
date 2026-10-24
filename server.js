@@ -312,6 +312,8 @@ app.post('/api/vault/credentials', async (req, res) => {
     try {
         await atVault.save({nif:atNif,password:atPassword});
         res.json({success:true,hasAtPassword:true,hasSsPassword:false});
+        // A gravação no cofre permite primeira consulta sem reiniciar o servidor.
+        setImmediate(() => { void atManager.refresh().catch(() => {}); });
     } catch {
         res.status(422).json({
             success:false,message:'Não foi possível guardar no cofre Windows DPAPI'
@@ -396,18 +398,17 @@ if (require.main === module) {
         }, 1000 * 60 * 60);
     }
 
-    // Quando o utilizador guardou credenciais no cofre Windows DPAPI,
-    // iniciar a consulta AT automaticamente em navegador dedicado headless.
-    // Sem cofre, manter a extensao Chrome existente e nao forcar login.
-    if (atVault.has() || process.env.FISCALGUARD_USE_MANAGED_AT === '1') {
-        const periodic = setInterval(() => {
+    // Consultar autonomamente quando houver credenciais cifradas; sem cofre,
+    // não criar sessão nem solicitar login. Verificar em cada ciclo permite
+    // guardar o cofre depois de arrancar sem reiniciar a aplicação.
+    const refreshATIfConfigured = () => {
+        if (atVault.has() || process.env.FISCALGUARD_USE_MANAGED_AT === '1') {
             void atManager.refresh().catch(() => {});
-        }, 6 * 60 * 60 * 1000);
-        periodic.unref?.();
-        setTimeout(() => {
-            void atManager.refresh().catch(() => {});
-        }, 1500).unref?.();
-    }
+        }
+    };
+    const periodicAT = setInterval(refreshATIfConfigured, 6 * 60 * 60 * 1000);
+    periodicAT.unref?.();
+    setTimeout(refreshATIfConfigured, 1500).unref?.();
 
     app.listen(PORT, '127.0.0.1', () => {
         console.log(`=======================================================`);
