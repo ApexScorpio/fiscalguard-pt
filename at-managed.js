@@ -72,6 +72,7 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
   let busy = false;
   let launching = null;
   let closing = false;
+  let browserMode = null; // 'visible' ou 'background'; nao abrir outro perfil
   const state = {
     phase: 'not_checked',
     message: 'Sessão AT por verificar',
@@ -99,6 +100,7 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
       closing = true;
       context = null;
       loginPage = null;
+      browserMode = null;
       try { await saved.close(); } catch {}
       closing = false;
     }
@@ -106,9 +108,13 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
 
   async function startLogin() {
     if (launching) return launching;
-    if (context) {
+    if (context && browserMode === 'background') {
+      // Reabrir VISIVEL apenas se o utilizador carregar explicitamente em entrar.
+      // Fecha o processo headless, mas reutiliza exatamente a MESMA pasta de perfil.
+      await closeContext();
+    } else if (context) {
       try { if (loginPage && !loginPage.isClosed()) await loginPage.bringToFront(); } catch {}
-      return setState(state.phase, state.message);
+      return publicState(state);
     }
 
     launching = (async () => {
@@ -122,15 +128,18 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
           acceptDownloads: false,
           args: ['--no-first-run', '--no-default-browser-check']
         });
+        browserMode = 'visible';
         loginPage = context.pages()[0] || await context.newPage();
         const page = loginPage;
         context.on('close', () => {
-          if (!closing && state.phase !== 'synced') {
-            setState('login_required', 'Janela de autenticação encerrada; é necessário confirmar a sessão');
+          if (!closing) {
+            // Fechar a janela nao prova expiracao dos cookies guardados.
+            setState('session_saved', 'Navegador fechado; sessao conservada no disco, ainda por verificar');
+            clearWatcher();
+            context = null;
+            loginPage = null;
+            browserMode = null;
           }
-          clearWatcher();
-          context = null;
-          loginPage = null;
         });
 
         await page.goto(HOME, { waitUntil: 'domcontentloaded', timeout: 30000 });
@@ -208,7 +217,8 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
     let current;
     try { current = loginPage && !loginPage.isClosed() ? loginPage.url() : ''; }
     catch { current = ''; }
-    if (!force && (!officialHost(current) || /login|autentic|sign.in/i.test(new URL(current).pathname))) {
+    const currentPath = (() => { try { return new URL(current).pathname; } catch { return ''; } })();
+    if (!force && (!officialHost(current) || /login|autentic|sign.in/i.test(currentPath))) {
       return publicState(state);
     }
     busy = true;
@@ -218,7 +228,15 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
       verificationPage = await context.newPage();
       await verificationPage.goto(HOME, { waitUntil: 'domcontentloaded', timeout: 30000 });
       if (!fiscalHost(verificationPage.url())) {
-        return setState('login_required', 'A AT pediu autenticação; conclui o acesso na janela oficial');
+        // Apenas um redirecionamento claro para login significa sessao expirada.
+        // Falhas tecnicas nao podem forcar outro login.
+        const destination = verificationPage.url();
+        const loginRedirect = /^https:\/\/(?:www\.)?acesso\.gov\.pt\//i.test(destination) ||
+          /^https:\/\/(?:www\.)?autenticacao\.gov\.pt\//i.test(destination) ||
+          /portaldasfinancas\.gov\.pt\/.{0,100}(?:login|autentic)/i.test(destination);
+        return setState(loginRedirect ? 'login_required' : 'unverified',
+          loginRedirect ? 'A AT pediu nova autenticacao (a sessao foi preservada)' :
+            'Portal redirecionou; nao foi possivel confirmar a sessao. Nao e necessario novo login por enquanto');
       }
       const response = await inspectOfficialPage(verificationPage);
       const verified = Number(response?.verifiedEndpoints || 0);
@@ -258,7 +276,21 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
       fs.writeFileSync(snapshot, JSON.stringify(output, null, 2), { mode: 0o600 });
       state.lastImportedAt = state.lastVerifiedAt;
       const result = setState('synced', 'Ligação autenticada confirmada: ' + verified + ' respostas oficiais válidas');
-      await closeContext(); // Perfil fica persistente; fecha só a janela gerida.
+      // CRITICO: nao fechar o browser nem eliminar o contexto autenticado.
+      // Proximas atualizacoes usam exatamente as mesmas cookies e tabs.
+      // Reduzir a janela, quando possivel, SEM terminar o processo.
+      if (browserMode === 'visible' && loginPage && !loginPage.isClosed() && context.newCDPSession) {
+        try {
+          const cdp = await context.newCDPSession(loginPage);
+          const windowInfo = await cdp.send('Browser.getWindowForTarget');
+          if (windowInfo?.windowId != null) {
+            await cdp.send('Browser.setWindowBounds', {
+              windowId: windowInfo.windowId, bounds: { windowState: 'minimized' }
+            });
+          }
+          await cdp.detach();
+        } catch { /* a impossibilidade de minimizar nunca termina a sessao */ }
+      }
       return result;
     } catch (error) {
       return setState('error', 'Falha na verificação AT: ' + error.constructor.name);
@@ -286,10 +318,18 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
       context = await engine.launchPersistentContext(profile, {
         channel: 'chrome', headless: true, acceptDownloads: false
       });
+      browserMode = 'background';
       loginPage = context.pages()[0] || await context.newPage();
-      const result = await probe(true);
-      await closeContext();
-      return result;
+      context.on('close', () => {
+        if (!closing) {
+          setState('session_saved', 'Navegador terminou; perfil AT continua guardado');
+          context = null;
+          loginPage = null;
+          browserMode = null;
+        }
+      });
+      // Reutilizar navegador aberto nas consultas seguintes.
+      return await probe(true);
     } catch (error) {
       await closeContext();
       return setState('error', 'Reutilização da sessão: ' + error.constructor.name);
