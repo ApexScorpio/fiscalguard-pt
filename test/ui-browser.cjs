@@ -103,7 +103,16 @@ const { chromium } = require('playwright');
     ]);
     assert.equal(managedRefreshes,2);
     assert.equal(await page.evaluate(()=>window.__testBridgeChecks),chromeBefore);
-    console.log('UI: PASSOU — cofre configurado envia atualizacao ao gestor AT, sem abrir outro login Chrome');
+
+    // Regressao: botão principal de sincronização antes ignorava
+    // completamente o cofre e insistia sempre na extensão Chrome.
+    await Promise.all([
+      page.waitForResponse(r=>r.url().endsWith('/api/at/refresh'),{timeout:12000}),
+      page.locator('#btn-sync-all').click()
+    ]);
+    assert.equal(managedRefreshes,3);
+    assert.equal(await page.evaluate(()=>window.__testBridgeChecks),chromeBefore);
+    console.log('UI: PASSOU — botoes principais e painel usam o mesmo gestor AT com cofre');
     console.log('IMPORTANTE: testes de interface NAO provam consulta autenticada real');
   } finally {
     await browser.close();
