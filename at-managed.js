@@ -338,7 +338,7 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
     return probe(true);
   }
 
-  async function refresh() {
+  async function performRefresh() {
     if (context) return probe(true);
     if (busy || launching) return publicState(state);
     if (!fs.existsSync(profile) && !vault.has?.()) {
@@ -365,6 +365,19 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
       await closeContext();
       return setState('error', 'Reutilização da sessão: ' + error.constructor.name);
     }
+  }
+
+  // No arranque, API, interface e agendador podem pedir refresh ao mesmo
+  // tempo. Um unico lancamento Playwright detem a pasta do perfil.
+  let activeRefresh=null;
+  function refresh() {
+    if(activeRefresh)return activeRefresh;
+    const pending=performRefresh();
+    activeRefresh=pending;
+    void pending.finally(()=>{
+      if(activeRefresh===pending)activeRefresh=null;
+    }).catch(()=>{});
+    return pending;
   }
 
   function status() { return publicState(state); }
