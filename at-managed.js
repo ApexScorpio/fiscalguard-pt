@@ -7,7 +7,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('playwright-core');
 const {vault: atVault}=require('./at-vault');
-const {makeAutoLogin}=require('./at-auto-login');
+const {makeAutoLogin,isATLoginURL}=require('./at-auto-login');
 
 const DIR = path.join(__dirname, 'data');
 const PROFILE = path.join(DIR, 'at-browser-profile');
@@ -220,7 +220,10 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
     try { current = loginPage && !loginPage.isClosed() ? loginPage.url() : ''; }
     catch { current = ''; }
     const currentPath = (() => { try { return new URL(current).pathname; } catch { return ''; } })();
-    if (!force && (!officialHost(current) || /login|autentic|sign.in/i.test(currentPath))) {
+    if (!force && !officialHost(current) && !isATLoginURL(current)) {
+      return publicState(state);
+    }
+    if (!force && officialHost(current) && /login|autentic|sign.in/i.test(currentPath)) {
       return publicState(state);
     }
     busy = true;
@@ -229,6 +232,18 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
     try {
       verificationPage = await context.newPage();
       await verificationPage.goto(HOME, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      // Reautenticar apenas quando o redirecionamento e o formulario
+      // correspondem ao dominio oficial de login da AT.
+      if (isATLoginURL(verificationPage.url())) {
+        const attempt=await autoLogin.run(verificationPage);
+        if (attempt.phase==='verification_required') {
+          return setState('verification_required','Autenticacao adicional exigida pela AT');
+        }
+        if (attempt.phase!=='submitted') {
+          return setState('login_required',
+            'Autenticacao pendente: '+String(attempt.phase||'nao_confirmada'));
+        }
+      }
       if (!fiscalHost(verificationPage.url())) {
         // Apenas um redirecionamento claro para login significa sessao expirada.
         // Falhas tecnicas nao podem forcar outro login.
@@ -253,6 +268,7 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
       state.verifiedEndpoints = verified;
       state.counts = counts;
       state.lastVerifiedAt = new Date().toISOString();
+      autoLogin.markAuthenticatedResult?.(true);
 
       // Importação limitada a contagens comprovadas; não inventa veículos,
       // montantes, dívidas ou estado contributivo.
