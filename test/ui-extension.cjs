@@ -51,7 +51,22 @@ const extensionPath=path.join(__dirname,'../chrome-bridge');
     });
     const page=await context.newPage();
     await page.goto('http://127.0.0.1:4848/',{waitUntil:'domcontentloaded'});
-    await page.locator('#official-at-debts').getByText('0 registos').waitFor({timeout:45000});
+    try {
+      await page.locator('#official-at-debts').getByText('0 registos').waitFor({timeout:45000});
+    } catch (error) {
+      // Apenas informacao sintetica dos testes; nenhum dado de contribuintes.
+      const state=await page.evaluate(()=>({
+        session:document.querySelector('#official-at-session')?.textContent,
+        debts:document.querySelector('#official-at-debts')?.textContent,
+        importState:document.querySelector('#official-import-state')?.textContent,
+        status:document.querySelector('#at-situation-text')?.textContent
+      }));
+      console.log('DIAGNOSTICO_EXTENSAO_CI:',JSON.stringify({
+        state,openTabs:context.pages().map(p=>p.url()),cookiesSeen,
+        serviceWorker:sw.url()
+      }));
+      throw error;
+    }
     assert.equal((await page.locator('#official-at-messages').textContent()).trim(),'2 mensagens');
     assert.ok(cookiesSeen>0,'o Chrome deve enviar cookies no MESMO perfil e dominio');
     assert.match(await page.locator('#official-at-session').textContent(),/Chrome/i);
