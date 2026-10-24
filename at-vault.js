@@ -47,7 +47,14 @@ function executePs(script,input='') {
     });
     proc.stderr.on('data',v=>{stderr+=String(v).slice(0,100);});
     proc.on('close',code=>{
-      if(code!==0)return rejectOnce();
+      if(code!==0) {
+        // Somente nos runners efémeros, com credenciais fictícias de teste.
+        // Nunca emitir texto de erros do cofre no computador do utilizador.
+        if(process.env.GITHUB_ACTIONS==='true') {
+          console.error('CI_DPAPI_DADOS_TECNICOS:',stderr.slice(0,700));
+        }
+        return rejectOnce();
+      }
       if(!settled){settled=true;resolve(output.trim());}
     });
     proc.stdin.end(input,'utf8'); // credenciais exclusivamente por stdin
