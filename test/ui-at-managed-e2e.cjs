@@ -76,13 +76,20 @@ async function runScenario(mode){
       if(u.origin===AT && u.pathname==='/geral'){
         if(u.searchParams.has('autenticado_teste'))authorized=true;
         if(!authorized) {
-          return route.fulfill({status:302,
-            headers:{location:LOGIN+'/v2/loginForm?partID=PFAP'},
-            contentType:'text/plain',body:'login test redirect'});
+          // Um redirect JS gera um novo pedido de navegacao interceptavel.
+          // Um 302 sintetico pode nao reentrar nas rotas Playwright.
+          const html='<!doctype html><html><head><script>location.replace('+
+            JSON.stringify(LOGIN+'/v2/loginForm?partID=PFAP')+
+            ')</script></head><body>Redirecionamento simulado AT</body></html>';
+          return route.fulfill({status:200,contentType:'text/html',body:html});
         }
         observations.authedPages++;
         return route.fulfill({status:200,contentType:'text/html',
           body:plainHTML('Sessao fiscal do teste')});
+      }
+      if(u.origin===AT && u.pathname!=='/geral' && !authorized) {
+        return route.fulfill({status:401,contentType:'application/json',
+          body:JSON.stringify({error:'unauthorized'})});
       }
       if(u.origin===AT && u.pathname==='/geral/dashboard/mensagens'){
         return route.fulfill({status:200,contentType:'application/json',
