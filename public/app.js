@@ -832,27 +832,45 @@ function initEventListeners() {
         });
     }
 
-    // Formulário do Cofre de Credenciais
+    // Cofre DPAPI do Windows: guardar só NIF + senha AT, sem leitura de volta.
+    // Não declarar sucesso de autenticação quando apenas guardamos credenciais.
     const vaultForm = document.getElementById('vault-form');
     if (vaultForm) {
-        vaultForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const atPassword = document.getElementById('vault-at-password').value;
-            const ssPassword = document.getElementById('vault-ss-password').value;
-
+        vaultForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const nifEl = document.getElementById('vault-at-nif');
+            const pwEl = document.getElementById('vault-at-password');
+            const label = document.getElementById('vault-save-status');
+            const submit = vaultForm.querySelector('button[type="submit"]');
+            const atNif = nifEl?.value.trim() || '';
+            const atPassword = pwEl?.value || '';
+            if (!/^[0-9]{9}$/.test(atNif) || atPassword.length < 1) {
+                if (label) label.textContent = 'Indica um NIF de 9 algarismos e uma senha não vazia.';
+                return;
+            }
+            if (submit) submit.disabled = true;
             try {
+                if (label) label.textContent = 'A cifrar as credenciais no Windows…';
                 const res = await fetch('/api/vault/credentials', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ atPassword, ssPassword })
+                    method:'POST',
+                    headers: { 'Content-Type':'application/json' },
+                    cache:'no-store',
+                    body: JSON.stringify({atNif,atPassword})
                 });
                 const result = await res.json();
-                alert("✓ Senhas dos portais guardadas com sucesso no Cofre Local em S:\\fiscalguard-pt!\nA app agora consegue aceder e ler os teus dados diretamente.");
+                if (!res.ok || result.success !== true) {
+                    throw new Error(result.message || 'O cofre local recusou a operação');
+                }
+                if (label) label.textContent =
+                    'Credenciais guardadas com cifragem DPAPI no PC. Login automático ainda não validado.';
                 await loadVaultStatus();
-                document.getElementById('vault-at-password').value = '';
-                document.getElementById('vault-ss-password').value = '';
-            } catch (err) {
-                alert("Erro ao guardar senhas no cofre: " + err.message);
+            } catch {
+                if (label) label.textContent =
+                    'Não foi possível guardar. Verifica se o cofre Windows está disponível.';
+            } finally {
+                if (pwEl) pwEl.value = '';
+                if (nifEl) nifEl.value = '';
+                if (submit) submit.disabled = false;
             }
         });
     }
