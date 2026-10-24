@@ -52,3 +52,27 @@ jobs:
           retention-days: 14
           if-no-files-found: error
 
+      - name: Empacotar apenas codigo web, SEM dados fiscais nem sessoes
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fiscalguard-web-sem-dados
+          path: |
+            server.js
+            at-managed.js
+            chrome-bridge-import.js
+            official-overview.js
+            security.js
+            db.js
+            rules.js
+            assistant.js
+            notifier.js
+            sync.js
+            sync-relay.js
+            sync-status.js
+            public/
+            chrome-bridge/
+            package.json
+            package-lock.json
+          retention-days: 14
+          if-no-files-found: error
