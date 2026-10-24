@@ -172,12 +172,17 @@ async function runScenario(mode){
       assert.equal(result.phase,'synced',result.message);
       assert.equal(result.counts.atDebts,0);
       assert.equal(result.counts.atMessages,2);
+      assert.deepEqual(result.endpointDiagnostics.atDebts,{http:200,result:'verified'});
+      assert.deepEqual(result.endpointDiagnostics.atMessages,{http:200,result:'verified'});
+      assert.deepEqual(result.endpointDiagnostics.atFines,{http:200,result:'unexpected_json_shape'});
       assert.equal(observations.vaultReads,1);
       const data=JSON.parse(fs.readFileSync(snapshot,'utf8'));
       assert.equal(data.summary.atMessages,2);
       assert.equal(data.summary.atDebts,0);
       assert.equal(JSON.stringify(data).includes(FAKE_NIF),false);
       assert.equal(JSON.stringify(data).includes(FAKE_PASSWORD),false);
+      assert.equal(JSON.stringify(result).includes(FAKE_PASSWORD),false);
+      assert.equal(JSON.stringify(result).includes(FAKE_NIF),false);
       // Mesmo perfil, sessao expirada: o gestor tem de executar nova autenticao.
       authorized=false;
       const again=await managed.refresh();
