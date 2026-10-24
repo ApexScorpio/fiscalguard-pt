@@ -10,6 +10,7 @@ const { readOverview } = require('./official-overview');
 const { summarizeSync } = require('./sync-status');
 const { answerQuestion } = require('./assistant');
 const { atManager } = require('./at-managed');
+const { vault: atVault } = require('./at-vault');
 const { importChromeReport } = require('./chrome-bridge-import');
 
 const app = express();
@@ -289,29 +290,33 @@ app.post('/api/demo/load', (req, res) => {
     res.status(403).json({ success: false, error: "O modo com dados fictícios foi permanentemente desativado. O FiscalGuard opera exclusivamente com dados oficiais extraídos via Google Chrome." });
 });
 
-app.get('/api/vault/credentials', (req, res) => {
-    const creds = getCredentials();
-    res.json({
-        at: {
-            nif: creds.at.nif || db.getProfile().nif,
-            hasPassword: Boolean(creds.at.password)
-        },
-        ss: {
-            niss: creds.ss.niss || db.getProfile().niss,
-            hasPassword: Boolean(creds.ss.password)
-        }
-    });
+// O cofre de credenciais devolve apenas estado. Nunca devolve NIF ou senha.
+app.get('/api/vault/credentials', (_req, res) => {
+    res.set('Cache-Control','no-store');
+    res.json({at:{hasPassword:atVault.has()},ss:{hasPassword:false}});
 });
 
-app.post('/api/vault/credentials', (req, res) => {
-    const { atPassword, ssPassword } = req.body;
-    const current = getCredentials();
-    if (atPassword !== undefined && atPassword !== "") current.at.password = atPassword;
-    if (ssPassword !== undefined && ssPassword !== "") current.ss.password = ssPassword;
-    current.at.nif = db.getProfile().nif;
-    current.ss.niss = db.getProfile().niss;
-    saveCredentials(current);
-    res.json({ success: true, hasAtPassword: Boolean(current.at.password), hasSsPassword: Boolean(current.ss.password) });
+app.post('/api/vault/credentials', async (req, res) => {
+    res.set('Cache-Control','no-store');
+    const {atNif,atPassword,ssPassword}=req.body||{};
+    if(ssPassword) {
+        return res.status(422).json({
+            success:false,message:'O cofre SSD ainda não está implementado'
+        });
+    }
+    if(typeof atNif!=='string' || typeof atPassword!=='string') {
+        return res.status(422).json({
+            success:false,message:'É necessário indicar NIF e senha AT'
+        });
+    }
+    try {
+        await atVault.save({nif:atNif,password:atPassword});
+        res.json({success:true,hasAtPassword:true,hasSsPassword:false});
+    } catch {
+        res.status(422).json({
+            success:false,message:'Não foi possível guardar no cofre Windows DPAPI'
+        });
+    }
 });
 
 app.get('/api/sync/status', (req, res) => {
