@@ -23,7 +23,7 @@ function pathLiteral(p) {
   return "'"+p+"'";
 }
 
-function executePs(script,input='') {
+function executePs(script,input='',maxOutputBytes=8192) {
   if (process.platform!=='win32') {
     return Promise.reject(new Error('DPAPI disponível apenas no Windows'));
   }
@@ -43,7 +43,7 @@ function executePs(script,input='') {
     proc.stdout.setEncoding('utf8');
     proc.stdout.on('data',v=>{
       output+=v;
-      if(output.length>8192)proc.kill();
+      if(output.length>maxOutputBytes)proc.kill();
     });
     proc.stderr.on('data',v=>{stderr+=String(v).slice(0,100);});
     proc.on('close',code=>{
@@ -114,4 +114,4 @@ function makeVault({filename=DEFAULT_FILE,runner=executePs}={}) {
   };
 }
 
-module.exports={makeVault,vault:makeVault(),validCredentials,DEFAULT_FILE};
+module.exports={makeVault,vault:makeVault(),validCredentials,DEFAULT_FILE,executePs};
