@@ -17,6 +17,7 @@ const {makeVault,validCredentials}=require('../at-vault');
     assert.equal(validCredentials(credentials),true);
     assert.equal(vault.available(),true);
     assert.equal(vault.has(),false);
+    console.log('DPAPI_ETAPA: PROTEGER');
     const saved=await vault.save(credentials);
     assert.equal(saved.saved,true);
     assert.equal(vault.has(),true);
@@ -25,6 +26,7 @@ const {makeVault,validCredentials}=require('../at-vault');
     assert.ok(!bytes.includes(Buffer.from(credentials.password)));
     assert.ok(!bytes.includes(Buffer.from(credentials.nif)));
     const reopened=makeVault({filename:file});
+    console.log('DPAPI_ETAPA: DESPROTEGER');
     const values=await reopened.read();
     assert.deepEqual(values,credentials);
     console.log('DPAPI Windows: APROVADO — cifrar e decifrar com dados fictícios');
@@ -32,6 +34,6 @@ const {makeVault,validCredentials}=require('../at-vault');
     fs.rmSync(root,{force:true,recursive:true});
   }
 })().catch(err=>{
-  console.error('DPAPI Windows: FALHOU —',err?.constructor?.name);
+  console.error('DPAPI Windows: FALHOU —',err?.constructor?.name, String(err?.message || '').slice(0,180));
   process.exitCode=1;
 });
