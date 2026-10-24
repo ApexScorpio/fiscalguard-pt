@@ -1,8 +1,8 @@
 'use strict';
 
 function summarizeSync(at, ss) {
-    const atOk = at && at.success === true;
-    const ssOk = ss && ss.success === true;
+    const atOk = Boolean(at && at.success === true);
+    const ssOk = Boolean(ss && ss.success === true);
     return {
         success: Boolean(atOk && ssOk),
         partialSuccess: Boolean(atOk !== ssOk),
