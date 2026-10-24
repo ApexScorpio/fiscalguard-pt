@@ -19,6 +19,12 @@ const safeURL=raw=>{
     const page=await context.newPage();
     const response=await page.goto(ENTRY,{waitUntil:'domcontentloaded',timeout:35000});
     await page.waitForTimeout(1800);
+    const nifOption=page.getByRole('button',{name:'NIF',exact:true}).first();
+    const nifTabPresent=(await nifOption.count())>0;
+    if(nifTabPresent){
+      await nifOption.click({timeout:8000}); // Apenas selecao visual, NUNCA submeter
+      await page.waitForTimeout(400);
+    }
     const target=page.url();
     const publicForm=page.locator('#username, input[name="username"], input[name="nif"], input[autocomplete="username"]').first();
     const publicPassword=page.locator('#password, input[type="password"]').first();
@@ -53,7 +59,7 @@ const safeURL=raw=>{
       }))
     }));
     console.log('AT_PUBLICA:',JSON.stringify({
-      page:safeURL(target),status:response?.status()??null,found,structure
+      page:safeURL(target),status:response?.status()??null,nifTabPresent,found,structure
     }));
     assert.equal(found.loginUrl,true,
       'Redirecionamento nao corresponde a URL de login reconhecida; necessita revisao de dominios');
