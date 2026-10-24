@@ -44,15 +44,26 @@ function plainHTML(label){
   return '<!doctype html><html><body><p>'+label+'</p></body></html>';
 }
 async function runScenario(mode){
-  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'fiscalguard-managed-ci-'));
+  const base=process.platform==='win32'?'D:\\FiscalGuard_CI_Temp':os.tmpdir();
+  fs.mkdirSync(base,{recursive:true});
+  const dir=fs.mkdtempSync(path.join(base,'fiscalguard-managed-ci-'));
   const profile=path.join(dir,'profile');
   const snapshot=path.join(dir,'official-import.json');
   const observations={launches:0,vaultReads:0,loginPages:0,authedPages:0,requests:0,seenPaths:[]};
   let authorized=false;
   let managed=null;
+  const useRealWindowsVault=process.platform==='win32' &&
+    process.env.FISCALGUARD_E2E_USE_DPAPI==='1';
+  const windowsVault=useRealWindowsVault
+    ? require('../at-vault').makeVault({filename:path.win32.join(dir,'at-ci.dpapi')})
+    : null;
   const fakeVault={
-    has:()=>true,available:()=>true,
-    read:async()=>{observations.vaultReads++;return {nif:FAKE_NIF,password:FAKE_PASSWORD};}
+    has:()=>windowsVault?windowsVault.has():true,
+    available:()=>true,
+    read:async()=>{
+      observations.vaultReads++;
+      return windowsVault?windowsVault.read():{nif:FAKE_NIF,password:FAKE_PASSWORD};
+    }
   };
   const engine={launchPersistentContext:async(userDataDir,opts)=>{
     observations.launches++;
@@ -110,6 +121,10 @@ async function runScenario(mode){
     return context;
   }};
   try{
+    if(windowsVault){
+      await windowsVault.save({nif:FAKE_NIF,password:FAKE_PASSWORD});
+      assert.equal(windowsVault.has(),true);
+    }
     const realAuto=makeAutoLogin({vault:fakeVault});
     const observedAuto={
       markAuthenticatedResult:value=>realAuto.markAuthenticatedResult(value),
