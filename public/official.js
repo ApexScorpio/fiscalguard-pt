@@ -109,7 +109,7 @@ window.addEventListener('message', async event => {
   if (event.data.action === 'BRIDGE_READY') {
     if (!fgChromeBridgeReady) {
       fgChromeBridgeReady = true;
-      void fgCheckChromeSession();
+      if(!window.__fgUsingManagedAT) void fgCheckChromeSession();
     }
     return;
   }
@@ -146,7 +146,7 @@ window.addEventListener('message', async event => {
 
 // Separar o estado do login da existência de dados fiscais importados.
 async function readATSession() {
-  if (fgChromeActive && Date.now()-fgChromeActive.timestamp < 6*60*60*1000) {
+  if (!window.__fgUsingManagedAT && fgChromeActive && Date.now()-fgChromeActive.timestamp < 6*60*60*1000) {
     officialElement('official-at-session',fgChromeActive.message);
     const label = document.getElementById('at-situation-text');
     if (label) label.textContent = 'AT consultada no Chrome';
@@ -220,8 +220,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-official-refresh')
     ?.addEventListener('click', useExistingChrome);
   // O motor com cofre e preferido. Sem cofre, a extensao usa sessao Chrome.
-  void refreshConfiguredAT();
-  window.postMessage({channel:FG_AT_CHANNEL,action:'PING'},window.location.origin);
+  void refreshConfiguredAT().then(() => {
+    if(!window.__fgUsingManagedAT)
+      window.postMessage({channel:FG_AT_CHANNEL,action:'PING'},window.location.origin);
+  });
   setTimeout(() => {
     if (!fgChromeBridgeReady && !window.__fgUsingManagedAT) {
       officialElement('official-at-session',
@@ -233,6 +235,6 @@ document.addEventListener('DOMContentLoaded', () => {
     void loadOfficialOverview();
   },10000);
   setInterval(() => {
-    if (fgChromeBridgeReady) void fgCheckChromeSession();
+    if (fgChromeBridgeReady && !window.__fgUsingManagedAT) void fgCheckChromeSession();
   },6*60*60*1000);
 });
