@@ -214,7 +214,11 @@ test('ACEITACAO: primeira sincronizacao autonoma funciona sem perfil se o cofre 
     const snapshot=path.join(dir,'official.json');
     assert.equal(fs.existsSync(profile),false);
     const manager=makeManager({engine,dir,profile,snapshot,vault,autoLogin});
-    const result=await manager.refresh();
+    // No arranque, painel e agendador podem pedir refresh em simultaneo.
+    // Isso NUNCA pode criar multiplos Chromes com o mesmo perfil.
+    const results=await Promise.all(Array.from({length:6},()=>manager.refresh()));
+    const result=results[0];
+    for(const entry of results)assert.equal(entry.phase,'synced');
     assert.equal(result.phase,'synced');
     assert.equal(result.counts.atDebts,0);
     assert.equal(launches,1);
