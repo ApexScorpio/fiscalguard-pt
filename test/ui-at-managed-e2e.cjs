@@ -47,7 +47,7 @@ async function runScenario(mode){
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'fiscalguard-managed-ci-'));
   const profile=path.join(dir,'profile');
   const snapshot=path.join(dir,'official-import.json');
-  const observations={launches:0,vaultReads:0,loginPages:0,authedPages:0,requests:0};
+  const observations={launches:0,vaultReads:0,loginPages:0,authedPages:0,requests:0,seenPaths:[]};
   let authorized=false;
   let managed=null;
   const fakeVault={
@@ -64,6 +64,7 @@ async function runScenario(mode){
       observations.requests++;
       const req=route.request();
       const u=new URL(req.url());
+      if(observations.seenPaths.length<16)observations.seenPaths.push(u.origin+u.pathname);
       if(u.origin===LOGIN && u.pathname==='/v2/loginForm'){
         observations.loginPages++;
         return route.fulfill({status:200,contentType:'text/html',body:loginForm(mode)});
@@ -112,6 +113,8 @@ async function runScenario(mode){
           console.log('E2E_FORM_DIAGNOSTICO',JSON.stringify({
             host:(()=>{try{return new URL(page.url()).hostname;}catch{return 'invalid';}})(),
             mockLoginPagesServed:observations.loginPages,
+            totalRequests:observations.requests,
+            routePaths:observations.seenPaths,
             inspection:await page.evaluate(()=>({
               ready:document.readyState,
               title:document.title,
