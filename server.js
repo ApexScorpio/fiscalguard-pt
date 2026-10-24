@@ -7,6 +7,7 @@ const { sendNativeToast, checkAndTriggerAlerts } = require('./notifier');
 const { syncPortalFinancas, syncSegurancaSocial, getCredentials, saveCredentials, launchInteractiveLogin, openNativeChrome, confirmActiveLogin } = require('./sync');
 const multiSync = require('./sync-relay');
 const { readOverview } = require('./official-overview');
+const { recordStore: atRecordStore, displayRows: displayATRecords } = require('./at-records');
 const { summarizeSync } = require('./sync-status');
 const { answerQuestion } = require('./assistant');
 const { atManager } = require('./at-managed');
@@ -123,6 +124,23 @@ app.post('/api/at/refresh', async (req, res) => {
     res.set('Cache-Control', 'no-store');
     try { res.json(await atManager.refresh()); }
     catch { res.status(500).json({ phase:'error', message:'Erro ao reutilizar sessão AT' }); }
+});
+
+// Registos reais guardados num cofre DPAPI local. Nunca enviar ao GitHub.
+// Sem arquivo local: apresentar 'por importar', nunca afirmar zero.
+app.get('/api/at/records', async (_req, res) => {
+    res.set('Cache-Control', 'no-store, private');
+    if (!atRecordStore.has()) {
+        return res.json({ status:'not_imported', capturedAt:null, sections:{} });
+    }
+    try {
+        const bundle = await atRecordStore.read();
+        if (!bundle) return res.json({status:'not_imported', capturedAt:null, sections:{}});
+        return res.json({status:'local_encrypted', ...displayATRecords(bundle)});
+    } catch {
+        return res.status(503).json({status:'unavailable',
+            message:'Não foi possível descifrar os registos AT nesta conta Windows'});
+    }
 });
 
 // Snapshot de dados fiscais locais. Nao supoe valores inexistentes.
