@@ -14,7 +14,9 @@ function validDate(s) {
 function safeVehicle(item) {
   if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
   const plate = typeof item.plate === 'string' ? item.plate.trim().toUpperCase() : '';
-  if (!/^[A-Z0-9]{2}-?[A-Z0-9]{2}-?[A-Z0-9]{2}$/.test(plate)) return null;
+  const compactPlate = plate.replace(/-/g, '');
+  if (!/^[A-Z0-9]{2}-?[A-Z0-9]{2}-?[A-Z0-9]{2}$/.test(plate) ||
+      (compactPlate.match(/[0-9]/g) || []).length < 2) return null;
   const amount = item.iucAmountEUR;
   return {
     plate,
