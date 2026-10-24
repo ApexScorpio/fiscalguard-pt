@@ -48,7 +48,13 @@ function makeAutoLogin({vault,now=()=>Date.now(),cooldownMs=15*60*1000}={}) {
       if(!validCredentials(creds))return {phase:'credentials_missing'};
       const user=page.locator('#username:visible, input[name="username"]:visible, input[name="nif"]:visible, input[autocomplete="username"]:visible').first();
       const pass=page.locator('#password:visible, input[type="password"]:visible').first();
-      const button=page.locator('#sbmt-btn:visible, button[type="submit"]:visible, input[type="submit"]:visible').first();
+      // A pagina oficial pode ter varios formulários (CMD, NIF, EORI).
+      // Preferir sempre o botao da área NIF pelo nome exato, para nunca
+      // escolher acidentalmente a opcao Chave Movel Digital.
+      const namedSubmit=typeof page.getByRole==='function'
+        ? page.getByRole('button',{name:'Autenticar',exact:true}).first() : null;
+      const fallbackSubmit=page.locator('#sbmt-btn:visible, button[type="submit"]:visible, input[type="submit"]:visible').first();
+      const button=namedSubmit && await namedSubmit.count() ? namedSubmit : fallbackSubmit;
       let [userPresent,passPresent,buttonPresent]=await Promise.all([
         user.count(),pass.count(),button.count()
       ]);
