@@ -12,7 +12,7 @@ test('extensao usa somente Financas e FiscalGuard local sem permissoes de cookie
   assert.equal(manifest.manifest_version,3);
   assert.deepEqual(manifest.permissions,['tabs']);
   assert.ok(manifest.host_permissions.includes('https://sitfiscal.portaldasfinancas.gov.pt/*'));
-  assert.ok(manifest.host_permissions.includes('http://127.0.0.1:4848/*'));
+  assert.ok(manifest.host_permissions.includes('http://127.0.0.1/*'));
   assert.equal(manifest.host_permissions.some(s=>s.includes('github.com')),false);
   assert.equal(manifest.permissions.includes('cookies'),false);
 });
