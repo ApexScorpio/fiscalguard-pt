@@ -396,10 +396,10 @@ if (require.main === module) {
         }, 1000 * 60 * 60);
     }
 
-    // A sessão preferencial é a sessão JA EXISTENTE no Chrome normal
-    // (atraves da extensao). Nunca abrir outro perfil automaticamente.
-    // O motor Playwright alternativo so pode arrancar por ativacao explicita.
-    if (process.env.FISCALGUARD_USE_MANAGED_AT === '1') {
+    // Quando o utilizador guardou credenciais no cofre Windows DPAPI,
+    // iniciar a consulta AT automaticamente em navegador dedicado headless.
+    // Sem cofre, manter a extensao Chrome existente e nao forcar login.
+    if (atVault.has() || process.env.FISCALGUARD_USE_MANAGED_AT === '1') {
         const periodic = setInterval(() => {
             void atManager.refresh().catch(() => {});
         }, 6 * 60 * 60 * 1000);
