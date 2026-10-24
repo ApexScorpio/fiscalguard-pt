@@ -67,7 +67,7 @@ function publicState(state) {
   };
 }
 
-function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot = SNAPSHOT, autoLogin = makeAutoLogin({vault:atVault}) } = {}) {
+function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot = SNAPSHOT, vault = atVault, autoLogin = makeAutoLogin({vault}) } = {}) {
   let context = null;
   let loginPage = null;
   let timer = null;
@@ -341,8 +341,8 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
   async function refresh() {
     if (context) return probe(true);
     if (busy || launching) return publicState(state);
-    if (!fs.existsSync(profile)) {
-      return setState('login_required', 'Ainda não existe um perfil AT persistente deste FiscalGuard');
+    if (!fs.existsSync(profile) && !vault.has?.()) {
+      return setState('login_required', 'Ainda não existe perfil nem credenciais cifradas AT no FiscalGuard');
     }
     fs.mkdirSync(dir, { recursive: true });
     try {
