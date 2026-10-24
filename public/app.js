@@ -555,12 +555,12 @@ async function runPortalSync(options = {}) {
     const logsEl = document.getElementById('sync-terminal-logs');
     if (consoleModal && logsEl) {
         consoleModal.classList.add('active');
-        logsEl.innerHTML = `[${new Date().toLocaleTimeString()}] A iniciar robô de extração do FiscalGuard PT...\n`;
+        logsEl.textContent = `[${new Date().toLocaleTimeString()}] A iniciar robô de extração do FiscalGuard PT...\n`;
     }
 
     const appendLog = (msg) => {
         if (logsEl) {
-            logsEl.innerHTML += `${msg}\n`;
+            logsEl.textContent += `${msg}\n`;
             logsEl.scrollTop = logsEl.scrollHeight;
         }
     };
@@ -583,7 +583,15 @@ async function runPortalSync(options = {}) {
             data.ss.log.forEach(l => appendLog(l));
         }
 
-        appendLog(`[${new Date().toLocaleTimeString()}] ✓ Leitura dos Portais 100% Concluída com Sucesso.`);
+        if (data.success === true) {
+            appendLog(`[${new Date().toLocaleTimeString()}] ✓ Consultas concluídas nos dois portais.`);
+        } else if (data.requiresLogin) {
+            appendLog(`[${new Date().toLocaleTimeString()}] ⚠ Autenticação necessária num ou mais portais. Utiliza o botão de início de sessão.`);
+        } else if (data.partialSuccess) {
+            appendLog(`[${new Date().toLocaleTimeString()}] ⚠ Sincronização parcial. Verifica os erros dos portais acima.`);
+        } else {
+            appendLog(`[${new Date().toLocaleTimeString()}] ❌ Não foi possível confirmar a sincronização oficial.`);
+        }
         await loadAllData();
 
     } catch (err) {
@@ -622,12 +630,12 @@ async function runInteractiveLogin(portal = 'financas') {
     const logsEl = document.getElementById('sync-terminal-logs');
     if (consoleModal && logsEl) {
         consoleModal.classList.add('active');
-        logsEl.innerHTML = `[${new Date().toLocaleTimeString()}] A abrir o Google Chrome para autenticação no ${portal === 'financas' ? 'Portal das Finanças (AT)' : 'Segurança Social Direta'}...\n`;
+        logsEl.textContent = `[${new Date().toLocaleTimeString()}] A abrir o Google Chrome para autenticação no ${portal === 'financas' ? 'Portal das Finanças (AT)' : 'Segurança Social Direta'}...\n`;
     }
 
     const appendLog = (msg) => {
         if (logsEl) {
-            logsEl.innerHTML += `${msg}\n`;
+            logsEl.textContent += `${msg}\n`;
             logsEl.scrollTop = logsEl.scrollHeight;
         }
     };
@@ -782,7 +790,7 @@ function initEventListeners() {
             const logsEl = document.getElementById('sync-terminal-logs');
             const appendLog = (msg) => {
                 if (logsEl) {
-                    logsEl.innerHTML += `${msg}\n`;
+                    logsEl.textContent += `${msg}\n`;
                     logsEl.scrollTop = logsEl.scrollHeight;
                 }
             };
