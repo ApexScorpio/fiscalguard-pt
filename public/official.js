@@ -72,6 +72,77 @@ async function loadOfficialOverview() {
   }
 }
 
+// Os registos AT nunca passam por innerHTML; JSON tem apenas texto.
+const RECORD_NAMES={atMessages:'Mensagens',atInteractions:'Interações',atAlerts:'Alertas',atDebts:'Dívidas',atFines:'Coimas'};
+async function loadATRecords(){
+  const host=document.getElementById('official-records-list');
+  if(!host)return;
+  try{
+    const res=await fetch('/api/at/records',{cache:'no-store'});
+    if(!res.ok)throw Error('UNAVAILABLE');
+    const data=await res.json();
+    host.replaceChildren();
+    if(data.status!=='local_encrypted'){
+      officialElement('official-records-updated','Arquivo cifrado · Por importar');
+      const p=document.createElement('p');
+      p.className='official-muted';
+      p.textContent='Ainda não existem registos detalhados importados neste computador.';
+      host.append(p);
+      return;
+    }
+    const date=Number.isFinite(Date.parse(data.capturedAt))
+      ?new Date(data.capturedAt).toLocaleString('pt-PT'):'data desconhecida';
+    officialElement('official-records-updated','Arquivo cifrado · Recolha de '+date);
+    for(const [key,label] of Object.entries(RECORD_NAMES)){
+      const info=data.sections?.[key]||{};
+      const card=document.createElement('details');
+      card.className='official-records-section';
+      card.dataset.kind=key;
+      const title=document.createElement('summary');
+      const verified=Number.isSafeInteger(info.count)&&info.count>=0&&info.status!=='unverified';
+      title.textContent=label+' · '+(!verified?'Por consultar':
+        info.status==='empty'?'Lista vazia nesta consulta':info.count+' registo(s)');
+      card.append(title);
+      if(info.truncated){
+        const note=document.createElement('p');
+        note.className='official-muted';
+        note.textContent='Recolha parcial: existem mais registos do que os guardados.';
+        card.append(note);
+      }
+      if(info.status==='records'&&Array.isArray(info.items)){
+        for(const record of info.items){
+          const article=document.createElement('article');
+          article.className='official-record';
+          const heading=document.createElement('strong');
+          heading.textContent='Registo '+String(record.id||'');
+          article.append(heading);
+          for(const field of Array.isArray(record.fields)?record.fields:[]){
+            const line=document.createElement('div');
+            line.className='official-record-field';
+            const name=document.createElement('span');
+            name.textContent=String(field.label||'Campo').slice(0,100);
+            const value=document.createElement('span');
+            value.textContent=String(field.value??'').slice(0,3000);
+            line.append(name,value);
+            article.append(line);
+          }
+          card.append(article);
+        }
+      }else{
+        const p=document.createElement('p');
+        p.className='official-muted';
+        p.textContent=info.status==='empty'?
+          'Esta lista veio vazia. Não demonstra ausência de obrigações noutras áreas.':
+          'Ainda não existe resposta autenticada confirmada para esta categoria.';
+        card.append(p);
+      }
+      host.append(card);
+    }
+  }catch{
+    officialElement('official-records-updated','Arquivo cifrado indisponível');
+  }
+}
+
 // Ponte opcional: reutiliza o Chrome normal sem iniciar outro browser/perfil.
 // Apenas contagens agregadas; sem NIF, password, cookies ou respostas completas.
 const FG_AT_CHANNEL = 'FiscalGuardATChrome';
@@ -187,7 +258,7 @@ async function atOperation(route) {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const state = await r.json();
     officialElement('official-at-session', state.message || 'Sem resposta da AT');
-    await Promise.all([readATSession(), loadOfficialOverview()]);
+    await Promise.all([readATSession(), loadOfficialOverview(), loadATRecords()]);
   } catch {
     officialElement('official-at-session', 'Falha ao contactar o servidor local (consulta não confirmada)');
   } finally {
@@ -211,6 +282,7 @@ async function refreshConfiguredAT() {
 
 document.addEventListener('DOMContentLoaded', () => {
   loadOfficialOverview();
+  void loadATRecords();
   readATSession();
   const useExistingChrome = () => {void refreshConfiguredAT();};
   document.getElementById('btn-official-login')
@@ -234,6 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
     void readATSession();
     void loadOfficialOverview();
   },10000);
+  setInterval(() => { void loadATRecords(); },60000);
   setInterval(() => {
     if (fgChromeBridgeReady && !window.__fgUsingManagedAT) void fgCheckChromeSession();
   },6*60*60*1000);
