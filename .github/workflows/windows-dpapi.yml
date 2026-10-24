@@ -1,0 +1,51 @@
+name: Teste Windows do cofre DPAPI (sem credenciais reais)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  dpapi-windows:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    env:
+      FISCALGUARD_E2E_USE_DPAPI: '1'
+      PLAYWRIGHT_BROWSERS_PATH: 'D:\\FiscalGuard_CI_Temp\\ms-playwright'
+      npm_config_cache: 'D:\\FiscalGuard_CI_Temp\\npm-cache'
+      TEMP: 'D:\\FiscalGuard_CI_Temp'
+      TMP: 'D:\\FiscalGuard_CI_Temp'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Testar cofre cifrado com NIF e senha fictícios em D
+        shell: pwsh
+        run: |
+          if (-not (Test-Path 'D:\\')) {
+            Write-Error 'Disco D indisponível no runner'
+            exit 1
+          }
+          node test/at-vault-windows.cjs
+          node test/at-records-windows.cjs
+      - name: Instalar Chromium virtual e dependencias no Windows
+        shell: pwsh
+        run: |
+          New-Item -Type Directory -Path 'D:\FiscalGuard_CI_Temp' -Force | Out-Null
+          npm ci --ignore-scripts
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install chromium
+      - name: Testar ciclo completo gestor AT no Windows com cofre DPAPI real e portal ficticio
+        shell: pwsh
+        run: node test/ui-at-managed-e2e.cjs
+      - name: Limpar navegador e temporarios de ensaio no Windows
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path 'D:\FiscalGuard_CI_Temp') {
+            Remove-Item 'D:\FiscalGuard_CI_Temp' -Recurse -Force -ErrorAction SilentlyContinue
+          }

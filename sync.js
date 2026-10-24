@@ -23,9 +23,11 @@ function getCredentials() {
     };
 }
 
-function saveCredentials(creds) {
-    fs.writeFileSync(CREDS_FILE, JSON.stringify(creds, null, 2), 'utf8');
-    return true;
+function saveCredentials() {
+    // O formato JSON antigo guardava palavras-passe em texto simples.
+    // Mantém-se apenas a assinatura para compatibilidade de importação.
+    // Novas credenciais são guardadas exclusivamente pelo cofre Windows DPAPI.
+    throw new Error('Gravação de credenciais em JSON desativada: usar cofre DPAPI');
 }
 
 /**

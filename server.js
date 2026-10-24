@@ -7,9 +7,11 @@ const { sendNativeToast, checkAndTriggerAlerts } = require('./notifier');
 const { syncPortalFinancas, syncSegurancaSocial, getCredentials, saveCredentials, launchInteractiveLogin, openNativeChrome, confirmActiveLogin } = require('./sync');
 const multiSync = require('./sync-relay');
 const { readOverview } = require('./official-overview');
+const { recordStore: atRecordStore, displayRows: displayATRecords } = require('./at-records');
 const { summarizeSync } = require('./sync-status');
 const { answerQuestion } = require('./assistant');
 const { atManager } = require('./at-managed');
+const { vault: atVault } = require('./at-vault');
 const { importChromeReport } = require('./chrome-bridge-import');
 
 const app = express();
@@ -122,6 +124,23 @@ app.post('/api/at/refresh', async (req, res) => {
     res.set('Cache-Control', 'no-store');
     try { res.json(await atManager.refresh()); }
     catch { res.status(500).json({ phase:'error', message:'Erro ao reutilizar sessão AT' }); }
+});
+
+// Registos reais guardados num cofre DPAPI local. Nunca enviar ao GitHub.
+// Sem arquivo local: apresentar 'por importar', nunca afirmar zero.
+app.get('/api/at/records', async (_req, res) => {
+    res.set('Cache-Control', 'no-store, private');
+    if (!atRecordStore.has()) {
+        return res.json({ status:'not_imported', capturedAt:null, sections:{} });
+    }
+    try {
+        const bundle = await atRecordStore.read();
+        if (!bundle) return res.json({status:'not_imported', capturedAt:null, sections:{}});
+        return res.json({status:'local_encrypted', ...displayATRecords(bundle)});
+    } catch {
+        return res.status(503).json({status:'unavailable',
+            message:'Não foi possível descifrar os registos AT nesta conta Windows'});
+    }
 });
 
 // Snapshot de dados fiscais locais. Nao supoe valores inexistentes.
@@ -289,29 +308,35 @@ app.post('/api/demo/load', (req, res) => {
     res.status(403).json({ success: false, error: "O modo com dados fictícios foi permanentemente desativado. O FiscalGuard opera exclusivamente com dados oficiais extraídos via Google Chrome." });
 });
 
-app.get('/api/vault/credentials', (req, res) => {
-    const creds = getCredentials();
-    res.json({
-        at: {
-            nif: creds.at.nif || db.getProfile().nif,
-            hasPassword: Boolean(creds.at.password)
-        },
-        ss: {
-            niss: creds.ss.niss || db.getProfile().niss,
-            hasPassword: Boolean(creds.ss.password)
-        }
-    });
+// O cofre de credenciais devolve apenas estado. Nunca devolve NIF ou senha.
+app.get('/api/vault/credentials', (_req, res) => {
+    res.set('Cache-Control','no-store');
+    res.json({at:{hasPassword:atVault.has()},ss:{hasPassword:false}});
 });
 
-app.post('/api/vault/credentials', (req, res) => {
-    const { atPassword, ssPassword } = req.body;
-    const current = getCredentials();
-    if (atPassword !== undefined && atPassword !== "") current.at.password = atPassword;
-    if (ssPassword !== undefined && ssPassword !== "") current.ss.password = ssPassword;
-    current.at.nif = db.getProfile().nif;
-    current.ss.niss = db.getProfile().niss;
-    saveCredentials(current);
-    res.json({ success: true, hasAtPassword: Boolean(current.at.password), hasSsPassword: Boolean(current.ss.password) });
+app.post('/api/vault/credentials', async (req, res) => {
+    res.set('Cache-Control','no-store');
+    const {atNif,atPassword,ssPassword}=req.body||{};
+    if(ssPassword) {
+        return res.status(422).json({
+            success:false,message:'O cofre SSD ainda não está implementado'
+        });
+    }
+    if(typeof atNif!=='string' || typeof atPassword!=='string') {
+        return res.status(422).json({
+            success:false,message:'É necessário indicar NIF e senha AT'
+        });
+    }
+    try {
+        await atVault.save({nif:atNif,password:atPassword});
+        res.json({success:true,hasAtPassword:true,hasSsPassword:false});
+        // A gravação no cofre permite primeira consulta sem reiniciar o servidor.
+        setImmediate(() => { void atManager.refresh().catch(() => {}); });
+    } catch {
+        res.status(422).json({
+            success:false,message:'Não foi possível guardar no cofre Windows DPAPI'
+        });
+    }
 });
 
 app.get('/api/sync/status', (req, res) => {
@@ -391,18 +416,17 @@ if (require.main === module) {
         }, 1000 * 60 * 60);
     }
 
-    // A sessão preferencial é a sessão JA EXISTENTE no Chrome normal
-    // (atraves da extensao). Nunca abrir outro perfil automaticamente.
-    // O motor Playwright alternativo so pode arrancar por ativacao explicita.
-    if (process.env.FISCALGUARD_USE_MANAGED_AT === '1') {
-        const periodic = setInterval(() => {
+    // Consultar autonomamente quando houver credenciais cifradas; sem cofre,
+    // não criar sessão nem solicitar login. Verificar em cada ciclo permite
+    // guardar o cofre depois de arrancar sem reiniciar a aplicação.
+    const refreshATIfConfigured = () => {
+        if (atVault.has() || process.env.FISCALGUARD_USE_MANAGED_AT === '1') {
             void atManager.refresh().catch(() => {});
-        }, 6 * 60 * 60 * 1000);
-        periodic.unref?.();
-        setTimeout(() => {
-            void atManager.refresh().catch(() => {});
-        }, 1500).unref?.();
-    }
+        }
+    };
+    const periodicAT = setInterval(refreshATIfConfigured, 6 * 60 * 60 * 1000);
+    periodicAT.unref?.();
+    setTimeout(refreshATIfConfigured, 1500).unref?.();
 
     app.listen(PORT, '127.0.0.1', () => {
         console.log(`=======================================================`);

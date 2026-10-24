@@ -70,3 +70,16 @@
   #tab-overview .calendar-section .obligations-list { overflow-y: auto; min-height: 0; }
   #tab-overview .calendar-section .section-header { margin-bottom: 8px; }
 }
+
+/* Registos oficiais: navegaveis sem expor dados fora do navegador local. */
+.official-records-box {margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08);}
+.official-records-list {display:flex;flex-direction:column;gap:7px;margin-top:8px;max-height:260px;overflow-y:auto;}
+.official-records-section {border:1px solid rgba(255,255,255,.10);background:rgba(39,57,77,.32);border-radius:9px;padding:8px 10px;}
+.official-records-section summary {cursor:pointer;color:#e4f2ff;font-size:12px;font-weight:600;}
+.official-records-section[open] summary {margin-bottom:9px;}
+.official-record {background:rgba(0,0,0,.15);border-radius:7px;padding:9px;margin:7px 0;font-size:12px;overflow-wrap:anywhere;}
+.official-record>strong {display:block;margin-bottom:6px;color:#5eead4;}
+.official-record-field {display:grid;grid-template-columns:minmax(90px,25%) minmax(0,1fr);gap:8px;border-top:1px solid rgba(255,255,255,.04);padding:4px 0;}
+.official-record-field span:first-child {color:#97a9bf;}
+.official-record-field span:last-child {white-space:pre-wrap;color:#eef5ff;}
+@media(max-width:600px){.official-record-field{grid-template-columns:1fr;gap:2px;}}

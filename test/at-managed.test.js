@@ -148,3 +148,124 @@ test('dez atualizacoes sobre a mesma sessão não provocam dez novos logins', as
     await m.closeContext();
   } finally {fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+
+test('ACEITACAO: gestor deve acionar o motor automatico quando AT redireciona para login',async()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'fiscalguard-test-'));
+  const fake=fakeEngine({authorized:false,recognized:0});
+  let calls=0;
+  const autoLogin={
+    run:async()=>{calls++;return {phase:'verification_required'};},
+    markAuthenticatedResult:()=>{}
+  };
+  try{
+    const m=makeManager({
+      engine:fake.browser,dir,profile:path.join(dir,'profile'),
+      snapshot:path.join(dir,'overview.json'),autoLogin
+    });
+    await m.startLogin();
+    const result=await m.confirmLogin();
+    assert.equal(calls,1,'O motor de login automatico tem de ser chamado no redirecionamento');
+    assert.equal(result.phase,'verification_required');
+    assert.equal(fs.existsSync(path.join(dir,'overview.json')),false);
+    await m.closeContext();
+  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+
+
+test('ACEITACAO: primeira sincronizacao autonoma funciona sem perfil se o cofre cifrado existir',async()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'fiscalguard-test-'));
+  let authenticated=false, attempts=0, launches=0, confirmed=0;
+  const main={
+    url:()=>'https://www.acesso.gov.pt/v2/loginForm?partID=PFAP',
+    isClosed:()=>false,bringToFront:async()=>{},goto:async()=>{}
+  };
+  const verificationPage={
+    url:()=>authenticated?'https://sitfiscal.portaldasfinancas.gov.pt/geral':
+      'https://www.acesso.gov.pt/v2/loginForm?partID=PFAP',
+    goto:async()=>{},
+    isClosed:()=>false,
+    close:async()=>{},
+    evaluate:async()=>({verifiedEndpoints:2,counts:{atMessages:0,atDebts:0,atFines:null}})
+  };
+  const context={
+    pages:()=>[main],
+    newPage:async()=>verificationPage,
+    on:()=>{},
+    close:async()=>{}
+  };
+  const engine={launchPersistentContext:async(_profile,options)=>{
+    launches++;
+    assert.equal(options.headless,true);
+    return context;
+  }};
+  const vault={has:()=>true,available:()=>true};
+  const autoLogin={
+    run:async page=>{
+      assert.equal(page,verificationPage);
+      attempts++;
+      authenticated=true;
+      return {phase:'submitted'};
+    },
+    markAuthenticatedResult:verified=>{if(verified)confirmed++;}
+  };
+  try{
+    const profile=path.join(dir,'first-ever-profile');
+    const snapshot=path.join(dir,'official.json');
+    assert.equal(fs.existsSync(profile),false);
+    const manager=makeManager({engine,dir,profile,snapshot,vault,autoLogin});
+    // No arranque, painel e agendador podem pedir refresh em simultaneo.
+    // Isso NUNCA pode criar multiplos Chromes com o mesmo perfil.
+    const results=await Promise.all(Array.from({length:6},()=>manager.refresh()));
+    const result=results[0];
+    for(const entry of results)assert.equal(entry.phase,'synced');
+    assert.equal(result.phase,'synced');
+    assert.equal(result.counts.atDebts,0);
+    assert.equal(launches,1);
+    assert.equal(attempts,1);
+    assert.equal(confirmed,1);
+    assert.equal(JSON.parse(fs.readFileSync(snapshot,'utf8')).summary.atMessages,0);
+    await manager.closeContext();
+  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+
+test('ACEITACAO: codigo OTP permanece visivel e a aba nao e fechada pelo gestor',async()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'fiscalguard-test-'));
+  let challenge=false,closed=0,shown=0;
+  const main={
+    url:()=> 'https://www.acesso.gov.pt/v2/loginForm?partID=PFAP',
+    isClosed:()=>false,bringToFront:async()=>{},goto:async()=>{}
+  };
+  const verification={
+    url:()=>challenge?'https://autenticacao.gov.pt/autenticar':
+      'https://www.acesso.gov.pt/v2/loginForm?partID=PFAP',
+    goto:async()=>{},isClosed:()=>false,
+    close:async()=>{closed++;},
+    bringToFront:async()=>{shown++;}
+  };
+  const context={
+    pages:()=>[main],newPage:async()=>verification,on:()=>{},
+    close:async()=>{}
+  };
+  const manager=makeManager({
+    engine:{launchPersistentContext:async()=>context},dir,
+    profile:path.join(dir,'profile'),snapshot:path.join(dir,'snapshot.json'),
+    vault:{has:()=>true,available:()=>true},
+    autoLogin:{
+      run:async()=>{challenge=true;return {phase:'verification_required'};},
+      markAuthenticatedResult:()=>{}
+    }
+  });
+  try{
+    await manager.startLogin();
+    // O temporizador de leitura iniciou o teste ao abrir o navegador.
+    const result=await manager.confirmLogin();
+    assert.equal(result.phase,'verification_required');
+    assert.equal(closed,0,'nunca fechar a aba que contem o desafio OTP');
+    assert.ok(shown>=1,'deixar o desafio visivel para o titular');
+    assert.equal(fs.existsSync(path.join(dir,'snapshot.json')),false);
+  }finally{
+    await manager.closeContext();
+    fs.rmSync(dir,{recursive:true,force:true});
+  }
+});

@@ -41,6 +41,17 @@ jobs:
           exit 1
       - name: Verificar botões, estados e importação simulada no Chromium
         run: node test/ui-browser.cjs
+      - name: Testar login AT num Chromium real com portais totalmente simulados
+        run: node test/ui-at-login.cjs
+      - name: Diagnosticar formulario publico AT REAL sem credenciais
+        continue-on-error: true
+        run: node test/at-public-form.cjs
+      - name: Testar gestor AT completo no Chromium virtual com login, expiracao e OTP simulados
+        timeout-minutes: 3
+        run: node test/ui-at-managed-e2e.cjs
+      - name: Inspecionar formulario publico da AT real sem enviar credenciais
+        timeout-minutes: 2
+        run: node test/at-public-login.cjs
       - name: Testar extensao no Chromium com sessao e cookies simuladas
         run: node test/ui-extension.cjs
       - name: Preparar extensao Chrome para instalacao local em D
@@ -60,6 +71,8 @@ jobs:
           path: |
             server.js
             at-managed.js
+            at-auto-login.js
+            at-vault.js
             chrome-bridge-import.js
             official-overview.js
             security.js

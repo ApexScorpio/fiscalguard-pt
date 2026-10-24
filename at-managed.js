@@ -6,6 +6,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('playwright-core');
+const {vault: atVault}=require('./at-vault');
+const {makeAutoLogin,isATLoginURL,isChallengeURL}=require('./at-auto-login');
 
 const DIR = path.join(__dirname, 'data');
 const PROFILE = path.join(DIR, 'at-browser-profile');
@@ -37,6 +39,27 @@ function fiscalHost(raw) {
   } catch { return false; }
 }
 
+// Uma etapa em acesso.gov.pt depois do submit nao equivale a sessao expirada.
+// Pode ser uma autorizacao ou outro passo oficial. Nunca a aceitar por
+// automatismo; esperar primeiro por eventuais redirects do proprio portal.
+function accessHost(raw) {
+  try {
+    const u = new URL(raw);
+    return u.protocol === 'https:' &&
+      (u.hostname === 'acesso.gov.pt' || u.hostname === 'www.acesso.gov.pt');
+  } catch { return false; }
+}
+async function waitForLoginForward(page, timeoutMs=12000) {
+  if (!accessHost(page.url()) || isATLoginURL(page.url()) ||
+      typeof page.waitForURL !== 'function')return;
+  await page.waitForURL(raw=>{
+    const destination=String(raw);
+    return fiscalHost(destination) ||
+      isATLoginURL(destination) ||
+      isChallengeURL(destination);
+  },{timeout:timeoutMs}).catch(()=>{});
+}
+
 function countFromPayload(kind, payload) {
   if (Array.isArray(payload)) return payload.length;
   if (!payload || typeof payload !== 'object') return null;
@@ -61,11 +84,12 @@ function publicState(state) {
     lastVerifiedAt: state.lastVerifiedAt,
     lastImportedAt: state.lastImportedAt,
     verifiedEndpoints: state.verifiedEndpoints,
-    counts: state.counts
+    counts: state.counts,
+    endpointDiagnostics: state.endpointDiagnostics
   };
 }
 
-function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot = SNAPSHOT } = {}) {
+function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot = SNAPSHOT, vault = atVault, autoLogin = makeAutoLogin({vault}) } = {}) {
   let context = null;
   let loginPage = null;
   let timer = null;
@@ -79,7 +103,8 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
     lastVerifiedAt: null,
     lastImportedAt: null,
     verifiedEndpoints: 0,
-    counts: { atMessages: null, atDebts: null, atFines: null }
+    counts: { atMessages: null, atDebts: null, atFines: null },
+    endpointDiagnostics: {}
   };
 
   const setState = (phase, message) => {
@@ -162,7 +187,7 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
     // Nunca devolver ao Node o corpo das respostas fiscais: apenas contagens,
     // estado HTTP e forma geral do JSON para os endpoints permitidos.
     return page.evaluate(async endpoints => {
-      const out = { verifiedEndpoints: 0, counts: {} };
+      const out = { verifiedEndpoints: 0, counts: {}, diagnostics: {} };
       for (const [key, endpoint] of Object.entries(endpoints)) {
         try {
           const controller = new AbortController();
@@ -180,10 +205,19 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
             clearTimeout(deadline);
           }
           const destination = new URL(response.url);
-          if (!response.ok ||
-              destination.protocol !== 'https:' ||
-              destination.hostname !== 'sitfiscal.portaldasfinancas.gov.pt' ||
-              !/json/i.test(response.headers.get('content-type') || '')) continue;
+          if (!response.ok) {
+            out.diagnostics[key]={http:response.status,result:'http_error'};
+            continue;
+          }
+          if(destination.protocol !== 'https:' ||
+             destination.hostname !== 'sitfiscal.portaldasfinancas.gov.pt') {
+            out.diagnostics[key]={http:response.status,result:'redirected'};
+            continue;
+          }
+          if(!/json/i.test(response.headers.get('content-type') || '')) {
+            out.diagnostics[key]={http:response.status,result:'unexpected_type'};
+            continue;
+          }
           const data = await response.json();
           const props = {
             atMessages: ['listaMensagens', 'mensagens', 'messages', 'dataFromResponseList'],
@@ -203,22 +237,29 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
           if (count !== null) {
             out.verifiedEndpoints += 1;
             out.counts[key] = count;
+            out.diagnostics[key]={http:response.status,result:'verified'};
+          } else {
+            out.diagnostics[key]={http:response.status,result:'unexpected_json_shape'};
           }
         } catch {
-          // Falha isolada de consulta: não assume zero.
+          // Apenas códigos de erro técnicos; nunca URLs, payloads ou cookies.
+          out.diagnostics[key]={http:null,result:'technical_error'};
         }
       }
       return out;
     }, ENDPOINTS);
   }
 
-  async function probe(force) {
+  async function performProbe(force) {
     if (busy || !context) return publicState(state);
     let current;
     try { current = loginPage && !loginPage.isClosed() ? loginPage.url() : ''; }
     catch { current = ''; }
     const currentPath = (() => { try { return new URL(current).pathname; } catch { return ''; } })();
-    if (!force && (!officialHost(current) || /login|autentic|sign.in/i.test(currentPath))) {
+    if (!force && !officialHost(current) && !isATLoginURL(current)) {
+      return publicState(state);
+    }
+    if (!force && officialHost(current) && /login|autentic|sign.in/i.test(currentPath)) {
       return publicState(state);
     }
     busy = true;
@@ -227,6 +268,52 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
     try {
       verificationPage = await context.newPage();
       await verificationPage.goto(HOME, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      // Reautenticar apenas quando o redirecionamento e o formulario
+      // correspondem ao dominio oficial de login da AT.
+      if (isATLoginURL(verificationPage.url())) {
+        const attempt=await autoLogin.run(verificationPage);
+        if (attempt.phase==='verification_required' || isChallengeURL(verificationPage.url())) {
+          // O formulario OTP precisa continuar aberto para o titular
+          // concluir a autenticacao. Fechar a aba aqui perdia o desafio.
+          if (browserMode === 'visible') {
+            loginPage=verificationPage;
+            verificationPage=null; // Nao fechar no finally.
+            try { await loginPage.bringToFront(); } catch {}
+          }
+          return setState('verification_required',
+            browserMode === 'visible'
+              ? 'Codigo de confirmacao pedido pela AT na janela aberta'
+              : 'A AT exige confirmacao adicional; abre a sessao oficial em modo visivel');
+        }
+        if (attempt.phase!=='submitted') {
+          return setState('login_required',
+            'Autenticacao pendente: '+String(attempt.phase||'nao_confirmada'));
+        }
+        // O formulario pode ter redirecionado para outra pagina de
+        // acesso.gov.pt, onde o portal faz um segundo redirect ou
+        // apresenta uma autorizacao. A mudanca de URL nao e sucesso.
+        await waitForLoginForward(verificationPage);
+      }
+      if (accessHost(verificationPage.url()) && !isATLoginURL(verificationPage.url())) {
+        if (browserMode === 'visible') {
+          loginPage=verificationPage;
+          verificationPage=null; // Preservar a pagina para a decisao do titular.
+          try { await loginPage.bringToFront(); } catch {}
+        }
+        return setState('verification_required',
+          browserMode === 'visible'
+            ? 'A AT apresenta outra etapa oficial; confirma-a na janela aberta'
+            : 'A AT apresenta outra etapa oficial; abre o navegador visivel para confirmar');
+      }
+      if (isChallengeURL(verificationPage.url())) {
+        if (browserMode === 'visible') {
+          loginPage=verificationPage;
+          verificationPage=null;
+          try { await loginPage.bringToFront(); } catch {}
+        }
+        return setState('verification_required',
+          'A AT exige confirmacao adicional; concluir na janela oficial');
+      }
       if (!fiscalHost(verificationPage.url())) {
         // Apenas um redirecionamento claro para login significa sessao expirada.
         // Falhas tecnicas nao podem forcar outro login.
@@ -239,6 +326,7 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
             'Portal redirecionou; nao foi possivel confirmar a sessao. Nao e necessario novo login por enquanto');
       }
       const response = await inspectOfficialPage(verificationPage);
+      state.endpointDiagnostics=response?.diagnostics||{};
       const verified = Number(response?.verifiedEndpoints || 0);
       if (!Number.isSafeInteger(verified) || verified < 1) {
         return setState('unverified', 'A página abriu, mas nenhuma resposta fiscal JSON foi validada');
@@ -251,6 +339,7 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
       state.verifiedEndpoints = verified;
       state.counts = counts;
       state.lastVerifiedAt = new Date().toISOString();
+      autoLogin.markAuthenticatedResult?.(true);
 
       // Importação limitada a contagens comprovadas; não inventa veículos,
       // montantes, dívidas ou estado contributivo.
@@ -300,6 +389,19 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
     }
   }
 
+  // Todos os pedidos simultaneos partilham a mesma verificacao.
+  // Nunca comunicar um estado intermedio como se fosse o resultado final.
+  let activeProbe=null;
+  function probe(force) {
+    if(activeProbe)return activeProbe;
+    const pending=performProbe(force);
+    activeProbe=pending;
+    void pending.finally(()=>{
+      if(activeProbe===pending)activeProbe=null;
+    }).catch(()=>{});
+    return pending;
+  }
+
   async function confirmLogin() {
     if (!context) {
       return setState('login_required', 'Sem navegador AT gerido pelo FiscalGuard. O login numa aba comum do Chrome não é partilhado automaticamente');
@@ -307,11 +409,11 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
     return probe(true);
   }
 
-  async function refresh() {
+  async function performRefresh() {
     if (context) return probe(true);
     if (busy || launching) return publicState(state);
-    if (!fs.existsSync(profile)) {
-      return setState('login_required', 'Ainda não existe um perfil AT persistente deste FiscalGuard');
+    if (!fs.existsSync(profile) && !vault.has?.()) {
+      return setState('login_required', 'Ainda não existe perfil nem credenciais cifradas AT no FiscalGuard');
     }
     fs.mkdirSync(dir, { recursive: true });
     try {
@@ -334,6 +436,19 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
       await closeContext();
       return setState('error', 'Reutilização da sessão: ' + error.constructor.name);
     }
+  }
+
+  // No arranque, API, interface e agendador podem pedir refresh ao mesmo
+  // tempo. Um unico lancamento Playwright detem a pasta do perfil.
+  let activeRefresh=null;
+  function refresh() {
+    if(activeRefresh)return activeRefresh;
+    const pending=performRefresh();
+    activeRefresh=pending;
+    void pending.finally(()=>{
+      if(activeRefresh===pending)activeRefresh=null;
+    }).catch(()=>{});
+    return pending;
   }
 
   function status() { return publicState(state); }
