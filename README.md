@@ -10,15 +10,17 @@
 
 ---
 
+> **Estado de desenvolvimento — 24/10/2026:** O login AT foi ligado ao motor e validado em GitHub Actions com Chromium real, em Linux e Windows, e cofre DPAPI real no Windows, sempre com credenciais fictícias e portal interceptado. A página pública verdadeira `acesso.gov.pt` foi inspecionada, sem autenticação. **Não existe ainda prova de login numa conta real nem importação de dívidas, IUC, pagamentos ou obrigações verdadeiras.** O PR #2 continua em rascunho. A Segurança Social requer integração independente.
+
 ## 🚀 Principais Funcionalidades
 
 ### 1. 🚦 Semáforo Fiscal & Contributivo em Tempo Real
 - **Autoridade Tributária (AT)**: Estado da situação tributária (regularizada vs. dívidas ativas), validade da certidão de não dívida e divergências.
 - **Segurança Social Direta (SSD)**: Estado da conta corrente contributiva, situação de pagamentos e verificação do Débito Direto ativo.
 
-### 2. ⚡ Automação 100% Desatendida (Background)
-- Monitorização periódica em segundo plano de prazos, guias de pagamento e novas faturas.
-- Verificação do dia limite de pagamento das contribuições (dia 20) com emissão dos dados Multibanco (Entidade e Referência) para pagamento imediato.
+### 2. ⚡ Automação de consultas AT (em validação)
+- Quando existe cofre DPAPI configurado, o serviço tenta autenticação no navegador dedicado e consultas periódicas sem roubar o foco; uma confirmação SMS/OTP, CAPTCHA ou restrição da AT pode exigir intervenção do contribuinte.
+- Os testes de CI demonstram o ciclo em ambiente virtual; as consultas e prazos reais só podem ser apresentados como confirmados depois de validação no portal autenticado.
 
 ### 3. 🔄 Sincronização Multi-Dispositivo (PC ↔ Portátil)
 - **Emparelhamento com 1-Clique**: Código seguro de emparelhamento (`FG-XXXXXX`) para ligar o computador de secretária ao portátil.
