@@ -29,6 +29,7 @@ function executePs(script,input='') {
   }
   const exe=path.join(process.env.SystemRoot || 'C:\\Windows',
     'System32','WindowsPowerShell','v1.0','powershell.exe');
+  fs.mkdirSync(TEMP,{recursive:true});
   const encoded=Buffer.from(script,'utf16le').toString('base64');
   return new Promise((resolve,reject)=>{
     const proc=spawn(exe,
@@ -63,7 +64,7 @@ function makeVault({filename=DEFAULT_FILE,runner=executePs}={}) {
       const script=[
         "$ErrorActionPreference='Stop'",
         "$file="+file,
-        "[Console]::InputEncoding=New-Object Text.UTF8Encoding($false)",
+        "[Console]::InputEncoding=[Text.UTF8Encoding]::new($false)",
         "$data=[Console]::In.ReadToEnd()",
         "$clear=[Text.Encoding]::UTF8.GetBytes($data)",
         "try {",
@@ -87,7 +88,7 @@ function makeVault({filename=DEFAULT_FILE,runner=executePs}={}) {
       if(!this.has())return null;
       const script=[
         "$ErrorActionPreference='Stop'",
-        "[Console]::OutputEncoding=New-Object Text.UTF8Encoding($false)",
+        "[Console]::OutputEncoding=[Text.UTF8Encoding]::new($false)",
         "$file="+file,
         "$blob=[IO.File]::ReadAllBytes($file)",
         "$clear=[Security.Cryptography.ProtectedData]::Unprotect(",
