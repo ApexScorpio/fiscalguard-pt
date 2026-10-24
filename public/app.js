@@ -551,6 +551,13 @@ async function loadVaultStatus() {
  * Executa a sincronização e extração direta dos portais com terminal ao vivo
  */
 async function runPortalSync(options = {}) {
+    // Nunca arrancar um perfil AT paralelo para atualizar. A sessão existente
+    // do Chrome é consultada pela extensão instalada UMA única vez.
+    if (typeof fgCheckChromeSession === 'function') {
+        await fgCheckChromeSession();
+        return;
+    }
+
     const consoleModal = document.getElementById('modal-sync-console');
     const logsEl = document.getElementById('sync-terminal-logs');
     if (consoleModal && logsEl) {
@@ -625,6 +632,11 @@ async function openDirectChrome(portal = 'financas') {
 }
 
 async function runInteractiveLogin(portal = 'financas') {
+    if (portal === 'financas' && typeof fgCheckChromeSession === 'function') {
+        await fgCheckChromeSession();
+        return;
+    }
+
     currentInteractivePortal = portal;
     const consoleModal = document.getElementById('modal-sync-console');
     const logsEl = document.getElementById('sync-terminal-logs');
@@ -787,6 +799,10 @@ function initEventListeners() {
     const btnConfirmLoginNow = document.getElementById('btn-confirm-login-now');
     if (btnConfirmLoginNow) {
         btnConfirmLoginNow.addEventListener('click', async () => {
+            if (typeof fgCheckChromeSession === 'function') {
+                await fgCheckChromeSession();
+                return;
+            }
             const logsEl = document.getElementById('sync-terminal-logs');
             const appendLog = (msg) => {
                 if (logsEl) {
