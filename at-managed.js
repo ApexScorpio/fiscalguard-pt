@@ -7,7 +7,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('playwright-core');
 const {vault: atVault}=require('./at-vault');
-const {makeAutoLogin,isATLoginURL}=require('./at-auto-login');
+const {makeAutoLogin,isATLoginURL,isChallengeURL}=require('./at-auto-login');
 
 const DIR = path.join(__dirname, 'data');
 const PROFILE = path.join(DIR, 'at-browser-profile');
@@ -251,13 +251,32 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
       // correspondem ao dominio oficial de login da AT.
       if (isATLoginURL(verificationPage.url())) {
         const attempt=await autoLogin.run(verificationPage);
-        if (attempt.phase==='verification_required') {
-          return setState('verification_required','Autenticacao adicional exigida pela AT');
+        if (attempt.phase==='verification_required' || isChallengeURL(verificationPage.url())) {
+          // O formulario OTP precisa continuar aberto para o titular
+          // concluir a autenticacao. Fechar a aba aqui perdia o desafio.
+          if (browserMode === 'visible') {
+            loginPage=verificationPage;
+            verificationPage=null; // Nao fechar no finally.
+            try { await loginPage.bringToFront(); } catch {}
+          }
+          return setState('verification_required',
+            browserMode === 'visible'
+              ? 'Codigo de confirmacao pedido pela AT na janela aberta'
+              : 'A AT exige confirmacao adicional; abre a sessao oficial em modo visivel');
         }
         if (attempt.phase!=='submitted') {
           return setState('login_required',
             'Autenticacao pendente: '+String(attempt.phase||'nao_confirmada'));
         }
+      }
+      if (isChallengeURL(verificationPage.url())) {
+        if (browserMode === 'visible') {
+          loginPage=verificationPage;
+          verificationPage=null;
+          try { await loginPage.bringToFront(); } catch {}
+        }
+        return setState('verification_required',
+          'A AT exige confirmacao adicional; concluir na janela oficial');
       }
       if (!fiscalHost(verificationPage.url())) {
         // Apenas um redirecionamento claro para login significa sessao expirada.
