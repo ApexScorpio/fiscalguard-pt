@@ -3,7 +3,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const crypto=require('node:crypto');
 const assert=require('node:assert/strict');
-const {makeRecordStore,bundleFromInspection}=require('../at-records');
+const {makeRecordStore,bundleFromInspection,validateBundle}=require('../at-records');
 
 (async()=>{
   assert.equal(process.platform,'win32');
@@ -30,7 +30,7 @@ const {makeRecordStore,bundleFromInspection}=require('../at-records');
     assert.equal(disk.includes(Buffer.from('DOCUMENTO_FICTICIO_PRIVADO')),false);
     assert.equal(disk.includes(Buffer.from('MENSAGEM_CI')),false);
     const read=await makeRecordStore({filename:file}).read();
-    assert.deepEqual(read,bundle);
+    assert.deepEqual(read,validateBundle(bundle));
     console.log('AT_REGISTOS_DPAPI=PASSOU_DADOS_FICTICIOS');
   }finally{fs.rmSync(folder,{force:true,recursive:true});}
 })().catch(err=>{
