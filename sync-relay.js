@@ -63,7 +63,7 @@ class MultiDeviceSync {
             deviceId: this.config.deviceId,
             deviceName: this.config.deviceName,
             pairingCode: this.config.pairingCode,
-            secretKey: this.config.secretKey,
+            hasSecretKey: Boolean(this.config.secretKey),
             syncMode: this.config.syncMode,
             pairedDevices: this.config.pairedDevices,
             lastSyncTimestamp: this.config.lastSyncTimestamp,
