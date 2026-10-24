@@ -111,6 +111,15 @@ async function runScenario(mode){
           // Somente presenca de campos e URL publica; nunca valores.
           console.log('E2E_FORM_DIAGNOSTICO',JSON.stringify({
             host:(()=>{try{return new URL(page.url()).hostname;}catch{return 'invalid';}})(),
+            mockLoginPagesServed:observations.loginPages,
+            inspection:await page.evaluate(()=>({
+              ready:document.readyState,
+              title:document.title,
+              bodyLength:document.body?.innerText?.length||0,
+              heading:document.querySelector('h1')?.innerText?.slice(0,60)||'',
+              inputs:document.querySelectorAll('input').length,
+              buttons:document.querySelectorAll('button').length
+            })),
             nifTabs:await page.getByRole('tab',{name:'NIF',exact:true}).count(),
             nifButtons:await page.getByRole('button',{name:'NIF',exact:true}).count(),
             userInputs:await page.locator('input[name="username"]').count(),
