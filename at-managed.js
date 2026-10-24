@@ -6,6 +6,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('playwright-core');
+const {vault: atVault}=require('./at-vault');
+const {makeAutoLogin}=require('./at-auto-login');
 
 const DIR = path.join(__dirname, 'data');
 const PROFILE = path.join(DIR, 'at-browser-profile');
@@ -65,7 +67,7 @@ function publicState(state) {
   };
 }
 
-function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot = SNAPSHOT } = {}) {
+function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot = SNAPSHOT, autoLogin = makeAutoLogin({vault:atVault}) } = {}) {
   let context = null;
   let loginPage = null;
   let timer = null;
