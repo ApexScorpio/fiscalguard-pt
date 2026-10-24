@@ -43,6 +43,9 @@ jobs:
         run: node test/ui-browser.cjs
       - name: Testar login AT num Chromium real com portais totalmente simulados
         run: node test/ui-at-login.cjs
+      - name: Inspecionar formulario publico da AT real sem enviar credenciais
+        timeout-minutes: 2
+        run: node test/at-public-login.cjs
       - name: Testar extensao no Chromium com sessao e cookies simuladas
         run: node test/ui-extension.cjs
       - name: Preparar extensao Chrome para instalacao local em D
