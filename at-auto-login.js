@@ -32,11 +32,11 @@ function makeAutoLogin({vault,now=()=>Date.now(),cooldownMs=15*60*1000}={}) {
     if (!vault || !vault.available?.() || !vault.has?.()) {
       return {phase:'credentials_missing'};
     }
+    // Uma tentativa em curso é partilhada: não executar dois submits.
+    if(inFlight)return inFlight;
     if(lastAttemptAt>0 && now()-lastAttemptAt<cooldownMs) {
       return {phase:'cooldown',retryAfterSeconds:Math.ceil((cooldownMs-(now()-lastAttemptAt))/1000)};
     }
-    // Never attempt duplicate submits while a navigation is in progress.
-    if(inFlight)return inFlight;
     inFlight=(async()=>{
       const creds=await vault.read();
       if(!validCredentials(creds))return {phase:'credentials_missing'};
@@ -65,6 +65,11 @@ function makeAutoLogin({vault,now=()=>Date.now(),cooldownMs=15*60*1000}={}) {
       .finally(()=>{inFlight=null;});
     return inFlight;
   }
-  return {run,isATLoginURL,isChallengeURL};
+  // Só a confirmação real de uma consulta autenticada deve libertar
+  // o bloqueio. A simples mudança de URL NÃO demonstra que houve login.
+  function markAuthenticatedResult(verified) {
+    if(verified === true && !inFlight) lastAttemptAt=0;
+  }
+  return {run,markAuthenticatedResult,isATLoginURL,isChallengeURL};
 }
 module.exports={makeAutoLogin,isATLoginURL,isChallengeURL};
