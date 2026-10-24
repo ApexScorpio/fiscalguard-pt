@@ -214,7 +214,7 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
     }, ENDPOINTS);
   }
 
-  async function probe(force) {
+  async function performProbe(force) {
     if (busy || !context) return publicState(state);
     let current;
     try { current = loginPage && !loginPage.isClosed() ? loginPage.url() : ''; }
@@ -316,6 +316,19 @@ function makeManager({ engine = chromium, dir = DIR, profile = PROFILE, snapshot
       try { if (verificationPage && !verificationPage.isClosed()) await verificationPage.close(); } catch {}
       busy = false;
     }
+  }
+
+  // Todos os pedidos simultaneos partilham a mesma verificacao.
+  // Nunca comunicar um estado intermedio como se fosse o resultado final.
+  let activeProbe=null;
+  function probe(force) {
+    if(activeProbe)return activeProbe;
+    const pending=performProbe(force);
+    activeProbe=pending;
+    void pending.finally(()=>{
+      if(activeProbe===pending)activeProbe=null;
+    }).catch(()=>{});
+    return pending;
   }
 
   async function confirmLogin() {
