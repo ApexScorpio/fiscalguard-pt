@@ -119,3 +119,44 @@ A aplicação abre automaticamente no navegador em:
 
 ## 📄 Licença
 Distribuído sob a licença MIT. Desenvolvido por **ApexScorpio**.
+
+---
+
+## Versão web — estado de migração (24/10/2026)
+
+**A interface web já existe** e corre localmente em `http://127.0.0.1:4848` quando o servidor for iniciado num computador com Node.js. Este projeto não precisa do programa WPF para apresentar a interface web.
+
+A página inicial passou a incluir um resumo das Finanças, Segurança Social e viaturas/IUC. Os valores só aparecem quando importados; na ausência de dados, apresenta **«Por consultar»**, sem assumir que o contribuinte não tem dívidas. A agenda extensa dispõe de zona de scroll própria nos monitores maiores.
+
+### Importações de dados reais
+
+O endpoint `GET /api/official/overview` lê um ficheiro **exclusivamente local** e opcional, `data/official-import.json`, que **não é incluído no GitHub**. Formato de referência (campos fictícios apenas para documentar o esquema; **não utilizar como dados fiscais reais**):
+
+```json
+{
+  "version": 1,
+  "source": "local-official-capture",
+  "capturedAt": "2026-10-24T10:00:00Z",
+  "summary": {
+    "atDebts": null,
+    "atFines": null,
+    "atMessages": null,
+    "ssStatus": "unknown"
+  },
+  "vehicles": []
+}
+```
+
+Mesmo com esse ficheiro, o painel distingue **importação local não verificada** de uma consulta oficial confirmada. O projeto ainda **não dispõe de um adaptador validado** que converta automaticamente as capturas cifradas da aplicação WPF para este formato. A autenticação na AT/SSD e a extração real por Playwright necessitam de validação no computador do utilizador.
+
+### Segurança: obrigatória antes de qualquer exposição à Internet
+
+- O servidor está limitado a `127.0.0.1` e verifica `Host`, `Origin` e `Sec-Fetch-Site`. **Não há autenticação de utilizadores na API**: não publicar esta versão num servidor público.
+- A chave de sincronização foi anteriormente incluída em `data/sync-config.json`, ficheiro com histórico no GitHub público. Considerá-la comprometida; **substituir a chave e invalidar emparelhamentos antigos** antes de usar sincronização entre dispositivos.
+- `.gitignore` impede **novos** ficheiros de dados de entrarem no repositório, mas não remove os que já estavam rastreados, nem apaga o histórico. Fazer auditoria e cópias protegidas antes de qualquer remoção.
+- Não introduzir credenciais da AT, NIF/NISS, ficheiros de sessão Playwright, perfil Chrome/WebView2 ou JSON com dados fiscais no GitHub.
+- Os testes de GitHub Actions são **simulados/unitários**, sem acesso a sessões autenticadas reais e sem a capacidade de garantir que os portais externos continuam a funcionar.
+
+### Desenvolvimento e testes
+
+`npm ci` seguido de `npm test` executa testes de segurança local e normalização de informação fiscal. O fluxo `.github/workflows/test.yml` executa esses testes em pull requests.
