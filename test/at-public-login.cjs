@@ -28,12 +28,16 @@ const safeURL=raw=>{
     const target=page.url();
     const publicForm=page.locator('#username, input[name="username"], input[name="nif"], input[autocomplete="username"]').first();
     const publicPassword=page.locator('#password, input[type="password"]').first();
-    const publicSubmit=page.locator('#sbmt-btn, button[type="submit"], input[type="submit"]').first();
+    const publicSubmit=page.getByRole('button',{name:'Autenticar',exact:true}).first();
+    const nifSubmitCount=await publicSubmit.count();
+    const nifSubmitVisible=nifSubmitCount ? await publicSubmit.isVisible() : false;
+    const nifUserVisible=(await publicForm.count())>0 && await publicForm.isVisible();
+    const nifPassVisible=(await publicPassword.count())>0 && await publicPassword.isVisible();
     const found={
       loginUrl:isATLoginURL(target),
-      userInput:(await publicForm.count())>0,
-      passInput:(await publicPassword.count())>0,
-      submitButton:(await publicSubmit.count())>0,
+      userInput:nifUserVisible,
+      passInput:nifPassVisible,
+      submitButton:nifSubmitVisible,
       frameCount:page.frames().length
     };
     // A estrutura publica e segura; nunca ler .value nem cookies/tokens.
