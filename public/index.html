@@ -49,7 +49,7 @@
                         <span class="status-indicator live-pulse-blue"></span>
                         <div class="status-info">
                             <span class="status-label">Multi-Dispositivo</span>
-                            <strong class="status-value" id="sync-situation-text">PC ↔ Portátil OK</strong>
+                            <strong class="status-value" id="sync-situation-text">Ligação por verificar</strong>
                         </div>
                     </div>
                 </div>
@@ -63,7 +63,7 @@
                 </button>
                 <button id="btn-sync-all" class="btn btn-primary" title="Executa sincronização 100% automática com credenciais locais">
                     <span class="btn-icon">⚡</span>
-                    <span>Sincronizar (100% Auto)</span>
+                    <span>Atualizar Finanças</span>
                 </button>
                 <button id="btn-notify-test" class="btn btn-secondary" title="Disparar notificação de teste nativa do Windows">
                     <span class="btn-icon">🔔</span>
@@ -163,10 +163,12 @@
                             <p class="official-eyebrow">DADOS IMPORTADOS · ESTADO REAL</p>
                             <h2 id="official-overview-title">Finanças, Segurança Social e IUC</h2>
                             <p class="official-muted" id="official-import-state" aria-live="polite">A verificar importações locais…</p>
+                            <p class="official-muted" id="official-at-session" aria-live="polite">Sessão AT por verificar</p>
                         </div>
                         <div class="official-actions">
                             <button class="btn btn-emerald" id="btn-official-login">Entrar nas Finanças</button>
-                            <button class="btn btn-secondary" id="btn-official-refresh">Atualizar vista</button>
+                            <button class="btn btn-secondary" id="btn-official-verify">Já entrei — Verificar</button>
+                            <button class="btn btn-secondary" id="btn-official-refresh">Atualizar Finanças</button>
                         </div>
                     </div>
                     <div class="official-status-grid">
