@@ -19,7 +19,7 @@ const safeURL=raw=>{
     const page=await context.newPage();
     const response=await page.goto(ENTRY,{waitUntil:'domcontentloaded',timeout:35000});
     await page.waitForTimeout(1800);
-    const nifOption=page.getByRole('button',{name:'NIF',exact:true}).first();
+    const nifOption=page.getByRole('tab',{name:'NIF',exact:true}).first();
     const nifTabPresent=(await nifOption.count())>0;
     if(nifTabPresent){
       await nifOption.click({timeout:8000}); // Apenas selecao visual, NUNCA submeter
