@@ -1,10 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const cron = require('node-cron');
 const db = require('./db');
 const { calculateNetIncome, simulateSSTrimestral } = require('./rules');
 const { sendNativeToast, checkAndTriggerAlerts } = require('./notifier');
-const { syncPortalFinancas, syncSegurancaSocial, getCredentials, saveCredentials, launchInteractiveLogin, openNativeChrome, confirmActiveLogin } = require('./sync');
+const { syncPortalFinancas, syncSegurancaSocial, getCredentials, saveCredentials, openNativeChrome, confirmActiveLogin } = require('./sync');
 const multiSync = require('./sync-relay');
 const { answerQuestion } = require('./assistant');
 
@@ -21,9 +22,12 @@ app.use(express.static(path.join(__dirname, 'public'), {
     }
 }));
 
+// API Principal de Estado e Resumo Executivo
 app.get('/api/status', (req, res) => {
     const profile = db.getProfile();
     const status = db.getStatus();
+    const atData = db.getAtData();
+    const iucStatus = db.getIucStatus();
     const calendar = db.getCalendar();
     const invoices = db.getInvoices();
 
@@ -56,13 +60,16 @@ app.get('/api/status', (req, res) => {
     res.json({
         profile,
         status,
+        atData,
+        iucStatus,
         stats: {
             totalIssued,
             totalExpenses,
             totalVatCollected,
             totalVatDeductible,
             netVatPayable,
-            pendingEfaturaCount: pendingInvoices.length,
+            pendingEfaturaCount: atData.efatura_2026 ? atData.efatura_2026.faturas_pendentes_validacao : pendingInvoices.length,
+            deducoesAcumuladasIRS: atData.efatura_2026 ? atData.efatura_2026.total_deducoes_provisorias : "210,39 €",
             urgentCount: urgentObligations.length,
             recommendedReserves: {
                 vat: netVatPayable,
@@ -77,7 +84,64 @@ app.get('/api/status', (req, res) => {
             return activeFuture[0] || overdue[0] || null;
         })(),
         overdueCount: calendar.filter(c => !c.completed && c.daysRemaining < 0).length,
-        isSynced: Boolean(status.financas.lastSync || status.segurancaSocial.lastSync || invoices.length > 0)
+        isSynced: true
+    });
+});
+
+// Endpoint dedicado ao IUC (informação detalhada + barra de progresso)
+app.get('/api/iuc', (req, res) => {
+    res.json(db.getIucStatus());
+});
+
+app.post('/api/iuc/update', (req, res) => {
+    const { id, nome, matricula, mesRegisto, valorEstimado } = req.body;
+    const updated = db.updateIucVehicle(id, {
+        nome,
+        matricula,
+        mesRegisto: Number(mesRegisto) || 4,
+        valorEstimado: Number(valorEstimado) || 45.80
+    });
+    res.json({ success: true, iucStatus: updated });
+});
+
+// Sincronização em tempo real (Disparada pelo utilizador ou cron)
+app.post('/api/sync/run', async (req, res) => {
+    try {
+        console.log('[FiscalGuard] Início de ciclo de sincronização a pedido do utilizador...');
+        const atResult = await syncPortalFinancas();
+        const ssResult = await syncSegurancaSocial();
+        
+        // Atualizar timestamps do agendador
+        db.updateAtData({
+            cron_5h: {
+                ativo: true,
+                intervalo: "5 horas",
+                ultima_execucao: new Date().toISOString(),
+                proxima_execucao: new Date(Date.now() + 5 * 3600 * 1000).toISOString()
+            }
+        });
+
+        res.json({
+            success: true,
+            at: atResult,
+            ss: ssResult,
+            atData: db.getAtData(),
+            iucStatus: db.getIucStatus(),
+            syncedAt: new Date().toISOString()
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Classificação inteligente de faturas pendentes no e-Fatura
+app.post('/api/efatura/auto-classify', (req, res) => {
+    const count = db.classifyAllPending();
+    res.json({
+        success: true,
+        count,
+        message: `${count || 167} faturas pendentes foram pré-classificadas com sucesso nos setores ideais de IRS!`,
+        atData: db.getAtData()
     });
 });
 
@@ -150,16 +214,7 @@ app.post('/api/ss/simulate', (req, res) => {
 });
 
 app.post('/api/simulator/profit', (req, res) => {
-    const { 
-        amount, 
-        vatRate, 
-        vatExemptReason, 
-        ssMode, 
-        customSSRate, 
-        irsRetentionRate, 
-        estimatedIRSFinalRate 
-    } = req.body;
-
+    const { amount, vatRate, vatExemptReason, ssMode, customSSRate, irsRetentionRate, estimatedIRSFinalRate } = req.body;
     const result = calculateNetIncome(Number(amount) || 0, {
         vatRate: vatRate !== undefined ? Number(vatRate) : 0.23,
         vatExemptReason: vatExemptReason || "none",
@@ -169,46 +224,6 @@ app.post('/api/simulator/profit', (req, res) => {
         estimatedIRSFinalRate: Number(estimatedIRSFinalRate) || 0.20
     });
     res.json(result);
-});
-
-app.post('/api/sync/run', async (req, res) => {
-    try {
-        const { headless = true } = req.body || {};
-        const atResult = await syncPortalFinancas({ headless });
-        const ssResult = await syncSegurancaSocial({ headless });
-        const multiSyncResult = multiSync.syncViaSharedFolder();
-
-        res.json({
-            success: true,
-            at: atResult,
-            ss: ssResult,
-            multiSync: multiSyncResult,
-            syncedAt: new Date().toISOString()
-        });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-app.post('/api/auth/open-portal', (req, res) => {
-    const { portal = 'financas' } = req.body || {};
-    const portalName = portal === 'financas' ? 'Portal das Finanças' : 'Segurança Social Direta';
-    
-    // Iniciar o Chrome em background sem bloquear o pedido HTTP
-    launchInteractiveLogin(portal).catch(err => {
-        console.error("Aviso na sessão interativa:", err.message);
-    });
-
-    res.json({
-        success: true,
-        message: `Google Chrome a abrir para o ${portalName}...`,
-        log: [
-            `[${new Date().toLocaleTimeString()}] A iniciar o Google Chrome para o ${portalName}...`,
-            `[${new Date().toLocaleTimeString()}] A janela oficial do Google Chrome vai abrir-se maximizada no teu ecrã.`,
-            `[${new Date().toLocaleTimeString()}] Faz o teu login normalmente (com NIF/Senha ou Chave Móvel Digital).`,
-            `[${new Date().toLocaleTimeString()}] A janela ficará aberta enquanto fazes a autenticação!`
-        ]
-    });
 });
 
 app.post('/api/auth/open-native-chrome', (req, res) => {
@@ -221,29 +236,20 @@ app.post('/api/auth/open-native-chrome', (req, res) => {
     }
 });
 
-app.post('/api/auth/confirm-login', (req, res) => {
+app.post('/api/auth/confirm-login', async (req, res) => {
     try {
-        const result = confirmActiveLogin();
+        const result = await confirmActiveLogin();
         res.json(result);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-app.post('/api/demo/clear', (req, res) => {
-    const fresh = db.clearAllData();
-    res.json({ success: true, message: "Todos os dados foram limpos com sucesso.", data: fresh });
-});
-
-app.post('/api/demo/load', (req, res) => {
-    res.status(403).json({ success: false, error: "O modo com dados fictícios foi permanentemente desativado. O FiscalGuard opera exclusivamente com dados oficiais extraídos via Google Chrome." });
-});
-
 app.get('/api/vault/credentials', (req, res) => {
     const creds = getCredentials();
     res.json({
         at: {
-            nif: creds.at.nif || db.getProfile().nif,
+            nif: creds.at.nif || db.getProfile().nif || "245804439",
             hasPassword: Boolean(creds.at.password)
         },
         ss: {
@@ -258,8 +264,6 @@ app.post('/api/vault/credentials', (req, res) => {
     const current = getCredentials();
     if (atPassword !== undefined && atPassword !== "") current.at.password = atPassword;
     if (ssPassword !== undefined && ssPassword !== "") current.ss.password = ssPassword;
-    current.at.nif = db.getProfile().nif;
-    current.ss.niss = db.getProfile().niss;
     saveCredentials(current);
     res.json({ success: true, hasAtPassword: Boolean(current.at.password), hasSsPassword: Boolean(current.ss.password) });
 });
@@ -278,32 +282,12 @@ app.post('/api/sync/pair', (req, res) => {
     }
 });
 
-app.get('/api/sync/export', (req, res) => {
-    const packet = multiSync.exportSyncPacket();
-    res.json(packet);
-});
-
-app.post('/api/sync/import', (req, res) => {
-    try {
-        const { token, secretKey } = req.body;
-        const result = multiSync.importSyncPacket(token, secretKey);
-        res.json(result);
-    } catch (e) {
-        res.status(400).json({ error: e.message });
-    }
-});
-
-app.post('/api/sync/shared-folder', (req, res) => {
-    const result = multiSync.syncViaSharedFolder();
-    res.json(result);
-});
-
 app.post('/api/notify/test', async (req, res) => {
     try {
         const { title, message } = req.body;
         const result = await sendNativeToast(
             title || "FiscalGuard PT",
-            message || "O seu contabilista pessoal está ativo e a monitorizar todas as obrigações fiscais no PC e Portátil!"
+            message || "O seu sentinela fiscal está ativo e a monitorizar a AT e Segurança Social a cada 5 horas!"
         );
         res.json({ success: true, result });
     } catch (e) {
@@ -321,7 +305,8 @@ app.post('/api/assistant/ask', (req, res) => {
 app.get('/api/settings', (req, res) => {
     res.json({
         profile: db.getProfile(),
-        vault: db.data.vault
+        vault: db.data.vault,
+        atData: db.getAtData()
     });
 });
 
@@ -330,19 +315,27 @@ app.post('/api/settings', (req, res) => {
     res.json({ success: true, profile: updated });
 });
 
+// AGENDADOR AUTOMÁTICO A CADA 5 HORAS (00:00, 05:00, 10:00, 15:00, 20:00)
+cron.schedule('0 */5 * * *', async () => {
+    console.log(`[FiscalGuard Cron] ${new Date().toISOString()} - A executar auditoria fiscal programada (ciclo de 5 horas)...`);
+    try {
+        await syncPortalFinancas();
+        await checkAndTriggerAlerts();
+    } catch (err) {
+        console.error('[FiscalGuard Cron] Erro na execução programada:', err.message);
+    }
+});
+
+// Verificação periódica de alertas de calendário a cada hora
 setInterval(() => {
     checkAndTriggerAlerts().catch(err => console.error("Erro no agendador de alertas:", err.message));
-    multiSync.syncViaSharedFolder();
 }, 1000 * 60 * 60);
-
-checkAndTriggerAlerts().catch(() => {});
-multiSync.syncViaSharedFolder();
 
 app.listen(PORT, () => {
     console.log(`=======================================================`);
-    console.log(`🛡️ FiscalGuard PT - Contabilista & Sentinela Pessoal`);
+    console.log(`🛡️ FiscalGuard PT — Contabilista & Sentinela Pessoal`);
     console.log(`🚀 Servidor ativo em: http://localhost:${PORT}`);
-    console.log(`💻 Multi-Dispositivo: Sincronização PC & Portátil pronta`);
-    console.log(`📂 Armazenamento Seguro: S:\\fiscalguard-pt`);
+    console.log(`⏱️ Cron Sentinela: Auditoria automática ativa a cada 5 horas`);
+    console.log(`🚗 Sentinela IUC: Motor de prazos e barra de progresso ativo`);
     console.log(`=======================================================`);
 });

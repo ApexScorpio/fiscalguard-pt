@@ -38,5 +38,174 @@
     "hasFinancasCredentials": false,
     "hasSSCredentials": false,
     "lastVerified": null
+  },
+  "atData": {
+    "contribuinte": {
+      "nome": "Miguel Angelo Correia Lopes",
+      "nif": "245804439",
+      "email": "lopes.miguelac@gmail.com",
+      "email_estado": "POR CONFIRMAR",
+      "telefone": "916621451",
+      "telefone_estado": "CONFIRMADO (Aceita SMS)",
+      "data_adesao_portal": "2015-01-24",
+      "ultima_alteracao_senha": "2026-02-04",
+      "iban_reembolsos": "PT50 0018 0359 0020 0039 2126 7 (Santander Totta)",
+      "iban_estado": "Confirmado"
+    },
+    "resumo_geral": {
+      "situacao_tributaria": "REGULARIZADA",
+      "dividas_ativas": "0,00 €",
+      "pagamentos_pendentes": "0,00 €",
+      "reembolsos_pendentes": "0,00 €",
+      "faturas_pendentes_validacao": 167
+    },
+    "iuc": {
+      "estado": "Sem veículos com imposto pendente no ano em curso (Em dia)",
+      "veiculos": [
+        {
+          "id": "v-abril-1",
+          "nome": "Viatura Principal",
+          "matricula": "XX-XX-XX",
+          "mesRegisto": 4,
+          "mesNome": "Abril",
+          "ultimoPagamento": "2026-04-19",
+          "valorEstimado": 45.8,
+          "estado": "pago_2026"
+        },
+        {
+          "id": "v-junho-1",
+          "nome": "Viatura Secundária (A)",
+          "matricula": "YY-YY-YY",
+          "mesRegisto": 6,
+          "mesNome": "Junho",
+          "ultimoPagamento": "2026-06-15",
+          "valorEstimado": 58.2,
+          "estado": "pago_2026"
+        },
+        {
+          "id": "v-junho-2",
+          "nome": "Viatura Secundária (B)",
+          "matricula": "ZZ-ZZ-ZZ",
+          "mesRegisto": 6,
+          "mesNome": "Junho",
+          "ultimoPagamento": "2026-06-15",
+          "valorEstimado": 38.5,
+          "estado": "pago_2026"
+        },
+        {
+          "id": "v-junho-3",
+          "nome": "Viatura Comercial / Mota",
+          "matricula": "WW-WW-WW",
+          "mesRegisto": 6,
+          "mesNome": "Junho",
+          "ultimoPagamento": "2026-06-26",
+          "valorEstimado": 22.4,
+          "estado": "pago_2026"
+        }
+      ],
+      "historico_recente": [
+        {
+          "data": "2026-06-26",
+          "evento": "IUC - Pagamento de Documento de Cobrança"
+        },
+        {
+          "data": "2026-06-15",
+          "evento": "IUC - Pagamento de Documento de Cobrança"
+        },
+        {
+          "data": "2026-06-15",
+          "evento": "IUC - Pagamento de Documento de Cobrança"
+        },
+        {
+          "data": "2026-04-19",
+          "evento": "IUC - Pagamento de Documento de Cobrança"
+        }
+      ]
+    },
+    "irs": {
+      "declaracao_recente": {
+        "ano": "2025",
+        "identificacao": "2025-1112-J1131-28",
+        "tipo": "1.ª D. PRAZO",
+        "data_rececao": "2026-06-18 16:34:06",
+        "situacao": "NOTIFICAÇÃO EMITIDA",
+        "data_situacao": "2026-06-22",
+        "montante_liquidado": "1.920,22 €",
+        "numero_liquidacao": "2026 500 5090860"
+      },
+      "rendimento_global_2025": "20.722,74 €",
+      "coleta_liquida_2025": "2.141,22 €",
+      "retencao_fonte_2025": "221,00 €",
+      "simulacao_2026": {
+        "cenario_recomendado": "Aumentar retenção ou poupança mensal de 160 €",
+        "deducoes_acumuladas": "210,39 €"
+      }
+    },
+    "efatura_2026": {
+      "faturas_pendentes_validacao": 167,
+      "total_deducoes_provisorias": "210,39 €",
+      "detalhe_setores": {
+        "despesas_gerais_familiares": {
+          "deducao": "195,27 €",
+          "gasto": "557,85 €",
+          "limite": "250,00 €",
+          "percentagem": 78.1
+        },
+        "reparacao_automoveis": {
+          "deducao": "9,54 €",
+          "gasto": "340,27 €",
+          "iva": "63,63 €",
+          "limite": "250,00 €",
+          "percentagem": 3.8
+        },
+        "ginasios": {
+          "deducao": "4,48 €",
+          "gasto": "79,80 €",
+          "iva": "14,92 €",
+          "limite": "250,00 €",
+          "percentagem": 1.8
+        },
+        "restauracao_e_alojamento": {
+          "deducao": "1,10 €",
+          "gasto": "57,66 €",
+          "iva": "7,32 €",
+          "limite": "250,00 €",
+          "percentagem": 0.4
+        },
+        "saude": {
+          "deducao": "0,00 €",
+          "gasto": "0,00 €",
+          "limite": "1000,00 €",
+          "percentagem": 0
+        },
+        "educacao": {
+          "deducao": "0,00 €",
+          "gasto": "0,00 €",
+          "limite": "800,00 €",
+          "percentagem": 0
+        },
+        "habitacao": {
+          "deducao": "0,00 €",
+          "gasto": "0,00 €",
+          "limite": "502,00 €",
+          "percentagem": 0
+        }
+      }
+    },
+    "dividas_e_execucoes": {
+      "estado": "Situação tributária regularizada (sem processos de execução fiscal nem quantias exequendas)",
+      "dividas_ativas": 0,
+      "processos": []
+    },
+    "pagamentos_a_decorrer": {
+      "estado": "Sem pagamentos a decorrer (0 resultados)",
+      "itens": []
+    },
+    "cron_5h": {
+      "ativo": true,
+      "intervalo": "5 horas",
+      "ultima_execucao": "2026-11-03T23:07:28.574Z",
+      "proxima_execucao": "2026-11-04T04:07:28.575Z"
+    }
   }
 }

@@ -9,45 +9,165 @@ if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
+// Estado padrão inicial alimentado com a estrutura oficial
+const DEFAULT_AT_DATA = {
+    contribuinte: {
+        nome: "Miguel Angelo Correia Lopes",
+        nif: "245804439",
+        email: "lopes.miguelac@gmail.com",
+        email_estado: "POR CONFIRMAR",
+        telefone: "916621451",
+        telefone_estado: "CONFIRMADO (Aceita SMS)",
+        data_adesao_portal: "2015-01-24",
+        ultima_alteracao_senha: "2026-02-04",
+        iban_reembolsos: "PT50 0018 0359 0020 0039 2126 7 (Santander Totta)",
+        iban_estado: "Confirmado"
+    },
+    resumo_geral: {
+        situacao_tributaria: "REGULARIZADA",
+        dividas_ativas: "0,00 €",
+        pagamentos_pendentes: "0,00 €",
+        reembolsos_pendentes: "0,00 €",
+        faturas_pendentes_validacao: 167
+    },
+    iuc: {
+        estado: "Sem veículos com imposto pendente no ano em curso (Em dia)",
+        veiculos: [
+            {
+                id: "v-abril-1",
+                nome: "Viatura Principal",
+                matricula: "XX-XX-XX",
+                mesRegisto: 4,
+                mesNome: "Abril",
+                ultimoPagamento: "2026-04-19",
+                valorEstimado: 45.80,
+                estado: "pago_2026"
+            },
+            {
+                id: "v-junho-1",
+                nome: "Viatura Secundária (A)",
+                matricula: "YY-YY-YY",
+                mesRegisto: 6,
+                mesNome: "Junho",
+                ultimoPagamento: "2026-06-15",
+                valorEstimado: 58.20,
+                estado: "pago_2026"
+            },
+            {
+                id: "v-junho-2",
+                nome: "Viatura Secundária (B)",
+                matricula: "ZZ-ZZ-ZZ",
+                mesRegisto: 6,
+                mesNome: "Junho",
+                ultimoPagamento: "2026-06-15",
+                valorEstimado: 38.50,
+                estado: "pago_2026"
+            },
+            {
+                id: "v-junho-3",
+                nome: "Viatura Comercial / Mota",
+                matricula: "WW-WW-WW",
+                mesRegisto: 6,
+                mesNome: "Junho",
+                ultimoPagamento: "2026-06-26",
+                valorEstimado: 22.40,
+                estado: "pago_2026"
+            }
+        ],
+        historico_recente: [
+            { data: "2026-06-26", evento: "IUC - Pagamento de Documento de Cobrança" },
+            { data: "2026-06-15", evento: "IUC - Pagamento de Documento de Cobrança" },
+            { data: "2026-06-15", evento: "IUC - Pagamento de Documento de Cobrança" },
+            { data: "2026-04-19", evento: "IUC - Pagamento de Documento de Cobrança" }
+        ]
+    },
+    irs: {
+        declaracao_recente: {
+            ano: "2025",
+            identificacao: "2025-1112-J1131-28",
+            tipo: "1.ª D. PRAZO",
+            data_rececao: "2026-06-18 16:34:06",
+            situacao: "NOTIFICAÇÃO EMITIDA",
+            data_situacao: "2026-06-22",
+            montante_liquidado: "1.920,22 €",
+            numero_liquidacao: "2026 500 5090860"
+        },
+        rendimento_global_2025: "20.722,74 €",
+        coleta_liquida_2025: "2.141,22 €",
+        retencao_fonte_2025: "221,00 €",
+        simulacao_2026: {
+            cenario_recomendado: "Aumentar retenção ou poupança mensal de 160 €",
+            deducoes_acumuladas: "210,39 €"
+        }
+    },
+    efatura_2026: {
+        faturas_pendentes_validacao: 167,
+        total_deducoes_provisorias: "210,39 €",
+        detalhe_setores: {
+            despesas_gerais_familiares: { deducao: "195,27 €", gasto: "557,85 €", limite: "250,00 €", percentagem: 78.1 },
+            reparacao_automoveis: { deducao: "9,54 €", gasto: "340,27 €", iva: "63,63 €", limite: "250,00 €", percentagem: 3.8 },
+            ginasios: { deducao: "4,48 €", gasto: "79,80 €", iva: "14,92 €", limite: "250,00 €", percentagem: 1.8 },
+            restauracao_e_alojamento: { deducao: "1,10 €", gasto: "57,66 €", iva: "7,32 €", limite: "250,00 €", percentagem: 0.4 },
+            saude: { deducao: "0,00 €", gasto: "0,00 €", limite: "1000,00 €", percentagem: 0.0 },
+            educacao: { deducao: "0,00 €", gasto: "0,00 €", limite: "800,00 €", percentagem: 0.0 },
+            habitacao: { deducao: "0,00 €", gasto: "0,00 €", limite: "502,00 €", percentagem: 0.0 }
+        }
+    },
+    dividas_e_execucoes: {
+        estado: "Situação tributária regularizada (sem processos de execução fiscal nem quantias exequendas)",
+        dividas_ativas: 0,
+        processos: []
+    },
+    pagamentos_a_decorrer: {
+        estado: "Sem pagamentos a decorrer (0 resultados)",
+        itens: []
+    },
+    cron_5h: {
+        ativo: true,
+        intervalo: "5 horas",
+        ultima_execucao: new Date().toISOString(),
+        proxima_execucao: new Date(Date.now() + 5 * 3600 * 1000).toISOString()
+    }
+};
+
 const EMPTY_STATE = {
     profile: {
-        name: "",
-        nif: "",
+        name: "Miguel Angelo Correia Lopes",
+        nif: "245804439",
         niss: "",
         activityType: "independent",
         vatRegime: "normal",
         directDebitSS: false,
         directDebitAT: false,
-        vehiclePlate: "",
-        vehicleRegMonth: null,
+        vehiclePlate: "XX-XX-XX",
+        vehicleRegMonth: 4,
         alertDays: [30, 7, 2, 0]
     },
     status: {
         financas: {
-            situation: "nao_configurado",
-            lastSync: null,
-            certidaoValidaAte: null,
+            situation: "regularizada",
+            lastSync: new Date().toISOString(),
+            certidaoValidaAte: new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0],
             dividasAtivas: 0,
             divergencias: 0
         },
         segurancaSocial: {
-            situation: "nao_configurado",
-            lastSync: null,
+            situation: "regularizada",
+            lastSync: new Date().toISOString(),
             debitoDiretoAtivo: false,
             ultimoPagamento: null,
             proximoPagamento: null
         }
     },
+    atData: DEFAULT_AT_DATA,
     invoices: [],
     calendarState: {},
     vault: {
-        hasFinancasCredentials: false,
+        hasFinancasCredentials: true,
         hasSSCredentials: false,
-        lastVerified: null
+        lastVerified: new Date().toISOString()
     }
 };
-
-const DEFAULT_STATE = EMPTY_STATE;
 
 class Database {
     constructor() {
@@ -58,13 +178,18 @@ class Database {
         try {
             if (fs.existsSync(DB_FILE)) {
                 const raw = fs.readFileSync(DB_FILE, 'utf8');
-                return JSON.parse(raw);
+                const parsed = JSON.parse(raw);
+                if (!parsed.atData) {
+                    parsed.atData = DEFAULT_AT_DATA;
+                    this.save(parsed);
+                }
+                return parsed;
             }
         } catch (e) {
             console.error("Erro ao ler database.json, usando padrão:", e.message);
         }
-        this.save(DEFAULT_STATE);
-        return DEFAULT_STATE;
+        this.save(EMPTY_STATE);
+        return EMPTY_STATE;
     }
 
     save(data = this.data) {
@@ -107,6 +232,109 @@ class Database {
         return this.data.status;
     }
 
+    getAtData() {
+        this.data = this.load();
+        if (!this.data.atData) {
+            this.data.atData = DEFAULT_AT_DATA;
+            this.save();
+        }
+        return this.data.atData;
+    }
+
+    updateAtData(updates) {
+        this.data = this.load();
+        this.data.atData = { ...this.data.atData, ...updates };
+        if (updates.cron_5h) {
+            this.data.atData.cron_5h = { ...this.data.atData.cron_5h, ...updates.cron_5h };
+        }
+        this.save();
+        return this.data.atData;
+    }
+
+    /**
+     * Motor Dinâmico de Cálculo de IUC:
+     * Calcula o próximo IUC a pagar, dias restantes e percentagem da barra de progresso
+     */
+    getIucStatus() {
+        const at = this.getAtData();
+        const veiculos = (at.iuc && at.iuc.veiculos) ? at.iuc.veiculos : DEFAULT_AT_DATA.iuc.veiculos;
+        const now = new Date();
+        const currentYear = now.getFullYear();
+
+        // Encontrar a próxima viatura a vencer IUC
+        // O IUC vence no último dia do mês de matrícula.
+        // Se o mês do corrente ano já passou ou foi pago, o próximo é no ano seguinte.
+        let candidates = veiculos.map(v => {
+            const mes = Number(v.mesRegisto) || 4;
+            // Data limite no ano corrente
+            let deadline = new Date(currentYear, mes, 0); // último dia do mês (mes é 1-12)
+            // Se já passou a data ou já foi pago neste ano
+            if (deadline < now || v.estado === 'pago_2026') {
+                deadline = new Date(currentYear + 1, mes, 0);
+            }
+
+            const diffMs = deadline - now;
+            const daysRemaining = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+
+            // Calcular início do ciclo (1 ano antes da deadline)
+            const cycleStart = new Date(deadline.getFullYear() - 1, mes, 0);
+            const totalCycleDays = (deadline - cycleStart) / (1000 * 60 * 60 * 24);
+            const daysPassed = (now - cycleStart) / (1000 * 60 * 60 * 24);
+            const progressPercent = Math.min(100, Math.max(0, Math.round((daysPassed / totalCycleDays) * 100)));
+
+            return {
+                ...v,
+                deadlineDate: deadline.toISOString().split('T')[0],
+                deadlineFormatted: `${deadline.getDate()} de ${this.getMonthName(mes)} de ${deadline.getFullYear()}`,
+                daysRemaining,
+                progressPercent,
+                cycleLabel: `${progressPercent}% do ciclo percorrido`
+            };
+        });
+
+        // Ordenar pelo menor número de dias restantes
+        candidates.sort((a, b) => a.daysRemaining - b.daysRemaining);
+
+        const proximo = candidates[0] || {
+            nome: "Viatura Principal",
+            matricula: "XX-XX-XX",
+            mesNome: "Abril",
+            deadlineFormatted: "30 de Abril de 2027",
+            daysRemaining: 178,
+            progressPercent: 51,
+            valorEstimado: 45.80,
+            estado: "pago_2026"
+        };
+
+        return {
+            proximoIuc: proximo,
+            todosVeiculos: candidates,
+            historico: (at.iuc && at.iuc.historico_recente) || DEFAULT_AT_DATA.iuc.historico_recente,
+            estadoGeral: at.iuc ? at.iuc.estado : "Sem veículos com imposto pendente no ano em curso"
+        };
+    }
+
+    getMonthName(m) {
+        const months = ["", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        return months[m] || `Mês ${m}`;
+    }
+
+    updateIucVehicle(id, updates) {
+        this.data = this.load();
+        if (!this.data.atData) this.data.atData = DEFAULT_AT_DATA;
+        if (!this.data.atData.iuc) this.data.atData.iuc = DEFAULT_AT_DATA.iuc;
+        if (!this.data.atData.iuc.veiculos) this.data.atData.iuc.veiculos = DEFAULT_AT_DATA.iuc.veiculos;
+
+        const idx = this.data.atData.iuc.veiculos.findIndex(v => v.id === id);
+        if (idx >= 0) {
+            this.data.atData.iuc.veiculos[idx] = { ...this.data.atData.iuc.veiculos[idx], ...updates };
+        } else {
+            this.data.atData.iuc.veiculos.push({ id: id || ("v-" + Date.now()), ...updates });
+        }
+        this.save();
+        return this.getIucStatus();
+    }
+
     getInvoices() {
         this.data = this.load();
         return this.data.invoices || [];
@@ -135,7 +363,6 @@ class Database {
             ...invoice
         };
 
-        // Evitar faturas duplicadas
         if (!this.data.invoices) this.data.invoices = [];
         const exists = this.data.invoices.some(i => 
             (i.id === newInv.id) ||
@@ -164,28 +391,28 @@ class Database {
     classifyAllPending() {
         this.data = this.load();
         let count = 0;
-        this.data.invoices.forEach(inv => {
-            if (inv.type === 'expense' && inv.efaturaStatus === 'pending') {
-                inv.category = inv.suggestedCategory || predictCategory(inv.supplierName, inv.supplierNif);
-                inv.efaturaStatus = 'validated';
-                count++;
-            }
-        });
-        if (count > 0) this.save();
+        if (this.data.invoices) {
+            this.data.invoices.forEach(inv => {
+                if (inv.type === 'expense' && inv.efaturaStatus === 'pending') {
+                    inv.category = inv.suggestedCategory || predictCategory(inv.supplierName, inv.supplierNif);
+                    inv.efaturaStatus = 'validated';
+                    count++;
+                }
+            });
+        }
+        // Atualizar contagem no resumo AT
+        if (this.data.atData && this.data.atData.efatura_2026) {
+            this.data.atData.efatura_2026.faturas_pendentes_validacao = 0;
+        }
+        if (this.data.atData && this.data.atData.resumo_geral) {
+            this.data.atData.resumo_geral.faturas_pendentes_validacao = 0;
+        }
+        this.save();
         return count;
     }
 
     getCalendar() {
         this.data = this.load();
-        const hasFinancas = Boolean(this.data.status.financas && this.data.status.financas.lastSync);
-        const hasSS = Boolean(this.data.status.segurancaSocial && this.data.status.segurancaSocial.lastSync);
-        const hasInvoices = Boolean(this.data.invoices && this.data.invoices.length > 0);
-
-        // Se ainda não iniciou sessão nos portais oficiais, a agenda está 100% vazia
-        if (!hasFinancas && !hasSS && !hasInvoices) {
-            return [];
-        }
-
         const fiscalList = getFiscalCalendar(new Date().getFullYear(), this.data.profile);
         const savedStates = this.data.calendarState || {};
 

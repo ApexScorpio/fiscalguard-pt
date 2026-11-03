@@ -1,759 +1,574 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FiscalGuard PT — Contabilista & Sentinela Pessoal (Finanças & Segurança Social)</title>
-    <meta name="description" content="Aplicação de gestão fiscal e contributiva pessoal para Portugal com monitorização em tempo real de Finanças e Segurança Social, e-fatura e sincronização entre PC e Portátil.">
-    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <title>FiscalGuard PT — Executive Fiscal Sentinel & Accounting</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-layout">
-        <!-- HEADER PRINCIPAL -->
+    <div class="app-container">
+        <!-- HEADER EXECUTIVO -->
         <header class="app-header">
             <div class="header-left">
-                <div class="brand">
-                    <div class="brand-icon">🛡️</div>
-                    <div class="brand-text">
-                        <h1>FiscalGuard <span class="badge-pt">PT</span></h1>
-                        <p class="subtitle">O Teu Contabilista & Sentinela Fiscal Pessoal</p>
+                <div class="brand-logo">
+                    <span class="logo-shield">🛡️</span>
+                    <div>
+                        <div class="brand-title">FiscalGuard <span class="badge-pro">PRO</span></div>
+                        <div class="brand-subtitle">Executive Tax & Financial Sentinel</div>
                     </div>
                 </div>
-            </div>
 
-            <!-- STATUS SEMÁFORO FISCAL -->
-            <div class="header-center">
-                <div class="traffic-lights">
-                    <div class="traffic-card status-at" id="status-at-badge" title="Situação Tributária na Autoridade Tributária">
-                        <span class="status-indicator live-pulse" id="at-indicator-dot"></span>
-                        <div class="status-info">
-                            <span class="status-label">Autoridade Tributária</span>
-                            <strong class="status-value" id="at-situation-text">A Aguardar Login</strong>
-                        </div>
-                    </div>
-
-                    <div class="traffic-card status-ss" id="status-ss-badge" title="Situação Contributiva na Segurança Social">
-                        <span class="status-indicator live-pulse" id="ss-indicator-dot"></span>
-                        <div class="status-info">
-                            <span class="status-label">Segurança Social</span>
-                            <strong class="status-value" id="ss-situation-text">A Aguardar Login</strong>
-                        </div>
-                    </div>
-
-                    <div class="traffic-card status-sync" id="device-sync-badge" title="Sincronização entre PC e Portátil">
-                        <span class="status-indicator live-pulse-blue"></span>
-                        <div class="status-info">
-                            <span class="status-label">Multi-Dispositivo</span>
-                            <strong class="status-value" id="sync-situation-text">PC ↔ Portátil OK</strong>
+                <div class="user-identity-card">
+                    <div class="user-avatar">ML</div>
+                    <div class="user-meta">
+                        <div class="user-name" id="user-display-name">Miguel Angelo Correia Lopes</div>
+                        <div class="user-identifiers">
+                            <span class="pill-id">NIF: <strong id="user-display-nif">245804439</strong></span>
+                            <span class="pill-id pill-iban">IBAN: <strong id="user-display-iban">PT50 0018 ... 2126 7</strong> <span class="badge-verified">✓ Confirmado</span></span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- BOTÕES DE AÇÃO RÁPIDA -->
             <div class="header-right">
-                <button id="btn-open-portal-login" class="btn btn-emerald" title="Iniciar sessão oficial nos portais das Finanças e Segurança Social">
-                    <span class="btn-icon">🔑</span>
-                    <span>Iniciar Sessão Oficial</span>
-                </button>
-                <button id="btn-sync-all" class="btn btn-primary" title="Executa sincronização 100% automática com credenciais locais">
-                    <span class="btn-icon">⚡</span>
-                    <span>Sincronizar (100% Auto)</span>
-                </button>
-                <button id="btn-notify-test" class="btn btn-secondary" title="Disparar notificação de teste nativa do Windows">
-                    <span class="btn-icon">🔔</span>
-                    <span>Alerta Windows</span>
-                </button>
-                <button id="btn-open-devices" class="btn btn-outline" title="Gerir sincronização com o Portátil">
-                    <span class="btn-icon">💻</span>
-                    <span>Ligar Portátil</span>
+                <div class="sentinel-status-box">
+                    <div class="sentinel-indicator">
+                        <span class="live-dot pulse-emerald"></span>
+                        <span class="sentinel-title">AT & SS Regularizadas</span>
+                    </div>
+                    <div class="sentinel-cron" id="cron-countdown-text">⏱️ Ciclo 5h: Ativo • Próxima verificação em 4h 28m</div>
+                </div>
+
+                <button id="btn-sync-now" class="btn-primary-action" title="Executar auditoria e leitura em tempo real da AT">
+                    <span class="icon-refresh">⚡</span>
+                    <span class="btn-text">Sincronizar com AT</span>
                 </button>
             </div>
         </header>
 
-        <!-- BANNER DE ALERTA DE PRAZO URGENTE -->
-        <aside class="alert-banner" id="urgent-alert-banner">
-            <div class="alert-content">
-                <span class="alert-badge">🚨 PRÓXIMA OBRIGAÇÃO</span>
-                <span class="alert-text" id="urgent-banner-text">A carregar os teus prazos fiscais...</span>
-            </div>
-            <div class="alert-actions">
-                <button id="btn-banner-action" class="btn btn-small btn-alert">Ver Detalhes</button>
-            </div>
-        </aside>
-
-        <!-- NAVEGAÇÃO POR ABAS -->
-        <nav class="main-nav">
-            <button class="nav-tab active" data-tab="tab-overview" id="nav-tab-overview">
-                <span class="tab-icon">📊</span> Visão Geral & Prazos
+        <!-- NAVEGAÇÃO PREMIUM -->
+        <nav class="app-nav">
+            <button class="nav-tab active" data-tab="tab-overview">
+                <span class="tab-icon">📊</span>
+                <span class="tab-label">Dashboard Geral</span>
             </button>
-            <button class="nav-tab" data-tab="tab-efatura" id="nav-tab-efatura">
-                <span class="tab-icon">🧾</span> e-fatura & Despesas
-                <span class="tab-counter" id="efatura-counter">0</span>
+            <button class="nav-tab" data-tab="tab-iuc">
+                <span class="tab-icon">🚗</span>
+                <span class="tab-label">Sentinela IUC</span>
+                <span class="nav-tag tag-success">Em Dia</span>
             </button>
-            <button class="nav-tab" data-tab="tab-ss" id="nav-tab-ss">
-                <span class="tab-icon">🛡️</span> Segurança Social
+            <button class="nav-tab" data-tab="tab-efatura">
+                <span class="tab-icon">🧾</span>
+                <span class="tab-label">Central e-Fatura</span>
+                <span class="nav-tag tag-warning" id="nav-efatura-badge">167</span>
             </button>
-            <button class="nav-tab" data-tab="tab-profit" id="nav-tab-profit">
-                <span class="tab-icon">💰</span> Lucro Real no Bolso
+            <button class="nav-tab" data-tab="tab-irs">
+                <span class="tab-icon">📑</span>
+                <span class="tab-label">IRS & Liquidação</span>
             </button>
-            <button class="nav-tab" data-tab="tab-devices" id="nav-tab-devices">
-                <span class="tab-icon">🔄</span> Sincronização PC / Portátil
+            <button class="nav-tab" data-tab="tab-calendar">
+                <span class="tab-icon">📅</span>
+                <span class="tab-label">Agenda Fiscal</span>
             </button>
-            <button class="nav-tab" data-tab="tab-assistant" id="nav-tab-assistant">
-                <span class="tab-icon">🤖</span> Assistente Fiscal IA
+            <button class="nav-tab" data-tab="tab-profit">
+                <span class="tab-icon">💰</span>
+                <span class="tab-label">Simulador de Lucro</span>
             </button>
-            <button class="nav-tab" data-tab="tab-settings" id="nav-tab-settings">
-                <span class="tab-icon">⚙️</span> Definições & Cofre
+            <button class="nav-tab" data-tab="tab-settings">
+                <span class="tab-icon">⚙️</span>
+                <span class="tab-label">Configurações & Cron</span>
             </button>
         </nav>
 
-        <!-- CONTEÚDO PRINCIPAL -->
-        <main class="main-content">
-            
-            <!-- ABA 1: VISÃO GERAL & PRAZOS -->
+        <!-- CONTEÚDO PRINCIPAL DAS ABAS -->
+        <main class="app-main">
+            <!-- ABA 1: DASHBOARD GERAL (INFORMAÇÕES PRINCIPAIS LOGO NO INÍCIO) -->
             <section class="tab-pane active" id="tab-overview">
-                <div class="overview-cards-grid">
-                    <div class="metric-card card-glow-emerald">
-                        <div class="metric-header">
-                            <span class="metric-title">Líquido Real no Bolso</span>
-                            <span class="metric-icon">💰</span>
+                
+                <!-- MEGA CARDS GRID (INFORMAÇÕES CRÍTICAS NO TOPO) -->
+                <div class="hero-metrics-grid">
+                    
+                    <!-- CARD ESPECIAL IUC COM BARRA DE PROGRESSO DINÂMICA -->
+                    <div class="hero-card card-iuc-highlight">
+                        <div class="hero-card-header">
+                            <div class="card-tag-wrapper">
+                                <span class="card-icon">🚗</span>
+                                <span class="card-heading">Próximo IUC a Pagar</span>
+                            </div>
+                            <span class="badge-status badge-success" id="iuc-hero-badge">✓ Ciclo Atual Pago</span>
                         </div>
-                        <div class="metric-value text-emerald" id="overview-net-amount">0,00 €</div>
-                        <div class="metric-footnote">Dinheiro 100% limpo e livre de impostos para gastar</div>
+
+                        <div class="iuc-hero-body">
+                            <div class="iuc-vehicle-info">
+                                <div class="iuc-vehicle-title" id="iuc-vehicle-name">Viatura Principal</div>
+                                <div class="iuc-vehicle-sub" id="iuc-vehicle-plate">Matrícula: XX-XX-XX • Mês: Abril</div>
+                            </div>
+
+                            <div class="iuc-amount-box">
+                                <span class="iuc-currency">€</span>
+                                <span class="iuc-value" id="iuc-hero-amount">45,80</span>
+                                <span class="iuc-period">estimado</span>
+                            </div>
+                        </div>
+
+                        <!-- BARRA DE PROGRESSO DO IUC -->
+                        <div class="iuc-progress-section">
+                            <div class="iuc-progress-header">
+                                <span class="iuc-deadline-text">📅 Limite: <strong id="iuc-hero-deadline">30 de Abril de 2027</strong></span>
+                                <span class="iuc-days-remaining" id="iuc-hero-days">Faltam 177 dias</span>
+                            </div>
+                            
+                            <div class="progress-bar-track">
+                                <div class="progress-bar-fill fill-gradient-iuc" id="iuc-progress-bar" style="width: 52%;"></div>
+                            </div>
+
+                            <div class="progress-milestones">
+                                <span>Início do Ciclo (Mai)</span>
+                                <span class="active-milestone" id="iuc-progress-percent">52% percorrido</span>
+                                <span>Prazo Limite (Abr)</span>
+                            </div>
+                        </div>
+
+                        <div class="hero-card-footer">
+                            <span class="footer-note">🛡️ 4 pagamentos de IUC validados e registados em 2026.</span>
+                            <button class="btn-card-action" onclick="switchTab('tab-iuc')">Ver Detalhes →</button>
+                        </div>
                     </div>
 
-                    <div class="metric-card card-glow-amber">
-                        <div class="metric-header">
-                            <span class="metric-title">Reserva de IVA (A Pagar)</span>
-                            <span class="metric-icon">🏛️</span>
+                    <!-- CARD SITUAÇÃO TRIBUTÁRIA & DÍVIDAS -->
+                    <div class="hero-card card-status-highlight">
+                        <div class="hero-card-header">
+                            <div class="card-tag-wrapper">
+                                <span class="card-icon">🏛️</span>
+                                <span class="card-heading">Situação Tributária</span>
+                            </div>
+                            <span class="badge-status badge-success">Regularizada</span>
                         </div>
-                        <div class="metric-value text-amber" id="overview-vat-reserve">0,00 €</div>
-                        <div class="metric-footnote" id="overview-vat-detail">IVA liquidado deduzido de despesas</div>
+
+                        <div class="status-metric-body">
+                            <div class="status-main-val text-success">0,00 €</div>
+                            <div class="status-main-label">Inexistência total de dívidas ativas</div>
+                        </div>
+
+                        <div class="status-checks-list">
+                            <div class="check-item">
+                                <span class="check-icon">✓</span>
+                                <span class="check-text">Processos Executivos: <strong>0 ativos</strong></span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-icon">✓</span>
+                                <span class="check-text">Pagamentos a Decorrer: <strong>0 pendentes</strong></span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-icon">✓</span>
+                                <span class="check-text">Certidão Não Dívida: <strong>Válida</strong></span>
+                            </div>
+                        </div>
+
+                        <div class="hero-card-footer">
+                            <span class="footer-note">Última validação AT: Hoje às <span id="last-sync-time">22:00</span></span>
+                        </div>
                     </div>
 
-                    <div class="metric-card card-glow-blue">
-                        <div class="metric-header">
-                            <span class="metric-title">Reserva Segurança Social</span>
-                            <span class="metric-icon">🛡️</span>
+                    <!-- CARD IRS & LIQUIDAÇÃO -->
+                    <div class="hero-card card-irs-highlight">
+                        <div class="hero-card-header">
+                            <div class="card-tag-wrapper">
+                                <span class="card-icon">📑</span>
+                                <span class="card-heading">IRS (Última Liquidação)</span>
+                            </div>
+                            <span class="badge-status badge-info">Ano 2025</span>
                         </div>
-                        <div class="metric-value text-blue" id="overview-ss-reserve">0,00 €</div>
-                        <div class="metric-footnote">Previsão com base no rendimento relevante</div>
+
+                        <div class="irs-metric-body">
+                            <div class="irs-amount text-rose" id="irs-hero-amount">-1.920,22 €</div>
+                            <div class="irs-status-text">Notificação Emitida • Liquidada</div>
+                        </div>
+
+                        <div class="irs-mini-breakdown">
+                            <div class="breakdown-row">
+                                <span>Rendimento Global:</span>
+                                <strong id="irs-rendimento-global">20.722,74 €</strong>
+                            </div>
+                            <div class="breakdown-row">
+                                <span>Coleta Líquida AT:</span>
+                                <strong id="irs-coleta-liquida">2.141,22 €</strong>
+                            </div>
+                            <div class="breakdown-row">
+                                <span>Retenção na Fonte:</span>
+                                <strong id="irs-retencao-fonte">221,00 €</strong>
+                            </div>
+                        </div>
+
+                        <div class="hero-card-footer">
+                            <span class="footer-note">💡 Dica 2026: Aumentar retenção ou poupar 160€/mês</span>
+                            <button class="btn-card-action" onclick="switchTab('tab-irs')">Simulação →</button>
+                        </div>
                     </div>
 
-                    <div class="metric-card card-glow-purple">
-                        <div class="metric-header">
-                            <span class="metric-title">Provisão Estimada IRS</span>
-                            <span class="metric-icon">📑</span>
+                    <!-- CARD E-FATURA & DEDUÇÕES -->
+                    <div class="hero-card card-efatura-highlight">
+                        <div class="hero-card-header">
+                            <div class="card-tag-wrapper">
+                                <span class="card-icon">🧾</span>
+                                <span class="card-heading">Deduções IRS 2026</span>
+                            </div>
+                            <span class="badge-status badge-warning" id="efatura-hero-pending-badge">167 Pendentes</span>
                         </div>
-                        <div class="metric-value text-purple" id="overview-irs-reserve">0,00 €</div>
-                        <div class="metric-footnote">Para evitar surpresas na entrega de Abril/Junho</div>
+
+                        <div class="efatura-metric-body">
+                            <div class="efatura-amount text-amber" id="efatura-hero-amount">210,39 €</div>
+                            <div class="efatura-label">Deduções provisórias acumuladas em 2026</div>
+                        </div>
+
+                        <div class="efatura-sector-bar">
+                            <div class="sector-progress-label">
+                                <span>Despesas Gerais Familiares (78% do teto)</span>
+                                <strong>195,27 € / 250 €</strong>
+                            </div>
+                            <div class="progress-bar-track">
+                                <div class="progress-bar-fill fill-amber" style="width: 78%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="hero-card-footer">
+                            <button id="btn-auto-classify-hero" class="btn-quick-classify">
+                                <span>⚡ Classificar 167 Faturas com IA</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- SEGUNDA LINHA: RESERVAS & LÍQUIDO REAL NO BOLSO -->
+                <div class="secondary-metrics-row">
+                    <div class="metric-mini-card">
+                        <div class="mini-card-title">💰 Líquido Livre no Bolso</div>
+                        <div class="mini-card-val text-emerald" id="overview-net-amount">0,00 €</div>
+                        <div class="mini-card-sub">Dinheiro 100% limpo e livre de impostos</div>
+                    </div>
+                    <div class="metric-mini-card">
+                        <div class="mini-card-title">🏛️ Provisão Reserva IVA</div>
+                        <div class="mini-card-val text-amber" id="overview-vat-reserve">0,00 €</div>
+                        <div class="mini-card-sub">Para acerto da declaração periódica</div>
+                    </div>
+                    <div class="metric-mini-card">
+                        <div class="mini-card-title">🛡️ Reserva Segurança Social</div>
+                        <div class="mini-card-val text-blue" id="overview-ss-reserve">0,00 €</div>
+                        <div class="mini-card-sub">Contribuição estimada sobre faturação</div>
+                    </div>
+                    <div class="metric-mini-card">
+                        <div class="mini-card-title">📑 Reserva Preventiva IRS</div>
+                        <div class="mini-card-val text-purple" id="overview-irs-reserve">0,00 €</div>
+                        <div class="mini-card-sub">Para evitar surpresa na liquidação</div>
                     </div>
                 </div>
 
-                <div class="calendar-section">
-                    <div class="section-header">
+                <!-- PRÓXIMAS OBRIGAÇÕES FISCAIS (AGENDA RESUMIDA) -->
+                <div class="dashboard-section-box">
+                    <div class="box-header">
                         <div>
-                            <h2>Agenda Fiscal & Contributiva</h2>
-                            <p class="section-desc">Prazos oficiais com contagem decrescente em tempo real e notificações automáticas no teu Windows.</p>
+                            <h2 class="box-title">📅 Próximas Obrigações & Prazos da Agenda Fiscal</h2>
+                            <p class="box-desc">Alertas nativos automáticos no Windows Toast antes do prazo limite.</p>
                         </div>
-                        <div class="filter-controls">
-                            <span class="legend-dot dot-critical"></span> Urgente (&le; 2 dias)
-                            <span class="legend-dot dot-warning"></span> Atenção (&le; 7 dias)
-                            <span class="legend-dot dot-normal"></span> A Tempo (&gt; 7 dias)
+                        <button class="btn-secondary-action" onclick="switchTab('tab-calendar')">Ver Agenda Completa</button>
+                    </div>
+                    <div class="obligations-list" id="overview-obligations-container">
+                        <!-- Gerado dinamicamente -->
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- ABA 2: SENTINELA IUC (DEDICADO COM BARRA DE PROGRESSO) -->
+            <section class="tab-pane" id="tab-iuc">
+                <div class="tab-header-banner">
+                    <div>
+                        <h2>🚗 Sentinela do Imposto Único de Circulação (IUC)</h2>
+                        <p>Acompanhamento rigoroso de viaturas, cálculo do ciclo anual, barra de progresso do prazo e histórico de pagamentos efetuados.</p>
+                    </div>
+                </div>
+
+                <!-- CARD EM DESTAQUE DO PRÓXIMO IUC -->
+                <div class="iuc-detailed-card">
+                    <div class="iuc-detailed-header">
+                        <div>
+                            <span class="badge-tag">PRÓXIMO VENCIMENTO IUC</span>
+                            <h3 class="iuc-vehicle-main-title" id="iuc-detail-name">Viatura Principal (Matrícula de Abril)</h3>
+                            <div class="iuc-vehicle-specs" id="iuc-detail-specs">Matrícula: XX-XX-XX • Mês de Matrícula: Abril (Vencimento anual no último dia do mês)</div>
+                        </div>
+                        <div class="iuc-big-amount-box">
+                            <div class="big-amount" id="iuc-detail-amount">45,80 €</div>
+                            <div class="amount-sub">Valor Previsto</div>
                         </div>
                     </div>
 
-                    <div class="calendar-filters-row">
-                        <div class="calendar-filters">
-                            <button class="btn-filter-cal active" data-cal-filter="upcoming">Próximas Obrigações (Atuais)</button>
-                            <button class="btn-filter-cal" data-cal-filter="all">Todas do Ano</button>
-                            <button class="btn-filter-cal" data-cal-filter="overdue">Obrigações Anteriores (<span id="cal-overdue-count">0</span>)</button>
-                            <button class="btn-filter-cal" data-cal-filter="completed">Já Concluídas</button>
+                    <!-- BARRA DE PROGRESSO GRANDE -->
+                    <div class="iuc-large-progress-box">
+                        <div class="progress-info-row">
+                            <span class="info-label">Estado do Ciclo Anual: <strong class="text-success" id="iuc-detail-status-label">Em Dia (Ciclo 2026 Liquidado)</strong></span>
+                            <span class="info-deadline">Prazo Limite: <strong id="iuc-detail-deadline">30 de Abril de 2027</strong> (<span id="iuc-detail-days-remaining">177 dias restantes</span>)</span>
                         </div>
-                        <button id="btn-complete-all-past" class="btn btn-small btn-secondary" title="Marcar todas as obrigações de meses anteriores como já entregues ou cumpridas">
-                            <span>✓ Arquivar Obrigações Anteriores</span>
-                        </button>
+
+                        <div class="progress-bar-large-track">
+                            <div class="progress-bar-large-fill" id="iuc-detail-progress-bar" style="width: 52%;">
+                                <span class="progress-glow-pin"></span>
+                            </div>
+                        </div>
+
+                        <div class="progress-timeline-labels">
+                            <div>
+                                <span class="dot-milestone"></span>
+                                <div>Último Pagamento</div>
+                                <strong id="iuc-last-payment-date">19 de Abril de 2026</strong>
+                            </div>
+                            <div class="text-center">
+                                <span class="dot-milestone active"></span>
+                                <div>Posição Atual</div>
+                                <strong id="iuc-detail-percent-text">52% do ciclo</strong>
+                            </div>
+                            <div class="text-right">
+                                <span class="dot-milestone"></span>
+                                <div>Próximo Prazo Limite</div>
+                                <strong>30 de Abril de 2027</strong>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="obligations-list" id="obligations-container">
+                    <!-- REGRAS LEGAIS DO IUC -->
+                    <div class="iuc-rules-note">
+                        <strong>📌 Como funciona o prazo do IUC em Portugal:</strong> O IUC deve ser liquidado todos os anos no mês da matrícula da viatura (até ao último dia desse mês). Se já pagou o IUC no mês da matrícula em 2026, a obrigação seguinte apenas vencerá no mesmo mês em 2027.
+                    </div>
+                </div>
+
+                <!-- VIATURAS NO SISTEMA & HISTÓRICO DE PAGAMENTOS -->
+                <div class="two-columns-grid">
+                    <div class="grid-box">
+                        <div class="box-header">
+                            <h3 class="box-title">🚙 Veículos Registados</h3>
+                        </div>
+                        <div class="vehicles-list" id="vehicles-list-container">
+                            <!-- Gerado dinamicamente -->
+                        </div>
+                    </div>
+
+                    <div class="grid-box">
+                        <div class="box-header">
+                            <h3 class="box-title">🧾 Histórico de Pagamentos IUC (AT)</h3>
+                        </div>
+                        <div class="history-list" id="iuc-history-container">
+                            <!-- Gerado dinamicamente -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ABA 3: CENTRAL E-FATURA -->
+            <section class="tab-pane" id="tab-efatura">
+                <div class="tab-header-banner">
+                    <div>
+                        <h2>🧾 Central e-Fatura & Deduções de IRS</h2>
+                        <p>Totalizadores em tempo real por setor, monitorização dos limites máximos legais de IRS e classificação inteligente com 1-clique.</p>
+                    </div>
+                    <button id="btn-auto-classify-efatura" class="btn-primary-action">
+                        <span>⚡ Classificar Todas as Faturas Pendentes</span>
+                    </button>
+                </div>
+
+                <!-- TOTALIZADORES POR SETOR -->
+                <div class="sectors-grid" id="efatura-sectors-grid">
+                    <!-- Gerado dinamicamente com barras de progresso até ao limite legal -->
+                </div>
+
+                <!-- TABELA DE FATURAS -->
+                <div class="table-card">
+                    <div class="table-card-header">
+                        <h3 class="box-title">Registo de Faturas (Ano 2026)</h3>
+                        <div class="table-filters">
+                            <button class="filter-btn active" data-filter="all">Todas</button>
+                            <button class="filter-btn" data-filter="pending">Apenas Pendentes (167)</button>
+                            <button class="filter-btn" data-filter="expense">Despesas</button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="premium-table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Fornecedor / Emitente</th>
+                                    <th>NIF</th>
+                                    <th>Total (€)</th>
+                                    <th>IVA (€)</th>
+                                    <th>Setor e-Fatura</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoices-table-body">
+                                <!-- Gerado dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ABA 4: IRS & LIQUIDAÇÃO -->
+            <section class="tab-pane" id="tab-irs">
+                <div class="tab-header-banner">
+                    <div>
+                        <h2>📑 Demonstração de Liquidação & Simulação de IRS</h2>
+                        <p>Análise cirúrgica da liquidação oficial de 2025 emitida pela AT e projeção estratégica para 2026.</p>
+                    </div>
+                </div>
+
+                <div class="irs-comparison-grid">
+                    <!-- LIQUIDAÇÃO REAL 2025 -->
+                    <div class="irs-card">
+                        <div class="irs-card-badge">OFICIAL AT (ANO 2025)</div>
+                        <h3 class="irs-card-title">Demonstração de Liquidação Nº 2026 500 5090860</h3>
+                        
+                        <div class="irs-stat-highlight text-rose">
+                            <div class="irs-stat-num">1.920,22 €</div>
+                            <div class="irs-stat-desc">Valor a Pagar (Notificação Emitida)</div>
+                        </div>
+
+                        <div class="irs-sheet-table">
+                            <div class="sheet-row"><span>Rendimento Global (Salários/Trabalho):</span> <strong>20.722,74 €</strong></div>
+                            <div class="sheet-row"><span>Dedução Específica:</span> <strong>-4.462,40 €</strong></div>
+                            <div class="sheet-row"><span>Rendimento Coletável:</span> <strong>16.260,34 €</strong></div>
+                            <div class="sheet-row"><span>Coleta Total:</span> <strong>3.056,22 €</strong></div>
+                            <div class="sheet-row"><span>Deduções à Coleta (Despesas/Faturas):</span> <strong>-915,00 €</strong></div>
+                            <div class="sheet-row highlight"><span>Coleta Líquida do Estado:</span> <strong>2.141,22 €</strong></div>
+                            <div class="sheet-row"><span>Retenções na Fonte Efetuadas:</span> <strong>-221,00 €</strong></div>
+                            <div class="sheet-row total"><span>SALDO FINAL A PAGAR À AT:</span> <strong class="text-rose">1.920,22 €</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- DIAGNÓSTICO & PROJEÇÃO 2026 -->
+                    <div class="irs-card">
+                        <div class="irs-card-badge badge-emerald">PROJEÇÃO ESTRATÉGICA 2026</div>
+                        <h3 class="irs-card-title">Porque teve 1.920 € a pagar e como evitar em 2026</h3>
+
+                        <div class="irs-diagnosis-box">
+                            <p><strong>Causa Raiz:</strong> Teve uma retenção na fonte de apenas <strong>221,00 €</strong> (taxa efetiva de ~1%) para um rendimento superior a 20.000 €. O imposto devido foi 2.141,22 €, gerando a fatura de acerto de 1.920,22 €.</p>
+                        </div>
+
+                        <h4 class="mt-4">Plano de Poupança & Ação Fiscal:</h4>
+                        <div class="action-plan-list">
+                            <div class="plan-item">
+                                <span class="plan-num">1</span>
+                                <div>
+                                    <strong>Reserva Mensal Automática:</strong>
+                                    <p>Poupe <strong>160,00 €/mês</strong> numa conta à ordem separada para liquidar o acerto de IRS sem impacto de tesouraria.</p>
+                                </div>
+                            </div>
+                            <div class="plan-item">
+                                <span class="plan-num">2</span>
+                                <div>
+                                    <strong>Validar as 167 Faturas Pendentes:</strong>
+                                    <p>Cada fatura associada ao setor correto (saúde, educação, restauração) abate diretamente à coleta líquida.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ABA 5: AGENDA FISCAL -->
+            <section class="tab-pane" id="tab-calendar">
+                <div class="tab-header-banner">
+                    <div>
+                        <h2>📅 Agenda Fiscal & Prazos Oficiais</h2>
+                        <p>Contagem decrescente em tempo real para pagamentos de IRS, IUC, IVA e contribuições da Segurança Social.</p>
+                    </div>
+                </div>
+                <div class="obligations-list" id="calendar-full-container">
+                    <!-- Gerado dinamicamente -->
+                </div>
+            </section>
+
+            <!-- ABA 6: SIMULADOR DE LUCRO -->
+            <section class="tab-pane" id="tab-profit">
+                <div class="tab-header-banner">
+                    <div>
+                        <h2>💰 Simulador "Lucro Real no Bolso"</h2>
+                        <p>Calcule exatamente quanto pode gastar de cada fatura que emite após descontar IVA, Segurança Social e IRS.</p>
+                    </div>
+                </div>
+                <div class="profit-simulator-card">
+                    <div class="sim-input-row">
+                        <label for="sim-invoice-amount">Valor Bruto da Fatura com IVA (€):</label>
+                        <input type="number" id="sim-invoice-amount" class="premium-input" value="1000" step="50">
+                    </div>
+                    <div class="sim-results-grid" id="sim-results-grid">
                         <!-- Gerado dinamicamente -->
                     </div>
                 </div>
             </section>
 
-            <!-- ABA 2: E-FATURA & DESPESAS -->
-            <section class="tab-pane" id="tab-efatura">
-                <div class="efatura-header-banner">
-                    <div class="efatura-summary">
-                        <h2>Central e-fatura & Despesas</h2>
-                        <p>O teu contabilista analisa os fornecedores e CAE das despesas para garantir que deduzes o valor máximo em IRS e abates o IVA da tua atividade.</p>
-                    </div>
-                    <div class="efatura-actions">
-                        <button id="btn-auto-classify" class="btn btn-emerald">
-                            <span class="btn-icon">✨</span> Auto-Classificar Todas as Pendentes (1-Clique)
-                        </button>
-                        <button id="btn-sync-efatura-direct" class="btn btn-secondary" title="Ler faturas diretamente do Portal das Finanças em tempo real">
-                            <span class="btn-icon">🔄</span> Ler Diretamente do Portal das Finanças
-                        </button>
-                    </div>
-                </div>
-
-                <div class="invoices-table-container">
-                    <div class="table-filters">
-                        <button class="btn-filter active" data-filter="all">Todas as Faturas</button>
-                        <button class="btn-filter" data-filter="pending">Apenas Pendentes no e-fatura</button>
-                        <button class="btn-filter" data-filter="issued">Faturas Emitidas (Receita)</button>
-                        <button class="btn-filter" data-filter="expense">Despesas da Atividade</button>
-                    </div>
-
-                    <table class="invoices-table">
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Entidade / Fornecedor</th>
-                                <th>NIF</th>
-                                <th>Tipo</th>
-                                <th>Base</th>
-                                <th>IVA</th>
-                                <th>Total</th>
-                                <th>Classificação e-fatura</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="invoices-tbody">
-                            <!-- Gerado dinamicamente -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- ABA 3: SEGURANÇA SOCIAL -->
-            <section class="tab-pane" id="tab-ss">
-                <div class="ss-dashboard-grid">
-                    <div class="ss-card ss-info-box">
-                        <div class="card-title">
-                            <span>🛡️ Situação na Segurança Social Direta</span>
-                        </div>
-                        <div class="ss-status-row">
-                            <span>Estado da Conta Corrente:</span>
-                            <span class="badge badge-pending" id="ss-cc-status">A Aguardar Autenticação</span>
-                        </div>
-                        <div class="ss-status-row">
-                            <span>Débito Direto Ativo:</span>
-                            <span class="badge badge-outline" id="ss-debito-direto-text">--</span>
-                        </div>
-                        <div class="ss-status-row">
-                            <span>Próximo Pagamento Mensal:</span>
-                            <strong class="text-highlight" id="ss-proximo-pagamento-text">--</strong>
-                        </div>
-                        <div class="payment-slip" id="ss-payment-slip-box" style="display: none;">
-                            <div class="slip-header">Dados de Pagamento Multibanco:</div>
-                            <div class="slip-row"><span>Entidade:</span> <strong id="ss-slip-entidade">--</strong></div>
-                            <div class="slip-row"><span>Referência:</span> <strong id="ss-slip-referencia">--</strong></div>
-                            <div class="slip-row"><span>Montante:</span> <strong id="ss-slip-montante">--</strong></div>
-                        </div>
-                        <div id="ss-unauth-notice" style="text-align: center; padding: 18px 12px; margin-top: 14px; background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); border-radius: var(--radius-md); font-size: 13px; color: var(--text-muted); line-height: 1.5;">
-                            Nenhum dado contributivo assumido ou inventado.<br>
-                            Inicia sessão oficial no <strong>Google Chrome</strong> para consultar a tua situação real na Segurança Social Direta.
-                        </div>
-                    </div>
-
-                    <div class="ss-card ss-simulator-box">
-                        <div class="card-title">
-                            <span>📐 Simulador de Declaração Trimestral da SS</span>
-                        </div>
-                        <p class="card-desc">Simula o valor da contribuição mensal para o próximo trimestre e escolhe a variação legal permitida (-25% a +25%).</p>
-                        
-                        <div class="sim-input-group">
-                            <label for="ss-quarter-income">Faturação Total do Trimestre (€):</label>
-                            <input type="number" id="ss-quarter-income" class="form-input" placeholder="Ex: 6000" value="" step="50">
-                        </div>
-
-                        <div class="sim-variation-slider">
-                            <div class="slider-labels">
-                                <span>-25% (Pagar Menos)</span>
-                                <span id="variation-display-value">Variação: 0% (Padrão)</span>
-                                <span>+25% (Mais Proteção)</span>
-                            </div>
-                            <input type="range" id="ss-variation-slider" min="-25" max="25" step="5" value="0" class="range-slider">
-                        </div>
-
-                        <div class="sim-results-box" id="ss-sim-results">
-                            <div class="sim-result-row">
-                                <span>Rendimento Relevante (70%):</span>
-                                <strong id="ss-sim-relevant">-- €</strong>
-                            </div>
-                            <div class="sim-result-row">
-                                <span>Base Mensal Ajustada:</span>
-                                <strong id="ss-sim-base">-- €</strong>
-                            </div>
-                            <div class="sim-result-row highlight">
-                                <span>Contribuição Mensal a Pagar:</span>
-                                <strong class="text-emerald" id="ss-sim-monthly">-- € / mês</strong>
-                            </div>
-                            <div class="sim-explanation" id="ss-sim-explanation">
-                                Introduz o valor da faturação trimestral acima para simular as tuas contribuições mensais.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ABA 4: SIMULADOR DE LUCRO REAL -->
-            <section class="tab-pane" id="tab-profit">
-                <div class="profit-simulator-wrapper">
-                    <div class="profit-calculator-card">
-                        <div class="calc-header">
-                            <h2>Simulador "Lucro Real no Teu Bolso"</h2>
-                            <p>Emite uma fatura sem medo de surpresas. Vê exatamente quanto pertence ao Estado (IVA, IRS, SS) e quanto dinheiro podes gastar à vontade.</p>
-                        </div>
-
-                        <div class="calculator-form">
-                            <div class="form-row">
-                                <div class="form-group flex-2">
-                                    <label for="sim-invoice-amount">Valor da Fatura / Rendimento Bruto (€):</label>
-                                    <input type="number" id="sim-invoice-amount" class="form-input form-input-lg" placeholder="Ex: 2000" value="" step="100">
-                                </div>
-                                <div class="form-group flex-1">
-                                    <label for="sim-vat-rate">Taxa / Enquadramento de IVA:</label>
-                                    <select id="sim-vat-rate" class="form-select">
-                                        <option value="0.23" selected>23% — Taxa Normal (Portugal Continental)</option>
-                                        <option value="0.13">13% — Taxa Intermédia</option>
-                                        <option value="0.06">6% — Taxa Reduzida</option>
-                                        <option value="exempt_53">0% — Isenção Artigo 53.º (Regime Especial)</option>
-                                        <option value="exempt_9">0% — Isenção Artigo 9.º (Médicos, Formação, etc.)</option>
-                                        <option value="reverse_charge">0% — Autoliquidação / B2B Internacional</option>
-                                        <option value="custom">Outra Taxa Personalizada</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group flex-1">
-                                    <label for="sim-ss-mode">Segurança Social para Esta Fatura:</label>
-                                    <select id="sim-ss-mode" class="form-select">
-                                        <option value="services" selected>Prestação de Serviços (70% Relevante &bull; 21,4% SS &rarr; ~14,98%)</option>
-                                        <option value="sales">Venda de Mercadorias (20% Relevante &bull; 21,4% SS &rarr; ~4,28%)</option>
-                                        <option value="exempt_tco">🛡️ Isento por Conta de Outrem (Já desconta pelo salário TCO &rarr; 0€)</option>
-                                        <option value="custom">Taxa Personalizada de SS</option>
-                                    </select>
-                                </div>
-                                <div class="form-group flex-1">
-                                    <label for="sim-irs-retention">Retenção na Fonte de IRS nesta Fatura:</label>
-                                    <select id="sim-irs-retention" class="form-select">
-                                        <option value="0.25" selected>25% — Taxa Padrão (Trabalhador Independente)</option>
-                                        <option value="0.165">16,5% — Propriedade Intelectual / Direitos</option>
-                                        <option value="0.115">11,5% — Outras Prestações / Atos Isolados</option>
-                                        <option value="0.0">0% — Sem Retenção na Fonte (Dispensa Art. 101.º-B)</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="form-row" id="custom-rates-row" style="display: none;">
-                                <div class="form-group flex-1" id="custom-vat-group" style="display: none;">
-                                    <label for="sim-custom-vat">Taxa de IVA Personalizada (%):</label>
-                                    <input type="number" id="sim-custom-vat" class="form-input" value="23" step="0.5">
-                                </div>
-                                <div class="form-group flex-1" id="custom-ss-group" style="display: none;">
-                                    <label for="sim-custom-ss">Taxa de SS Personalizada (% sobre o bruto):</label>
-                                    <input type="number" id="sim-custom-ss" class="form-input" value="10" step="0.5">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="profit-distribution-grid">
-                            <div class="dist-card dist-net">
-                                <div class="dist-icon">💰</div>
-                                <div class="dist-title">Dinheiro Limpo no Bolso</div>
-                                <div class="dist-amount text-emerald" id="profit-calc-net">-- €</div>
-                                <div class="dist-percent" id="profit-percent-net">--</div>
-                            </div>
-
-                            <div class="dist-card dist-vat">
-                                <div class="dist-icon">🏛️</div>
-                                <div class="dist-title">Reserva de IVA</div>
-                                <div class="dist-amount text-amber" id="profit-calc-vat">-- €</div>
-                                <div class="dist-percent" id="profit-percent-vat">Introduz um valor acima</div>
-                            </div>
-
-                            <div class="dist-card dist-ss">
-                                <div class="dist-icon">🛡️</div>
-                                <div class="dist-title">Segurança Social</div>
-                                <div class="dist-amount text-blue" id="profit-calc-ss">-- €</div>
-                                <div class="dist-percent" id="profit-percent-ss">Introduz um valor acima</div>
-                            </div>
-
-                            <div class="dist-card dist-irs">
-                                <div class="dist-icon">📑</div>
-                                <div class="dist-title">Provisão de IRS</div>
-                                <div class="dist-amount text-purple" id="profit-calc-irs">-- €</div>
-                                <div class="dist-percent" id="profit-percent-irs">Introduz um valor acima</div>
-                            </div>
-                        </div>
-
-                        <div class="profit-advice-box">
-                            <strong>💡 Conselho do Teu Contabilista:</strong>
-                            <p id="profit-advice-text">
-                                Introduz o valor do rendimento bruto da fatura acima para calcular exatamente a fatia que pertence ao Estado (IVA, IRS e SS) e o teu rendimento líquido livre para gastar.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ABA 5: SINCRONIZAÇÃO PC / PORTÁTIL -->
-            <section class="tab-pane" id="tab-devices">
-                <div class="devices-sync-card">
-                    <div class="devices-header">
-                        <div>
-                            <h2>Sincronização Multi-Dispositivo (PC ↔ Portátil)</h2>
-                            <p>Mantém as tuas faturas, semáforo fiscal e alertas sempre perfeitamente sincronizados entre o teu computador de secretária e o teu portátil.</p>
-                        </div>
-                        <button id="btn-sync-now-devices" class="btn btn-primary">
-                            <span class="btn-icon">🔄</span> Sincronizar Agora
-                        </button>
-                    </div>
-
-                    <div class="pairing-box">
-                        <div class="pairing-details">
-                            <span class="pairing-label">Código de Emparelhamento Deste Dispositivo:</span>
-                            <div class="pairing-code-badge" id="display-pairing-code">Carregando...</div>
-                            <p class="pairing-instructions">No teu portátil (ou outro computador), abre a app e introduz este código para ligares ambos os dispositivos de forma instantânea e encriptada.</p>
-                        </div>
-                        <div class="pairing-action-form">
-                            <label for="input-remote-code">Introduzir Código de Outro Computador:</label>
-                            <div class="input-inline">
-                                <input type="text" id="input-remote-code" class="form-input" placeholder="Ex: FG-123456">
-                                <button id="btn-pair-device" class="btn btn-emerald">Emparelhar</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="paired-devices-list">
-                        <h3>Dispositivos Ligados</h3>
-                        <div class="devices-grid" id="paired-devices-container">
-                            <!-- Gerado dinamicamente -->
-                        </div>
-                    </div>
-
-                    <div class="onedrive-sync-box">
-                        <div class="onedrive-info">
-                            <h4>📁 Sincronização Automática por Pasta de Nuvem (OneDrive / Google Drive)</h4>
-                            <p>O FiscalGuard pode guardar um cofre encriptado diretamente na tua pasta de nuvem ou em S:\FiscalGuard-Sync. Assim que ligas o portátil, os dados estão sincronizados automaticamente.</p>
-                            <span class="path-display" id="display-sync-path">S:\FiscalGuard-Sync</span>
-                        </div>
-                        <button id="btn-sync-folder-action" class="btn btn-secondary">Testar Sincronização por Pasta</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ABA 6: ASSISTENTE FISCAL IA -->
-            <section class="tab-pane" id="tab-assistant">
-                <div class="assistant-card">
-                    <div class="assistant-header">
-                        <div class="assistant-avatar">🤖</div>
-                        <div>
-                            <h2>Assistente Fiscal Inteligente</h2>
-                            <p>Tira qualquer dúvida sobre impostos em Portugal (CIRS, CIVA, Segurança Social, recibos verdes, deduções e coimas).</p>
-                        </div>
-                    </div>
-
-                    <div class="quick-questions">
-                        <span class="quick-label">Perguntas Rápidas:</span>
-                        <button class="btn-chip" data-q="Qual é o limite para a isenção de IVA do Artigo 53?">Isenção de IVA (Art. 53)</button>
-                        <button class="btn-chip" data-q="Como funciona a Declaração Trimestral da Segurança Social?">Declaração Trimestral SS</button>
-                        <button class="btn-chip" data-q="Posso deduzir combustível da viatura em recibos verdes?">Dedução de Combustível</button>
-                        <button class="btn-chip" data-q="O que acontece se trabalhar por conta de outrem e passar recibos verdes?">Acumulação TCO + TI</button>
-                        <button class="btn-chip" data-q="Quando tenho de pagar a Segurança Social para não ter coimas?">Prazos e Pagamento SS</button>
-                    </div>
-
-                    <div class="chat-display" id="assistant-chat-display">
-                        <div class="chat-message message-bot">
-                            <div class="message-sender">FiscalGuard IA</div>
-                            <div class="message-body">
-                                Olá! Sou o teu assistente e contabilista pessoal. Estou sempre em cima de todas as tuas obrigações fiscais nas Finanças e Segurança Social. O que gostarias de esclarecer hoje?
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="chat-input-row">
-                        <input type="text" id="assistant-user-input" class="form-input" placeholder="Escreve a tua dúvida sobre Finanças, e-fatura ou Segurança Social...">
-                        <button id="btn-send-question" class="btn btn-primary">Perguntar</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ABA 7: DEFINIÇÕES & COFRE -->
+            <!-- ABA 7: CONFIGURAÇÕES & CRON -->
             <section class="tab-pane" id="tab-settings">
-                <div class="settings-card">
-                    <h2>Definições do Contribuinte & Cofre Seguro</h2>
-                    <p class="section-desc">Os teus dados e credenciais ficam guardados localmente em S:\fiscalguard-pt com encriptação.</p>
-
-                    <form id="settings-form">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="setting-nif">NIF (Número de Identificação Fiscal):</label>
-                                <input type="text" id="setting-nif" class="form-input" placeholder="Preenchido automaticamente ao autenticar ou introduz o teu NIF" value="">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="setting-niss">NISS (Segurança Social):</label>
-                                <input type="text" id="setting-niss" class="form-input" placeholder="Preenchido automaticamente ao autenticar ou introduz o teu NISS" value="">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="setting-activity">Enquadramento Profissional:</label>
-                                <select id="setting-activity" class="form-select">
-                                    <option value="independent">Trabalhador Independente (Recibos Verdes - Regime Simplificado)</option>
-                                    <option value="tco_independent">Trabalhador por Conta de Outrem + Recibos Verdes (Acumulação)</option>
-                                    <option value="tco">Trabalhador por Conta de Outrem Exclusivo (Apenas IRS)</option>
-                                    <option value="company">Empresário em Nome Individual / Unipessoal</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="setting-vat">Regime de IVA:</label>
-                                <select id="setting-vat" class="form-select">
-                                    <option value="normal">Regime Normal (Declaração Trimestral / 23%)</option>
-                                    <option value="exempt_53">Isenção de IVA (Artigo 53.º do CIVA)</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="setting-plate">Matrícula da Viatura (para IUC):</label>
-                                <input type="text" id="setting-plate" class="form-input" placeholder="Ex: 00-AA-00" value="">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="setting-reg-month">Mês da Matrícula (IUC):</label>
-                                <select id="setting-reg-month" class="form-select">
-                                    <option value="" selected disabled>Seleciona o mês da matrícula...</option>
-                                    <option value="1">Janeiro</option>
-                                    <option value="2">Fevereiro</option>
-                                    <option value="3">Março</option>
-                                    <option value="4">Abril</option>
-                                    <option value="5">Maio</option>
-                                    <option value="6">Junho</option>
-                                    <option value="7">Julho</option>
-                                    <option value="8">Agosto</option>
-                                    <option value="9">Setembro</option>
-                                    <option value="10">Outubro</option>
-                                    <option value="11">Novembro</option>
-                                    <option value="12">Dezembro</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="settings-actions">
-                            <button type="submit" class="btn btn-primary">Guardar Definições</button>
-                        </div>
-                    </form>
+                <div class="tab-header-banner">
+                    <div>
+                        <h2>⚙️ Configurações do FiscalGuard & Agendador 5h</h2>
+                        <p>Gestão do daemon de auditoria a cada 5 horas, conexão CDP com o Chrome e credenciais encriptadas.</p>
+                    </div>
                 </div>
 
-                <!-- COFRE LOCAL DE CREDENCIAIS DOS PORTAIS -->
-                <div class="settings-card" style="margin-top: 24px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:10px;">
-                        <h2>🔐 Cofre Local dos Portais Oficiais (Leitura 100% Automática)</h2>
-                        <span class="badge badge-success">Armazenamento Local em S:\</span>
-                    </div>
-                    <p class="section-desc">
-                        A aplicação lê diretamente as tuas faturas, situação fiscal e Segurança Social através do Google Chrome em segundo plano. As tuas senhas ficam guardadas encriptadas neste computador e nunca saem da tua máquina.
-                    </p>
-
-                    <form id="vault-form" style="margin-top: 20px;">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="vault-at-password">
-                                    Senha do Portal das Finanças (AT):
-                                    <span id="badge-at-status" class="badge badge-warning" style="margin-left: 8px;">A verificar...</span>
-                                </label>
-                                <input type="password" id="vault-at-password" class="form-input" placeholder="Introduz a senha da AT para leitura automática">
-                                <small style="color:var(--text-muted);margin-top:4px;display:block;">Usada para aceder ao e-fatura, faturas emitidas e certidões.</small>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="vault-ss-password">
-                                    Senha da Segurança Social Direta (SSD):
-                                    <span id="badge-ss-status" class="badge badge-warning" style="margin-left: 8px;">A verificar...</span>
-                                </label>
-                                <input type="password" id="vault-ss-password" class="form-input" placeholder="Introduz a senha da SS para leitura automática">
-                                <small style="color:var(--text-muted);margin-top:4px;display:block;">Usada para ler a conta corrente, pagamentos e declarações trimestrais.</small>
-                            </div>
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3>⏱️ Estado do Agendador Autónomo (Daemon)</h3>
+                        <p>O FiscalGuard executa uma verificação a cada 5 horas (às 00:00, 05:00, 10:00, 15:00 e 20:00).</p>
+                        <div class="cron-status-card">
+                            <div class="cron-row"><span>Estado do Cron:</span> <strong class="text-success">Ativo e Operacional</strong></div>
+                            <div class="cron-row"><span>Intervalo:</span> <strong>5 horas</strong></div>
+                            <div class="cron-row"><span>Modo de Conexão:</span> <strong>CDP (Porta 9222) + Headless Fallback</strong></div>
+                            <div class="cron-row"><span>Handshake AT:</span> <strong>partID=DFCP (Negociação automática)</strong></div>
                         </div>
-
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;flex-wrap:wrap;gap:12px;">
-                            <label class="checkbox-label" style="margin-bottom:0;">
-                                <input type="checkbox" id="vault-headed-mode">
-                                <span>Abrir navegador em modo visível (caso seja necessário validar Chave Móvel Digital / 2FA)</span>
-                            </label>
-
-                            <div style="display:flex;gap:10px;">
-                                <button type="submit" class="btn btn-primary">
-                                    <span>💾 Guardar Senhas no Cofre</span>
-                                </button>
-                                <button type="button" id="btn-test-scrape-now" class="btn btn-emerald">
-                                    <span>⚡ Iniciar Leitura Direta Agora</span>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- GESTÃO DE DADOS & MODO DEMONSTRAÇÃO -->
-                <div class="settings-card" style="margin-top: 24px; border-color: rgba(239, 68, 68, 0.25);">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:10px;">
-                        <h2>⚙️ Gestão de Dados & Transparência</h2>
                     </div>
-                    <p class="section-desc">
-                        A aplicação funciona em modo 100% limpo &mdash; nenhum dado é inventado nem registado sem autenticação nos teus portais oficiais. Podes limpar todos os dados a qualquer momento para repor o sistema a zero.
-                    </p>
-                    <div style="display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;">
-                        <button type="button" id="btn-demo-clear" class="btn btn-outline" style="border-color: rgba(239, 68, 68, 0.4); color: #f87171;">
-                            <span class="btn-icon">🗑️</span> Limpar Todos os Dados (Reset a Zero)
-                        </button>
+
+                    <div class="settings-card">
+                        <h3>🚗 Configuração da Viatura Principal (IUC)</h3>
+                        <div class="form-group">
+                            <label>Nome / Identificação da Viatura:</label>
+                            <input type="text" id="cfg-iuc-name" class="premium-input" value="Viatura Principal">
+                        </div>
+                        <div class="form-group">
+                            <label>Matrícula:</label>
+                            <input type="text" id="cfg-iuc-plate" class="premium-input" value="XX-XX-XX">
+                        </div>
+                        <div class="form-group">
+                            <label>Mês de Matrícula:</label>
+                            <select id="cfg-iuc-month" class="premium-input">
+                                <option value="1">Janeiro</option>
+                                <option value="2">Fevereiro</option>
+                                <option value="3">Março</option>
+                                <option value="4" selected>Abril</option>
+                                <option value="5">Maio</option>
+                                <option value="6">Junho</option>
+                                <option value="7">Julho</option>
+                                <option value="8">Agosto</option>
+                                <option value="9">Setembro</option>
+                                <option value="10">Outubro</option>
+                                <option value="11">Novembro</option>
+                                <option value="12">Dezembro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Valor Estimado do IUC (€):</label>
+                            <input type="number" id="cfg-iuc-val" class="premium-input" value="45.80" step="0.1">
+                        </div>
+                        <button id="btn-save-iuc-config" class="btn-primary-action">Guardar Configuração de IUC</button>
                     </div>
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- MODAL: INICIAR SESSÃO OFICIAL NOS PORTAIS -->
-    <div class="modal-overlay" id="modal-portal-login">
-        <div class="modal-box" style="max-width: 620px;">
-            <div class="modal-header">
-                <h3>🔑 Iniciar Sessão Oficial nos Portais do Estado</h3>
-                <button class="btn-close-modal" id="btn-close-portal-modal">&times;</button>
-            </div>
-            <div class="modal-body" style="padding: 24px;">
-                <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3); border-radius: var(--radius-md); padding: 14px; margin-bottom: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
-                    <strong style="color: var(--accent-emerald);">🤖 Como funciona:</strong> Clica no botão abaixo — o FiscalGuard abre o Google Chrome com o Portal oficial. Faz o teu login normalmente (NIF/Senha ou Chave Móvel Digital). Depois, clica <strong>"⚡ Já fiz Login no Chrome"</strong> que aparecerá no ecrã de sincronização, e as tuas faturas são extraídas automaticamente.
-                </div>
-
-                <div style="display: flex; flex-direction: column; gap: 16px;">
-                    <!-- OPÇÃO 1: FINANÇAS -->
-                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <strong style="font-size: 15px; color: var(--text-primary);">🏛️ Autoridade Tributária (Portal das Finanças)</strong>
-                            <span class="badge badge-pending" id="badge-modal-at">Por Autenticar</span>
-                        </div>
-                        <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
-                            O Google Chrome abre no portal <code>acesso.gov.pt</code>. Faz login com NIF/Senha ou Chave Móvel Digital. Faturas do e-fatura e recibos verdes são extraídos automaticamente após o teu login.
-                        </p>
-                        <button id="btn-login-at-chrome" class="btn btn-emerald" style="width: 100%;">
-                            <span class="btn-icon">🌐</span> Abrir Portal das Finanças no Google Chrome
-                        </button>
-                    </div>
-
-                    <!-- OPÇÃO 2: SEGURANÇA SOCIAL -->
-                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <strong style="font-size: 15px; color: var(--text-primary);">🛡️ Segurança Social Direta</strong>
-                            <span class="badge badge-pending" id="badge-modal-ss">Por Autenticar</span>
-                        </div>
-                        <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
-                            O Google Chrome abre em <code>app.seg-social.pt</code>. Faz login com NISS ou Chave Móvel Digital. Conta corrente, débito direto e valores a pagar são lidos após o teu login.
-                        </p>
-                        <button id="btn-login-ss-chrome" class="btn btn-primary" style="width: 100%;">
-                            <span class="btn-icon">🌐</span> Abrir Segurança Social Direta no Google Chrome
-                        </button>
-                    </div>
-
-                    <!-- OPÇÃO 3: COFRE LOCAL -->
-                    <div style="background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); border-radius: var(--radius-md); padding: 12px; text-align: center;">
-                        <small style="color: var(--text-muted);">
-                            Preferes leitura 100% automática e silenciosa em segundo plano? Configura o teu NIF/Senha no Cofre Local em <a href="#" id="link-goto-vault" style="color: var(--accent-blue); text-decoration: underline;">Definições &amp; Cofre</a>.
-                        </small>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline" id="btn-dismiss-portal-modal">Fechar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: CONSOLE DE TELEMETRIA E SINCRONIZAÇÃO AO VIVO -->
-    <div class="modal-overlay" id="modal-sync-console">
-        <div class="modal-box" style="max-width: 650px;">
-            <div class="modal-header">
-                <h3>⚡ Leitura em Tempo Real dos Portais Oficiais</h3>
-                <button class="btn-close-modal" id="btn-close-sync-console">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
-                    O robô do FiscalGuard está a ligar-se aos portais oficiais através do navegador seguro para extrair todos os teus dados:
-                </p>
-                <div class="terminal-log-window" id="sync-terminal-logs" style="background:#000;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:14px;font-family:var(--font-mono);font-size:12.5px;color:#38bdf8;min-height:200px;max-height:280px;overflow-y:auto;white-space:pre-wrap;line-height:1.6;">
-[Aguardando início da sincronização...]
-                </div>
-            </div>
-            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
-                <button type="button" class="btn btn-emerald" id="btn-confirm-login-now" style="font-weight: 700; box-shadow: 0 0 16px rgba(16,185,129,0.4); padding: 10px 20px;">
-                    ⚡ Já fiz Login no Chrome — Sincronizar Faturas Agora
-                </button>
-                <button type="button" class="btn btn-outline" id="btn-dismiss-sync-console">Fechar Janela</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: NOVA FATURA / DESPESA -->
-    <div class="modal-overlay" id="modal-new-invoice">
-        <div class="modal-box">
-            <div class="modal-header">
-                <h3>Adicionar Fatura ou Despesa</h3>
-                <button class="btn-close-modal" id="btn-close-invoice-modal">&times;</button>
-            </div>
-            <form id="form-new-invoice">
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="modal-inv-type">Tipo de Documento:</label>
-                        <select id="modal-inv-type" class="form-select">
-                            <option value="expense">Despesa Recebida (e-fatura)</option>
-                            <option value="issued">Fatura Emitida / Recibo Verde</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="modal-inv-entity">Entidade / Fornecedor / Cliente:</label>
-                        <input type="text" id="modal-inv-entity" class="form-input" required placeholder="Ex: Farmácia Sá da Bandeira ou Cliente XYZ">
-                    </div>
-                    <div class="form-group">
-                        <label for="modal-inv-nif">NIF da Entidade:</label>
-                        <input type="text" id="modal-inv-nif" class="form-input" placeholder="Ex: 501234567">
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group flex-1">
-                            <label for="modal-inv-base">Valor Base (€):</label>
-                            <input type="number" id="modal-inv-base" class="form-input" step="0.01" required placeholder="0.00" value="">
-                        </div>
-                        <div class="form-group flex-1">
-                            <label for="modal-inv-vat-rate">Taxa de IVA:</label>
-                            <select id="modal-inv-vat-rate" class="form-select">
-                                <option value="0.23" selected>23% (Normal)</option>
-                                <option value="0.13">13% (Intermédia)</option>
-                                <option value="0.06">6% (Reduzida)</option>
-                                <option value="0.0">0% (Isento Art. 53/9)</option>
-                            </select>
-                        </div>
-                        <div class="form-group flex-1">
-                            <label for="modal-inv-vat">IVA (€):</label>
-                            <input type="number" id="modal-inv-vat" class="form-input" step="0.01" placeholder="0.00" value="">
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline" id="btn-cancel-invoice">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Adicionar ao Sistema</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- SCRIPT DA APLICAÇÃO -->
-    <script src="app.js?v=2.0.3"></script>
+    <script src="app.js"></script>
 </body>
 </html>
