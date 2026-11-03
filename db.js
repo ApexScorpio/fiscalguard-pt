@@ -36,7 +36,8 @@ const DEFAULT_AT_DATA = {
             {
                 id: "v-abril-1",
                 nome: "Viatura Principal",
-                matricula: "XX-XX-XX",
+                matricula: "45-AB-89",
+                categoria: "Ligeiro de Passageiros",
                 mesRegisto: 4,
                 mesNome: "Abril",
                 ultimoPagamento: "2026-04-19",
@@ -45,8 +46,9 @@ const DEFAULT_AT_DATA = {
             },
             {
                 id: "v-junho-1",
-                nome: "Viatura Secundária (A)",
-                matricula: "YY-YY-YY",
+                nome: "Viatura Familiar",
+                matricula: "62-TX-14",
+                categoria: "Ligeiro de Passageiros",
                 mesRegisto: 6,
                 mesNome: "Junho",
                 ultimoPagamento: "2026-06-15",
@@ -55,8 +57,9 @@ const DEFAULT_AT_DATA = {
             },
             {
                 id: "v-junho-2",
-                nome: "Viatura Secundária (B)",
-                matricula: "ZZ-ZZ-ZZ",
+                nome: "Viatura Urbana",
+                matricula: "18-94-ZV",
+                categoria: "Ligeiro de Passageiros",
                 mesRegisto: 6,
                 mesNome: "Junho",
                 ultimoPagamento: "2026-06-15",
@@ -65,8 +68,9 @@ const DEFAULT_AT_DATA = {
             },
             {
                 id: "v-junho-3",
-                nome: "Viatura Comercial / Mota",
-                matricula: "WW-WW-WW",
+                nome: "Comercial / Mota",
+                matricula: "AA-01-BB",
+                categoria: "Comercial / Motociclo",
                 mesRegisto: 6,
                 mesNome: "Junho",
                 ultimoPagamento: "2026-06-26",
@@ -75,13 +79,25 @@ const DEFAULT_AT_DATA = {
             }
         ],
         historico_recente: [
-            { data: "2026-06-26", evento: "IUC - Pagamento de Documento de Cobrança" },
-            { data: "2026-06-15", evento: "IUC - Pagamento de Documento de Cobrança" },
-            { data: "2026-06-15", evento: "IUC - Pagamento de Documento de Cobrança" },
-            { data: "2026-04-19", evento: "IUC - Pagamento de Documento de Cobrança" }
+            { data: "2026-06-26", evento: "IUC - Pagamento Documento Cobrança (Matr. AA-01-BB)", valor: "22,40 €" },
+            { data: "2026-06-15", evento: "IUC - Pagamento Documento Cobrança (Matr. 62-TX-14)", valor: "58,20 €" },
+            { data: "2026-06-15", evento: "IUC - Pagamento Documento Cobrança (Matr. 18-94-ZV)", valor: "38,50 €" },
+            { data: "2026-04-19", evento: "IUC - Pagamento Documento Cobrança (Matr. 45-AB-89)", valor: "45,80 €" }
         ]
     },
     irs: {
+        previsao_2026: {
+            ano: 2026,
+            saldo_previsto_a_pagar: "1.709,83 €",
+            deducoes_acumuladas: "210,39 €",
+            poupanca_mensal_sugerida: "160,00 €",
+            potencial_recuperacao: "250,00 €",
+            rendimento_estimado: "21.000,00 €",
+            coleta_estimada: "3.100,00 €",
+            retencao_estimada: "250,00 €",
+            estado_apuramento: "Em acumulação (167 faturas por classificar)",
+            comparativo_2025: "1.920,22 € (poupança de ~210 € já garantida)"
+        },
         declaracao_recente: {
             ano: "2025",
             identificacao: "2025-1112-J1131-28",
@@ -94,11 +110,7 @@ const DEFAULT_AT_DATA = {
         },
         rendimento_global_2025: "20.722,74 €",
         coleta_liquida_2025: "2.141,22 €",
-        retencao_fonte_2025: "221,00 €",
-        simulacao_2026: {
-            cenario_recomendado: "Aumentar retenção ou poupança mensal de 160 €",
-            deducoes_acumuladas: "210,39 €"
-        }
+        retencao_fonte_2025: "221,00 €"
     },
     efatura_2026: {
         faturas_pendentes_validacao: 167,
@@ -139,8 +151,6 @@ const EMPTY_STATE = {
         vatRegime: "normal",
         directDebitSS: false,
         directDebitAT: false,
-        vehiclePlate: "XX-XX-XX",
-        vehicleRegMonth: 4,
         alertDays: [30, 7, 2, 0]
     },
     status: {
@@ -179,7 +189,7 @@ class Database {
             if (fs.existsSync(DB_FILE)) {
                 const raw = fs.readFileSync(DB_FILE, 'utf8');
                 const parsed = JSON.parse(raw);
-                if (!parsed.atData) {
+                if (!parsed.atData || !parsed.atData.iuc || !parsed.atData.iuc.veiculos || parsed.atData.iuc.veiculos.length < 4) {
                     parsed.atData = DEFAULT_AT_DATA;
                     this.save(parsed);
                 }
@@ -234,7 +244,7 @@ class Database {
 
     getAtData() {
         this.data = this.load();
-        if (!this.data.atData) {
+        if (!this.data.atData || !this.data.atData.iuc) {
             this.data.atData = DEFAULT_AT_DATA;
             this.save();
         }
@@ -253,22 +263,21 @@ class Database {
 
     /**
      * Motor Dinâmico de Cálculo de IUC:
-     * Calcula o próximo IUC a pagar, dias restantes e percentagem da barra de progresso
+     * Calcula todos os veículos ordenados DO MAIS PERTO a ter de pagar até ao MAIS LONGE
      */
     getIucStatus() {
         const at = this.getAtData();
-        const veiculos = (at.iuc && at.iuc.veiculos) ? at.iuc.veiculos : DEFAULT_AT_DATA.iuc.veiculos;
+        const veiculos = (at.iuc && at.iuc.veiculos && at.iuc.veiculos.length) 
+            ? at.iuc.veiculos 
+            : DEFAULT_AT_DATA.iuc.veiculos;
         const now = new Date();
         const currentYear = now.getFullYear();
 
-        // Encontrar a próxima viatura a vencer IUC
-        // O IUC vence no último dia do mês de matrícula.
-        // Se o mês do corrente ano já passou ou foi pago, o próximo é no ano seguinte.
         let candidates = veiculos.map(v => {
             const mes = Number(v.mesRegisto) || 4;
-            // Data limite no ano corrente
-            let deadline = new Date(currentYear, mes, 0); // último dia do mês (mes é 1-12)
-            // Se já passou a data ou já foi pago neste ano
+            // No ano corrente
+            let deadline = new Date(currentYear, mes, 0); // último dia do mês
+            // Se já passou a data ou já foi liquidado no ciclo 2026
             if (deadline < now || v.estado === 'pago_2026') {
                 deadline = new Date(currentYear + 1, mes, 0);
             }
@@ -276,7 +285,7 @@ class Database {
             const diffMs = deadline - now;
             const daysRemaining = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
 
-            // Calcular início do ciclo (1 ano antes da deadline)
+            // Ciclo de 365 dias
             const cycleStart = new Date(deadline.getFullYear() - 1, mes, 0);
             const totalCycleDays = (deadline - cycleStart) / (1000 * 60 * 60 * 24);
             const daysPassed = (now - cycleStart) / (1000 * 60 * 60 * 24);
@@ -292,22 +301,11 @@ class Database {
             };
         });
 
-        // Ordenar pelo menor número de dias restantes
+        // ORDENAÇÃO ESTRITA: Do mais perto a pagar até ao mais longe
         candidates.sort((a, b) => a.daysRemaining - b.daysRemaining);
 
-        const proximo = candidates[0] || {
-            nome: "Viatura Principal",
-            matricula: "XX-XX-XX",
-            mesNome: "Abril",
-            deadlineFormatted: "30 de Abril de 2027",
-            daysRemaining: 178,
-            progressPercent: 51,
-            valorEstimado: 45.80,
-            estado: "pago_2026"
-        };
-
         return {
-            proximoIuc: proximo,
+            proximoIuc: candidates[0],
             todosVeiculos: candidates,
             historico: (at.iuc && at.iuc.historico_recente) || DEFAULT_AT_DATA.iuc.historico_recente,
             estadoGeral: at.iuc ? at.iuc.estado : "Sem veículos com imposto pendente no ano em curso"
@@ -400,7 +398,6 @@ class Database {
                 }
             });
         }
-        // Atualizar contagem no resumo AT
         if (this.data.atData && this.data.atData.efatura_2026) {
             this.data.atData.efatura_2026.faturas_pendentes_validacao = 0;
         }

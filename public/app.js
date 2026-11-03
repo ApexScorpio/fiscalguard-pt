@@ -1,27 +1,15 @@
 /**
- * FiscalGuard PRO — Frontend Controller & Realtime Sentinel Engine
+ * FiscalGuard PRO — No-Scroll Executive Sentinel Controller
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Inicializar Navegação por Abas
     initTabs();
-
-    // 2. Carregar Dados Iniciais
     loadDashboardData();
-
-    // 3. Inicializar Listeners de Ações Rápidas
     initActionButtons();
-
-    // 4. Polling Automático a cada 20 segundos
-    setInterval(loadDashboardData, 20000);
-
-    // 5. Atualizar temporizador do cron a cada segundo
     initCronTimer();
+    setInterval(loadDashboardData, 20000);
 });
 
-/* ==========================================================================
-   NAVEGAÇÃO POR ABAS
-   ========================================================================== */
 function initTabs() {
     const tabs = document.querySelectorAll('.nav-tab');
     tabs.forEach(tab => {
@@ -43,13 +31,9 @@ function switchTab(tabPaneId) {
     const targetTabBtn = document.querySelector(`.nav-tab[data-tab="${tabPaneId}"]`);
     if (targetTabBtn) {
         targetTabBtn.click();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
 
-/* ==========================================================================
-   CARREGAMENTO & RENDERIZAÇÃO DE DADOS
-   ========================================================================== */
 async function loadDashboardData() {
     try {
         const [resStatus, resIuc, resCalendar, resInvoices] = await Promise.all([
@@ -60,14 +44,14 @@ async function loadDashboardData() {
         ]);
 
         renderHeader(resStatus);
-        renderHeroMetrics(resStatus, resIuc);
-        renderIucTab(resIuc);
-        renderEfaturaTab(resStatus, resInvoices);
-        renderCalendar(resCalendar);
-        renderSecondaryReserves(resStatus);
+        renderIucHeroAndList(resIuc);
+        renderIrsForecast(resStatus);
+        renderEfaturaSummary(resStatus);
+        renderReservesAndAgenda(resStatus, resCalendar);
+        renderDetailedTabs(resStatus, resIuc, resInvoices, resCalendar);
 
     } catch (err) {
-        console.error('[FiscalGuard] Erro ao carregar dados do dashboard:', err);
+        console.error('[FiscalGuard] Erro ao carregar dados:', err);
     }
 }
 
@@ -83,134 +67,194 @@ function renderHeader(data) {
     }
 }
 
-function renderHeroMetrics(statusData, iucData) {
-    const at = statusData.atData || {};
+/**
+ * Renderiza a parte do IUC com todas as matrículas ordenadas do mais próximo ao mais distante
+ */
+function renderIucHeroAndList(iucData) {
     const proximo = iucData.proximoIuc || {};
+    const todos = iucData.todosVeiculos || [proximo];
 
-    // 1. CARD HERO IUC
-    const iucNameEl = document.getElementById('iuc-vehicle-name');
-    const iucPlateEl = document.getElementById('iuc-vehicle-plate');
-    const iucAmountEl = document.getElementById('iuc-hero-amount');
-    const iucDeadlineEl = document.getElementById('iuc-hero-deadline');
-    const iucDaysEl = document.getElementById('iuc-hero-days');
-    const iucProgressEl = document.getElementById('iuc-progress-bar');
-    const iucPercentEl = document.getElementById('iuc-progress-percent');
-    const iucBadgeEl = document.getElementById('iuc-hero-badge');
+    // Destaque do veículo mais próximo
+    const elPlate = document.getElementById('hero-iuc-plate');
+    const elName = document.getElementById('hero-iuc-name');
+    const elDeadline = document.getElementById('hero-iuc-deadline');
+    const elAmount = document.getElementById('hero-iuc-amount');
+    const elDays = document.getElementById('hero-iuc-days');
+    const elProgress = document.getElementById('hero-iuc-progress');
+    const elPercentLabel = document.getElementById('hero-iuc-percent-label');
 
-    if (iucNameEl) iucNameEl.textContent = proximo.nome || 'Viatura Principal';
-    if (iucPlateEl) iucPlateEl.textContent = `Matrícula: ${proximo.matricula || 'XX-XX-XX'} • Mês: ${proximo.mesNome || 'Abril'}`;
-    if (iucAmountEl) iucAmountEl.textContent = formatMoney(proximo.valorEstimado || 45.80);
-    if (iucDeadlineEl) iucDeadlineEl.textContent = proximo.deadlineFormatted || '30 de Abril de 2027';
-    if (iucDaysEl) iucDaysEl.textContent = `Faltam ${proximo.daysRemaining} dias`;
+    if (elPlate) elPlate.textContent = proximo.matricula || '45-AB-89';
+    if (elName) elName.textContent = proximo.nome || 'Viatura Principal';
+    if (elDeadline) elDeadline.textContent = proximo.deadlineDate ? formatDatePt(proximo.deadlineDate) : '30/04/2027';
+    if (elAmount) elAmount.textContent = formatMoney(proximo.valorEstimado || 45.80);
+    if (elDays) elDays.textContent = `Faltam ${proximo.daysRemaining} dias`;
     
     const pct = Math.min(100, Math.max(0, proximo.progressPercent || 52));
-    if (iucProgressEl) iucProgressEl.style.width = `${pct}%`;
-    if (iucPercentEl) iucPercentEl.textContent = `${pct}% do ciclo anual percorrido`;
-    if (iucBadgeEl) {
-        iucBadgeEl.textContent = proximo.daysRemaining > 30 ? '✓ Ciclo Atual Pago' : '⚠️ Vencimento Próximo';
-        iucBadgeEl.className = proximo.daysRemaining > 30 ? 'badge-status badge-success' : 'badge-status badge-warning';
-    }
+    if (elProgress) elProgress.style.width = `${pct}%`;
+    if (elPercentLabel) elPercentLabel.textContent = `${pct}% percorrido`;
 
-    // 2. CARD IRS
-    const irs = at.irs || {};
-    const dec = irs.declaracao_recente || {};
-    if (dec.montante_liquidado) document.getElementById('irs-hero-amount').textContent = `-${dec.montante_liquidado}`;
-    if (irs.rendimento_global_2025) document.getElementById('irs-rendimento-global').textContent = irs.rendimento_global_2025;
-    if (irs.coleta_liquida_2025) document.getElementById('irs-coleta-liquida').textContent = irs.coleta_liquida_2025;
-    if (irs.retencao_fonte_2025) document.getElementById('irs-retencao-fonte').textContent = irs.retencao_fonte_2025;
-
-    // 3. CARD E-FATURA
-    const efatura = at.efatura_2026 || {};
-    const pendentesCount = efatura.faturas_pendentes_validacao !== undefined ? efatura.faturas_pendentes_validacao : 167;
-    const deducoesTotal = efatura.total_deducoes_provisorias || "210,39 €";
-
-    document.getElementById('efatura-hero-amount').textContent = deducoesTotal;
-    const heroBadge = document.getElementById('efatura-hero-pending-badge');
-    if (heroBadge) {
-        heroBadge.textContent = pendentesCount > 0 ? `${pendentesCount} Pendentes` : '✓ Todas Validadas';
-        heroBadge.className = pendentesCount > 0 ? 'badge-status badge-warning' : 'badge-status badge-success';
-    }
-
-    const navBadge = document.getElementById('nav-efatura-badge');
-    if (navBadge) {
-        navBadge.textContent = pendentesCount;
-        navBadge.style.display = pendentesCount > 0 ? 'inline-block' : 'none';
-    }
-
-    const btnHeroClassify = document.getElementById('btn-auto-classify-hero');
-    if (btnHeroClassify) {
-        if (pendentesCount === 0) {
-            btnHeroClassify.textContent = '✓ 100% das Faturas Validadas no e-Fatura';
-            btnHeroClassify.disabled = true;
-            btnHeroClassify.style.opacity = '0.6';
-        } else {
-            btnHeroClassify.textContent = `⚡ Classificar ${pendentesCount} Faturas com IA`;
-            btnHeroClassify.disabled = false;
-        }
+    // Lista de TODOS os veículos ordenados do mais perto ao mais longe
+    const listContainer = document.getElementById('dashboard-vehicles-container');
+    if (listContainer) {
+        listContainer.innerHTML = todos.map((v, idx) => `
+            <div class="v-item-row" title="Veículo ${idx + 1}: ${v.nome} - Limite ${v.deadlineFormatted}">
+                <div class="v-item-left">
+                    <span class="v-plate-sm">${v.matricula}</span>
+                    <span class="v-name-sm">${v.nome}</span>
+                </div>
+                <div class="v-item-right">
+                    <span class="v-amount-sm">${formatMoney(v.valorEstimado)} €</span>
+                    <span class="v-days-badge ${idx === 0 ? 'v-days-near' : 'v-days-far'}">
+                        ${v.daysRemaining} dias (${v.mesNome})
+                    </span>
+                </div>
+            </div>
+        `).join('');
     }
 }
 
-function renderIucTab(iucData) {
-    const proximo = iucData.proximoIuc || {};
+/**
+ * Renderiza o card do IRS focado na PREVISÃO DE 2026
+ */
+function renderIrsForecast(statusData) {
+    const at = statusData.atData || {};
+    const irs = at.irs || {};
+    const prev = irs.previsao_2026 || {};
+    const efatura = at.efatura_2026 || {};
 
-    document.getElementById('iuc-detail-name').textContent = `${proximo.nome || 'Viatura Principal'} (Matrícula de ${proximo.mesNome || 'Abril'})`;
-    document.getElementById('iuc-detail-specs').textContent = `Matrícula: ${proximo.matricula || 'XX-XX-XX'} • Mês de Matrícula: ${proximo.mesNome || 'Abril'} • Prazo legal no último dia do mês`;
-    document.getElementById('iuc-detail-amount').textContent = `${formatMoney(proximo.valorEstimado || 45.80)} €`;
-    document.getElementById('iuc-detail-deadline').textContent = proximo.deadlineFormatted || '30 de Abril de 2027';
-    document.getElementById('iuc-detail-days-remaining').textContent = `${proximo.daysRemaining} dias restantes`;
+    const deducoes = efatura.total_deducoes_provisorias || "210,39 €";
     
-    const pct = Math.min(100, Math.max(0, proximo.progressPercent || 52));
-    document.getElementById('iuc-detail-progress-bar').style.width = `${pct}%`;
-    document.getElementById('iuc-detail-percent-text').textContent = `${pct}% do ciclo`;
+    // Atualizar valores do card de previsão
+    const elBalance = document.getElementById('forecast-irs-balance');
+    const elDeductions = document.getElementById('forecast-irs-deductions');
+    const elSavings = document.getElementById('forecast-irs-savings');
+    const elPotential = document.getElementById('forecast-irs-potential');
+    const elRef2025 = document.getElementById('ref-irs-2025');
 
-    // Lista de Veículos
-    const vehContainer = document.getElementById('vehicles-list-container');
-    if (vehContainer && iucData.todosVeiculos) {
-        vehContainer.innerHTML = iucData.todosVeiculos.map(v => `
-            <div class="vehicle-card-row">
+    if (elBalance) elBalance.textContent = prev.saldo_previsto_a_pagar || "~1.709,83 €";
+    if (elDeductions) elDeductions.textContent = deducoes;
+    if (elSavings) elSavings.textContent = prev.poupanca_mensal_sugerida ? `${prev.poupanca_mensal_sugerida}/mês` : "160,00 €/mês";
+    if (elPotential) elPotential.textContent = prev.potencial_recuperacao ? `+${prev.potencial_recuperacao}` : "+250,00 €";
+    if (elRef2025) elRef2025.textContent = (irs.declaracao_recente && irs.declaracao_recente.montante_liquidado) ? `-${irs.declaracao_recente.montante_liquidado}` : "-1.920,22 €";
+
+    // Atualizar na aba IRS detalhada
+    const tabBal = document.getElementById('irs-tab-balance');
+    const tabTot = document.getElementById('irs-tab-total');
+    if (tabBal) tabBal.textContent = prev.saldo_previsto_a_pagar || "~1.709,83 €";
+    if (tabTot) tabTot.textContent = prev.saldo_previsto_a_pagar || "~1.709,83 €";
+}
+
+function renderEfaturaSummary(statusData) {
+    const at = statusData.atData || {};
+    const efatura = at.efatura_2026 || {};
+    const count = efatura.faturas_pendentes_validacao !== undefined ? efatura.faturas_pendentes_validacao : 167;
+    const deducoes = efatura.total_deducoes_provisorias || "210,39 €";
+
+    const elAmount = document.getElementById('hero-efatura-amount');
+    const elBadge = document.getElementById('hero-efatura-badge');
+    const elNavBadge = document.getElementById('nav-efatura-badge');
+
+    if (elAmount) elAmount.textContent = deducoes;
+    if (elBadge) {
+        elBadge.textContent = count > 0 ? `${count} Pendentes` : '✓ Todas Validadas';
+        elBadge.className = count > 0 ? 'badge-status badge-warning' : 'badge-status badge-success';
+    }
+    if (elNavBadge) {
+        elNavBadge.textContent = count;
+        elNavBadge.style.display = count > 0 ? 'inline-block' : 'none';
+    }
+}
+
+function renderReservesAndAgenda(statusData, calendarData) {
+    const stats = statusData.stats || {};
+    const reserves = stats.recommendedReserves || {};
+
+    const elNet = document.getElementById('overview-net-amount');
+    const elVat = document.getElementById('overview-vat-reserve');
+    const elSS = document.getElementById('overview-ss-reserve');
+    const elIrs = document.getElementById('overview-irs-reserve');
+
+    if (elNet) elNet.textContent = `${formatMoney(reserves.netTakeHome || 0)} €`;
+    if (elVat) elVat.textContent = `${formatMoney(reserves.vat || 0)} €`;
+    if (elSS) elSS.textContent = `${formatMoney(reserves.ss || 0)} €`;
+    if (elIrs) elIrs.textContent = `160,00 €/mês`;
+
+    // Ticker horizontal de obrigações
+    const elPills = document.getElementById('overview-obligations-container');
+    if (elPills && calendarData) {
+        elPills.innerHTML = calendarData.slice(0, 3).map(item => `
+            <div class="ob-mini-pill">
+                <span>${item.category === 'IUC' ? '🚗' : (item.category === 'IRS' ? '📑' : '🏛️')}</span>
+                <strong>${item.title.split(' ')[0]}</strong>
+                <span class="ob-mini-days ${item.daysRemaining <= 7 ? 'text-rose' : 'text-amber'}">
+                    ${item.daysRemaining < 0 ? 'Concluída' : (item.daysRemaining === 0 ? 'Hoje' : `${item.daysRemaining}d`)}
+                </span>
+            </div>
+        `).join('');
+    }
+}
+
+function renderDetailedTabs(statusData, iucData, invoicesData, calendarData) {
+    // ABA IUC DETALHADA: Grade com todos os veículos
+    const gridVehicles = document.getElementById('all-vehicles-grid-container');
+    if (gridVehicles && iucData.todosVeiculos) {
+        gridVehicles.innerHTML = iucData.todosVeiculos.map((v, idx) => `
+            <div class="vehicle-detail-card ${idx === 0 ? 'closest-vehicle' : ''}">
+                <div class="v-card-top">
+                    <div>
+                        <div class="pt-license-plate">${v.matricula}</div>
+                        <div style="font-weight: 800; color: #fff; font-size: 15px; margin-top: 6px;">${v.nome}</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">${v.categoria || 'Ligeiro de Passageiros'} • Mês: ${v.mesNome}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-family: 'JetBrains Mono'; font-weight: 800; font-size: 22px; color: var(--accent-amber);">${formatMoney(v.valorEstimado)} €</div>
+                        <span class="badge-status ${idx === 0 ? 'badge-warning' : 'badge-success'}">${v.daysRemaining} dias restantes</span>
+                    </div>
+                </div>
+
+                <div class="v-card-middle">
+                    <div class="v-progress-text">
+                        <span>Prazo: <strong>${v.deadlineFormatted}</strong></span>
+                        <strong class="text-amber">${v.progressPercent}%</strong>
+                    </div>
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill fill-gradient-iuc" style="width: ${v.progressPercent}%;"></div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Histórico de IUC
+    const elHist = document.getElementById('iuc-history-container');
+    if (elHist && iucData.historico) {
+        elHist.innerHTML = iucData.historico.map(h => `
+            <div class="v-item-row" style="padding: 8px 12px;">
                 <div>
-                    <div style="font-weight: 700; color: #fff;">${v.nome}</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">Matrícula: ${v.matricula} • Mês: ${v.mesNome}</div>
+                    <div style="font-weight: 700; color: #fff; font-size: 12px;">${h.evento}</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">Processado pela AT</div>
                 </div>
                 <div style="text-align: right;">
-                    <div style="font-family: 'JetBrains Mono'; font-weight: 700; color: var(--accent-amber);">${formatMoney(v.valorEstimado)} €</div>
-                    <span class="badge-status badge-success" style="font-size: 10px;">${v.daysRemaining} dias</span>
+                    <div style="font-family: 'JetBrains Mono'; font-weight: 700; color: var(--accent-emerald); font-size: 12px;">${h.data}</div>
+                    <div style="font-size: 10px; color: var(--accent-amber);">${h.valor || 'Pago'}</div>
                 </div>
             </div>
         `).join('');
     }
 
-    // Histórico de Pagamentos
-    const histContainer = document.getElementById('iuc-history-container');
-    if (histContainer && iucData.historico) {
-        histContainer.innerHTML = iucData.historico.map(h => `
-            <div class="history-card-row">
-                <div>
-                    <div style="font-weight: 600; color: #fff; font-size: 12px;">${h.evento}</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">Processado pela AT</div>
-                </div>
-                <div style="font-family: 'JetBrains Mono'; font-size: 12px; color: var(--accent-emerald); font-weight: 700;">
-                    ${h.data}
-                </div>
-            </div>
-        `).join('');
-    }
-}
-
-function renderEfaturaTab(statusData, invoicesData) {
+    // ABA E-FATURA: Setores & Tabela
     const at = statusData.atData || {};
     const setores = (at.efatura_2026 && at.efatura_2026.detalhe_setores) || {};
-
     const sectorsGrid = document.getElementById('efatura-sectors-grid');
     if (sectorsGrid) {
         const sectorNames = {
-            despesas_gerais_familiares: { title: "Despesas Gerais Familiares", icon: "🛒", max: 250 },
-            reparacao_automoveis: { title: "Reparação de Automóveis", icon: "🔧", max: 250 },
-            ginasios: { title: "Ginásios & Desporto", icon: "🏋️", max: 250 },
-            restauracao_e_alojamento: { title: "Restauração & Alojamento", icon: "☕", max: 250 },
-            saude: { title: "Saúde & Medicamentos", icon: "💊", max: 1000 },
-            educacao: { title: "Educação & Manuais", icon: "📚", max: 800 },
-            habitacao: { title: "Habitação / Rendas", icon: "🏠", max: 502 }
+            despesas_gerais_familiares: { title: "Despesas Gerais", icon: "🛒", max: 250 },
+            reparacao_automoveis: { title: "Reparação Automóvel", icon: "🔧", max: 250 },
+            ginasios: { title: "Ginásios", icon: "🏋️", max: 250 },
+            restauracao_e_alojamento: { title: "Restauração", icon: "☕", max: 250 },
+            saude: { title: "Saúde", icon: "💊", max: 1000 },
+            educacao: { title: "Educação", icon: "📚", max: 800 },
+            habitacao: { title: "Habitação", icon: "🏠", max: 502 }
         };
 
         sectorsGrid.innerHTML = Object.keys(sectorNames).map(k => {
@@ -221,10 +265,10 @@ function renderEfaturaTab(statusData, invoicesData) {
 
             return `
                 <div class="sector-card">
-                    <div class="sector-name">${info.icon} ${info.title}</div>
-                    <div class="sector-val-row">
-                        <span style="color: var(--accent-emerald); font-weight: 700; font-family: 'JetBrains Mono';">${data.deducao}</span>
-                        <span style="color: var(--text-muted); font-size: 11px;">Teto: ${data.limite || info.max + ' €'}</span>
+                    <div style="font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 4px;">${info.icon} ${info.title}</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
+                        <span class="text-emerald font-bold">${data.deducao}</span>
+                        <span class="text-muted">${data.limite || info.max + ' €'}</span>
                     </div>
                     <div class="progress-bar-track">
                         <div class="progress-bar-fill fill-gradient-iuc" style="width: ${pct}%;"></div>
@@ -234,10 +278,9 @@ function renderEfaturaTab(statusData, invoicesData) {
         }).join('');
     }
 
-    // Tabela de Faturas
     const tbody = document.getElementById('invoices-table-body');
     if (tbody && invoicesData && invoicesData.invoices) {
-        tbody.innerHTML = invoicesData.invoices.slice(0, 50).map(i => `
+        tbody.innerHTML = invoicesData.invoices.slice(0, 30).map(i => `
             <tr>
                 <td style="font-family: 'JetBrains Mono';">${i.date}</td>
                 <td style="font-weight: 600; color: #fff;">${i.entity || i.supplierName}</td>
@@ -245,91 +288,64 @@ function renderEfaturaTab(statusData, invoicesData) {
                 <td style="font-family: 'JetBrains Mono'; font-weight: 700; color: #fff;">${formatMoney(i.total)} €</td>
                 <td style="font-family: 'JetBrains Mono'; color: var(--text-muted);">${formatMoney(i.vatAmount)} €</td>
                 <td><span class="badge-status badge-info">${i.category || 'Pendente'}</span></td>
-                <td>
-                    <span class="badge-status ${i.efaturaStatus === 'pending' ? 'badge-warning' : 'badge-success'}">
-                        ${i.efaturaStatus === 'pending' ? 'Pendente' : 'Validada'}
-                    </span>
-                </td>
+                <td><span class="badge-status ${i.efaturaStatus === 'pending' ? 'badge-warning' : 'badge-success'}">${i.efaturaStatus === 'pending' ? 'Pendente' : 'Validada'}</span></td>
             </tr>
+        `).join('');
+    }
+
+    // ABA CALENDÁRIO COMPLETA
+    const calFull = document.getElementById('calendar-full-container');
+    if (calFull && calendarData) {
+        calFull.innerHTML = calendarData.map(item => `
+            <div class="v-item-row" style="padding: 12px; margin-bottom: 8px;">
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <span style="font-size: 20px;">${item.category === 'IUC' ? '🚗' : (item.category === 'IRS' ? '📑' : '🏛️')}</span>
+                    <div>
+                        <div style="font-weight: 700; color: #fff;">${item.title}</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">${item.description} • Limite: ${item.deadline}</div>
+                    </div>
+                </div>
+                <div>
+                    <span class="v-days-badge ${item.daysRemaining <= 7 ? 'v-days-near' : 'v-days-far'}">
+                        ${item.daysRemaining < 0 ? 'Concluída' : `${item.daysRemaining} dias`}
+                    </span>
+                </div>
+            </div>
         `).join('');
     }
 }
 
-function renderCalendar(calendar) {
-    const listOverview = document.getElementById('overview-obligations-container');
-    const listFull = document.getElementById('calendar-full-container');
-
-    const html = calendar.slice(0, 4).map(item => `
-        <div class="obligation-item">
-            <div class="ob-left">
-                <div class="ob-icon-badge">${item.category === 'IUC' ? '🚗' : (item.category === 'IRS' ? '📑' : '🏛️')}</div>
-                <div>
-                    <div class="ob-title">${item.title}</div>
-                    <div class="ob-sub">${item.description} • Limite: ${item.deadline}</div>
-                </div>
-            </div>
-            <div class="ob-right">
-                <span class="ob-days ${item.daysRemaining <= 7 ? 'text-rose' : 'text-amber'}">
-                    ${item.daysRemaining < 0 ? 'Concluída' : (item.daysRemaining === 0 ? 'Hoje' : `${item.daysRemaining} dias`)}
-                </span>
-                <span class="badge-status ${item.completed ? 'badge-success' : 'badge-info'}">
-                    ${item.completed ? 'Cumprido' : 'Em Curso'}
-                </span>
-            </div>
-        </div>
-    `).join('');
-
-    if (listOverview) listOverview.innerHTML = html;
-    if (listFull) listFull.innerHTML = html;
-}
-
-function renderSecondaryReserves(statusData) {
-    const stats = statusData.stats || {};
-    const reserves = stats.recommendedReserves || {};
-
-    document.getElementById('overview-net-amount').textContent = `${formatMoney(reserves.netTakeHome || 0)} €`;
-    document.getElementById('overview-vat-reserve').textContent = `${formatMoney(reserves.vat || 0)} €`;
-    document.getElementById('overview-ss-reserve').textContent = `${formatMoney(reserves.ss || 0)} €`;
-    document.getElementById('overview-irs-reserve').textContent = `${formatMoney(reserves.irs || 0)} €`;
-}
-
-/* ==========================================================================
-   LISTENERS DE AÇÕES
-   ========================================================================== */
 function initActionButtons() {
-    // Botão Sincronizar Agora
     const btnSync = document.getElementById('btn-sync-now');
     if (btnSync) {
         btnSync.addEventListener('click', async () => {
             btnSync.disabled = true;
-            btnSync.innerHTML = '<span class="icon-refresh spinning">⚡</span> <span>A sincronizar com AT...</span>';
-            
+            btnSync.innerHTML = '<span>⚡</span> <span>A sincronizar...</span>';
             try {
-                const res = await fetch('/api/sync/run', { method: 'POST' }).then(r => r.json());
-                alert("✓ Sincronização concluída com sucesso! Os valores mais recentes do Portal das Finanças foram atualizados.");
+                await fetch('/api/sync/run', { method: 'POST' });
+                alert("✓ Sincronização concluída com sucesso!");
                 await loadDashboardData();
             } catch (e) {
-                alert("Aviso na sincronização: " + e.message);
+                alert("Aviso: " + e.message);
             } finally {
                 btnSync.disabled = false;
-                btnSync.innerHTML = '<span class="icon-refresh">⚡</span> <span class="btn-text">Sincronizar com AT</span>';
+                btnSync.innerHTML = '<span class="icon-refresh">⚡</span> <span>Sincronizar AT</span>';
             }
         });
     }
 
-    // Botões de Classificar e-Fatura
     const setupClassify = (btnId) => {
         const btn = document.getElementById(btnId);
         if (btn) {
             btn.addEventListener('click', async () => {
                 btn.disabled = true;
-                btn.textContent = 'A classificar com regras inteligentes...';
+                btn.textContent = 'A classificar...';
                 try {
                     const res = await fetch('/api/efatura/auto-classify', { method: 'POST' }).then(r => r.json());
                     alert("✓ " + res.message);
                     await loadDashboardData();
                 } catch (e) {
-                    alert("Erro ao classificar: " + e.message);
+                    alert("Erro: " + e.message);
                 } finally {
                     btn.disabled = false;
                 }
@@ -339,12 +355,12 @@ function initActionButtons() {
     setupClassify('btn-auto-classify-hero');
     setupClassify('btn-auto-classify-efatura');
 
-    // Guardar Configuração de IUC
+    // Salvar configuração de matrícula
     const btnSaveIuc = document.getElementById('btn-save-iuc-config');
     if (btnSaveIuc) {
         btnSaveIuc.addEventListener('click', async () => {
             const body = {
-                id: 'v-abril-1',
+                id: document.getElementById('cfg-select-vehicle').value,
                 nome: document.getElementById('cfg-iuc-name').value,
                 matricula: document.getElementById('cfg-iuc-plate').value,
                 mesRegisto: document.getElementById('cfg-iuc-month').value,
@@ -355,8 +371,22 @@ function initActionButtons() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
-            alert("✓ Configuração de IUC atualizada com sucesso!");
+            alert("✓ Viatura atualizada com sucesso!");
             await loadDashboardData();
+        });
+    }
+
+    const selectVeh = document.getElementById('cfg-select-vehicle');
+    if (selectVeh) {
+        selectVeh.addEventListener('change', async () => {
+            const iucData = await fetch('/api/iuc').then(r => r.json());
+            const veh = (iucData.todosVeiculos || []).find(v => v.id === selectVeh.value);
+            if (veh) {
+                document.getElementById('cfg-iuc-name').value = veh.nome;
+                document.getElementById('cfg-iuc-plate').value = veh.matricula;
+                document.getElementById('cfg-iuc-month').value = veh.mesRegisto;
+                document.getElementById('cfg-iuc-val').value = veh.valorEstimado;
+            }
         });
     }
 }
@@ -372,8 +402,15 @@ function initCronTimer() {
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const el = document.getElementById('cron-countdown-text');
-        if (el) el.textContent = `⏱️ Ciclo 5h: Ativo • Próxima verificação em ${hours}h ${mins}m`;
+        if (el) el.textContent = `Ciclo 5h: Ativo (${hours}h ${mins}m)`;
     }, 1000);
+}
+
+function formatDatePt(dStr) {
+    if (!dStr) return '--';
+    const parts = dStr.split('-');
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    return dStr;
 }
 
 function formatMoney(num) {
