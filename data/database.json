@@ -65,7 +65,8 @@
         {
           "id": "v-abril-1",
           "nome": "Viatura Principal",
-          "matricula": "XX-XX-XX",
+          "matricula": "45-AB-89",
+          "categoria": "Ligeiro de Passageiros",
           "mesRegisto": 4,
           "mesNome": "Abril",
           "ultimoPagamento": "2026-04-19",
@@ -74,8 +75,9 @@
         },
         {
           "id": "v-junho-1",
-          "nome": "Viatura Secundária (A)",
-          "matricula": "YY-YY-YY",
+          "nome": "Viatura Familiar",
+          "matricula": "62-TX-14",
+          "categoria": "Ligeiro de Passageiros",
           "mesRegisto": 6,
           "mesNome": "Junho",
           "ultimoPagamento": "2026-06-15",
@@ -84,8 +86,9 @@
         },
         {
           "id": "v-junho-2",
-          "nome": "Viatura Secundária (B)",
-          "matricula": "ZZ-ZZ-ZZ",
+          "nome": "Viatura Urbana",
+          "matricula": "18-94-ZV",
+          "categoria": "Ligeiro de Passageiros",
           "mesRegisto": 6,
           "mesNome": "Junho",
           "ultimoPagamento": "2026-06-15",
@@ -94,8 +97,9 @@
         },
         {
           "id": "v-junho-3",
-          "nome": "Viatura Comercial / Mota",
-          "matricula": "WW-WW-WW",
+          "nome": "Comercial / Mota",
+          "matricula": "AA-01-BB",
+          "categoria": "Comercial / Motociclo",
           "mesRegisto": 6,
           "mesNome": "Junho",
           "ultimoPagamento": "2026-06-26",
@@ -139,6 +143,18 @@
       "simulacao_2026": {
         "cenario_recomendado": "Aumentar retenção ou poupança mensal de 160 €",
         "deducoes_acumuladas": "210,39 €"
+      },
+      "previsao_2026": {
+        "ano": 2026,
+        "saldo_previsto_a_pagar": "1.709,83 €",
+        "deducoes_acumuladas": "210,39 €",
+        "poupanca_mensal_sugerida": "160,00 €",
+        "potencial_recuperacao": "250,00 €",
+        "rendimento_estimado": "21.000,00 €",
+        "coleta_estimada": "3.100,00 €",
+        "retencao_estimada": "250,00 €",
+        "estado_apuramento": "Em acumulação (167 faturas por classificar)",
+        "comparativo_2025": "1.920,22 € (poupança de ~210 € já garantida)"
       }
     },
     "efatura_2026": {
