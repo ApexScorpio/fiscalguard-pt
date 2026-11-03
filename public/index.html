@@ -74,9 +74,9 @@
             </button>
         </nav>
 
-        <!-- VIEWPORT PRINCIPAL (SEM SCROLL NO DASHBOARD) -->
+        <!-- VIEWPORT PRINCIPAL (SEM SCROLL NO DASHBOARD E SEM ESPAÇOS EM BRANCO) -->
         <main class="app-content-viewport">
-            <!-- ABA 1: DASHBOARD GERAL (TUDO VISÍVEL SEM NECESSIDADE DE SCROLL E SEM ESPAÇOS EM BRANCO) -->
+            <!-- ABA 1: DASHBOARD GERAL -->
             <section class="tab-pane active h-full" id="tab-overview">
                 <div class="dashboard-fit-grid">
                     
@@ -88,7 +88,7 @@
                             <div class="c-card-header">
                                 <div class="c-title-group">
                                     <span class="c-icon">🚗</span>
-                                    <span class="c-title">Sentinela IUC • Frota</span>
+                                    <span class="c-title">Sentinela IUC • Frota (4 Viaturas)</span>
                                 </div>
                                 <span class="badge-status badge-success">✓ 4 Pagas em 2026</span>
                             </div>
@@ -131,7 +131,7 @@
                             </div>
 
                             <div class="c-card-footer">
-                                <span>🛡️ Ciclo 2026 100% liquidado. Próximo encargo em Abril 2027.</span>
+                                <span>🛡️ Ciclo 2026 100% liquidado na AT. Próximo encargo em Abril 2027.</span>
                             </div>
                         </div>
 
@@ -172,22 +172,24 @@
                                     <span class="f-tile-foot">Abate direto à coleta</span>
                                 </div>
                                 <div class="f-tile">
-                                    <span class="f-tile-lbl">Retenção na Fonte</span>
+                                    <span class="f-tile-lbl">Retenção Estimada</span>
                                     <strong class="f-tile-num text-muted">~250,00 €</strong>
-                                    <span class="f-tile-foot">Estimativa ano 2026</span>
+                                    <span class="f-tile-foot">Ano 2026</span>
                                 </div>
                             </div>
 
-                            <div class="irs-strategy-box">
-                                <div class="strat-item">
-                                    <span class="strat-dot">💡</span>
-                                    <span>Ao classificar as <strong>167 faturas pendentes</strong>, reduz a fatura fiscal em até <strong>250 €</strong>.</span>
-                                </div>
+                            <!-- MINI TABELA DE SIMULAÇÃO 2026 QUE PREENCHE O CARD DE FORMA PERFEITA -->
+                            <div class="irs-mini-sim-table">
+                                <div class="sim-row"><span>Rendimento Bruto Previsto:</span> <strong>~21.000,00 €</strong></div>
+                                <div class="sim-row"><span>Dedução Específica (Art. 25.º):</span> <strong>-4.462,40 €</strong></div>
+                                <div class="sim-row"><span>Coleta Bruta Estimada:</span> <strong>~3.050,00 €</strong></div>
+                                <div class="sim-row highlight"><span>Deduções Atuais e-Fatura:</span> <strong class="text-emerald">-210,39 €</strong></div>
+                                <div class="sim-row total"><span>SALDO ESTIMADO A PAGAR:</span> <strong class="text-rose">~1.709,83 €</strong></div>
                             </div>
 
                             <div class="c-card-footer">
-                                <span>Acompanhamento preventivo de tesouraria</span>
-                                <button class="btn-text-link" onclick="switchTab('tab-irs')">Simulação Completa →</button>
+                                <span>💡 Valide as 167 faturas para abater até 250 € adicionais</span>
+                                <button class="btn-text-link" onclick="switchTab('tab-irs')">Simulação →</button>
                             </div>
                         </div>
 
@@ -232,10 +234,18 @@
                                     <span class="audit-name"><span class="check-green">✓</span> Segurança Social Direta:</span>
                                     <strong class="text-success">Sem Dívidas / Em Dia</strong>
                                 </div>
+                                <div class="audit-row">
+                                    <span class="audit-name"><span class="check-green">✓</span> Contactos Oficiais AT:</span>
+                                    <strong class="text-success">Telemóvel & SMS Ativos</strong>
+                                </div>
+                                <div class="audit-row">
+                                    <span class="audit-name"><span class="check-green">✓</span> Património Predial (IMI):</span>
+                                    <strong class="text-success">0 prédios c/ imposto</strong>
+                                </div>
                             </div>
 
                             <div class="c-card-footer">
-                                <span>Certidão permanente de inexistência de dívidas ativa</span>
+                                <span>Certidão permanente de inexistência de dívidas ativa na AT</span>
                             </div>
                         </div>
 
@@ -296,7 +306,23 @@
                                 <div class="s-bar-item">
                                     <div class="s-bar-header">
                                         <span>💊 Saúde & Medicamentos</span>
-                                        <strong class="text-muted">0,00 € / 1000 € (0%)</strong>
+                                        <strong class="text-muted">0,00 € / 1.000 € (Teto livre)</strong>
+                                    </div>
+                                    <div class="s-bar-track"><div class="s-bar-fill" style="width: 0%;"></div></div>
+                                </div>
+
+                                <div class="s-bar-item">
+                                    <div class="s-bar-header">
+                                        <span>📚 Educação & Manuais</span>
+                                        <strong class="text-muted">0,00 € / 800 € (Teto livre)</strong>
+                                    </div>
+                                    <div class="s-bar-track"><div class="s-bar-fill" style="width: 0%;"></div></div>
+                                </div>
+
+                                <div class="s-bar-item">
+                                    <div class="s-bar-header">
+                                        <span>🏠 Habitação & Rendas</span>
+                                        <strong class="text-muted">0,00 € / 502 € (Teto livre)</strong>
                                     </div>
                                     <div class="s-bar-track"><div class="s-bar-fill" style="width: 0%;"></div></div>
                                 </div>
@@ -343,7 +369,7 @@
                             </div>
                         </div>
 
-                        <!-- PRÓXIMOS PRAZOS REAIS DA AT (NÃO MAIS AQUELES 'CONCLUÍDA' INÚTEIS!) -->
+                        <!-- PRÓXIMOS PRAZOS REAIS DA AT -->
                         <div class="obligations-horizontal-strip">
                             <div class="obligations-strip-title">📅 Próximos Prazos Reais:</div>
                             <div class="obligations-pills-row" id="overview-obligations-container">

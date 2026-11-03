@@ -265,7 +265,7 @@ html, body.no-scroll-layout {
     min-height: 0;
 }
 
-/* COMPACT HERO CARD COM FLUXO NATURAL (SEM JUSTIFY-CONTENT SPACE-BETWEEN!) */
+/* COMPACT HERO CARD COM FLUXO EQUILIBRADO */
 .compact-hero-card {
     background: var(--bg-card);
     backdrop-filter: blur(14px);
@@ -365,6 +365,7 @@ html, body.no-scroll-layout {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    flex-shrink: 0;
 }
 
 .iuc-top-row {
@@ -373,29 +374,15 @@ html, body.no-scroll-layout {
     align-items: center;
 }
 
-.iuc-top-val-block {
-    text-align: right;
-}
-
+.iuc-top-val-block { text-align: right; }
 .iuc-val-large {
     font-size: 22px;
     font-weight: 800;
     font-family: 'JetBrains Mono', monospace;
     color: var(--accent-amber);
 }
-
-.iuc-curr {
-    font-size: 14px;
-    color: var(--accent-amber);
-    font-weight: 700;
-}
-
-.iuc-badge-days {
-    display: block;
-    font-size: 10px;
-    color: var(--accent-amber);
-    font-weight: 700;
-}
+.iuc-curr { font-size: 14px; color: var(--accent-amber); font-weight: 700; }
+.iuc-badge-days { display: block; font-size: 10px; color: var(--accent-amber); font-weight: 700; }
 
 .iuc-vehicle-meta-row {
     display: flex;
@@ -403,14 +390,9 @@ html, body.no-scroll-layout {
     align-items: center;
     font-size: 11px;
 }
-
 .vehicle-name { color: #fff; }
 .vehicle-deadline-sub { color: var(--text-muted); }
 .vehicle-deadline-sub strong { color: #fff; }
-
-.iuc-progress-wrapper {
-    margin-top: 2px;
-}
 
 .progress-bar-track {
     height: 6px;
@@ -419,16 +401,12 @@ html, body.no-scroll-layout {
     overflow: hidden;
     margin-bottom: 3px;
 }
-
 .progress-bar-fill {
     height: 100%;
     border-radius: var(--radius-full);
     transition: width 0.6s ease;
 }
-
-.fill-gradient-iuc {
-    background: linear-gradient(90deg, var(--accent-emerald), var(--accent-amber));
-}
+.fill-gradient-iuc { background: linear-gradient(90deg, var(--accent-emerald), var(--accent-amber)); }
 
 .progress-label-bar {
     display: flex;
@@ -443,16 +421,16 @@ html, body.no-scroll-layout {
     color: var(--text-muted);
     letter-spacing: 0.5px;
     margin-top: 4px;
+    flex-shrink: 0;
 }
 
-/* LISTA DE VEÍCULOS ORDENADOS */
+/* LISTA DE VEÍCULOS ORDENADOS QUE PREENCHE O RESTO DO CARD */
 .vehicles-ordered-list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
     flex: 1;
-    overflow-y: auto;
-    padding-right: 2px;
+    justify-content: space-between;
 }
 
 .v-item-row {
@@ -462,7 +440,7 @@ html, body.no-scroll-layout {
     background: rgba(255, 255, 255, 0.025);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
-    padding: 5px 8px;
+    padding: 7px 10px;
     font-size: 11px;
 }
 
@@ -479,7 +457,7 @@ html, body.no-scroll-layout {
     color: #fff;
     background: #000;
     border: 1px solid #334155;
-    padding: 1px 5px;
+    padding: 2px 6px;
     border-radius: 3px;
 }
 
@@ -501,7 +479,7 @@ html, body.no-scroll-layout {
 .v-days-badge {
     font-size: 9px;
     font-weight: 700;
-    padding: 1px 6px;
+    padding: 2px 8px;
     border-radius: var(--radius-full);
     font-family: 'JetBrains Mono', monospace;
 }
@@ -514,6 +492,7 @@ html, body.no-scroll-layout {
     border: 1px solid rgba(244, 63, 94, 0.2);
     border-radius: var(--radius-md);
     padding: 8px 12px;
+    flex-shrink: 0;
 }
 
 .f-top-label {
@@ -544,15 +523,13 @@ html, body.no-scroll-layout {
     border-radius: var(--radius-full);
 }
 
-.f-top-sub {
-    font-size: 10px;
-    color: var(--text-muted);
-}
+.f-top-sub { font-size: 10px; color: var(--text-muted); }
 
 .forecast-tiles-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 6px;
+    flex-shrink: 0;
 }
 
 .f-tile {
@@ -564,31 +541,35 @@ html, body.no-scroll-layout {
     flex-direction: column;
 }
 
-.f-tile-lbl {
-    font-size: 9px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-}
+.f-tile-lbl { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
+.f-tile-num { font-size: 13px; font-family: 'JetBrains Mono', monospace; margin: 1px 0; }
+.f-tile-foot { font-size: 9px; color: var(--text-muted); }
 
-.f-tile-num {
-    font-size: 13px;
-    font-family: 'JetBrains Mono', monospace;
-    margin: 1px 0;
-}
-
-.f-tile-foot {
-    font-size: 9px;
-    color: var(--text-muted);
-}
-
-.irs-strategy-box {
-    background: rgba(255, 255, 255, 0.02);
-    border-left: 3px solid var(--accent-amber);
-    padding: 6px 10px;
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+/* MINI TABELA DE SIMULAÇÃO QUE PREENCHE O CARD DE FORMA RICA */
+.irs-mini-sim-table {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    flex: 1;
     font-size: 10px;
-    line-height: 1.4;
+}
+
+.sim-row {
+    display: flex;
+    justify-content: space-between;
     color: var(--text-secondary);
+}
+
+.sim-row strong { color: #fff; font-family: 'JetBrains Mono', monospace; }
+.sim-row.highlight { font-weight: 700; }
+.sim-row.total {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 4px;
+    font-weight: 800;
 }
 
 /* CARD 3: SITUAÇÃO TRIBUTÁRIA */
@@ -596,8 +577,9 @@ html, body.no-scroll-layout {
     background: rgba(16, 185, 129, 0.06);
     border: 1px solid rgba(16, 185, 129, 0.2);
     border-radius: var(--radius-md);
-    padding: 10px 12px;
+    padding: 8px 12px;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .status-hero-num {
@@ -620,7 +602,7 @@ html, body.no-scroll-layout {
     padding: 10px 12px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    justify-content: space-around;
     flex: 1;
 }
 
@@ -646,6 +628,7 @@ html, body.no-scroll-layout {
     border: 1px solid rgba(245, 158, 11, 0.2);
     border-radius: var(--radius-md);
     padding: 8px 12px;
+    flex-shrink: 0;
 }
 
 .efatura-hero-num {
@@ -654,10 +637,7 @@ html, body.no-scroll-layout {
     font-family: 'JetBrains Mono', monospace;
 }
 
-.efatura-hero-sub {
-    font-size: 10px;
-    color: var(--text-muted);
-}
+.efatura-hero-sub { font-size: 10px; color: var(--text-muted); }
 
 .btn-classify-action {
     background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(245, 158, 11, 0.15));
@@ -679,9 +659,8 @@ html, body.no-scroll-layout {
 .sectors-full-list {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    justify-content: space-around;
     flex: 1;
-    overflow-y: auto;
 }
 
 .s-bar-item {
@@ -742,7 +721,7 @@ html, body.no-scroll-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
-    height: 58px;
+    height: 54px;
     flex-shrink: 0;
 }
 
