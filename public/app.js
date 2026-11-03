@@ -47,7 +47,7 @@ async function loadDashboardData() {
         renderIucHeroAndList(resIuc);
         renderIrsForecast(resStatus);
         renderEfaturaSummary(resStatus);
-        renderReservesAndAgenda(resStatus, resCalendar);
+        renderReservesAndAgenda(resStatus, resCalendar, resIuc);
         renderDetailedTabs(resStatus, resIuc, resInvoices, resCalendar);
 
     } catch (err) {
@@ -124,7 +124,6 @@ function renderIrsForecast(statusData) {
 
     const deducoes = efatura.total_deducoes_provisorias || "210,39 €";
     
-    // Atualizar valores do card de previsão
     const elBalance = document.getElementById('forecast-irs-balance');
     const elDeductions = document.getElementById('forecast-irs-deductions');
     const elSavings = document.getElementById('forecast-irs-savings');
@@ -137,7 +136,6 @@ function renderIrsForecast(statusData) {
     if (elPotential) elPotential.textContent = prev.potencial_recuperacao ? `+${prev.potencial_recuperacao}` : "+250,00 €";
     if (elRef2025) elRef2025.textContent = (irs.declaracao_recente && irs.declaracao_recente.montante_liquidado) ? `-${irs.declaracao_recente.montante_liquidado}` : "-1.920,22 €";
 
-    // Atualizar na aba IRS detalhada
     const tabBal = document.getElementById('irs-tab-balance');
     const tabTot = document.getElementById('irs-tab-total');
     if (tabBal) tabBal.textContent = prev.saldo_previsto_a_pagar || "~1.709,83 €";
@@ -165,7 +163,7 @@ function renderEfaturaSummary(statusData) {
     }
 }
 
-function renderReservesAndAgenda(statusData, calendarData) {
+function renderReservesAndAgenda(statusData, calendarData, iucData) {
     const stats = statusData.stats || {};
     const reserves = stats.recommendedReserves || {};
 
@@ -179,18 +177,33 @@ function renderReservesAndAgenda(statusData, calendarData) {
     if (elSS) elSS.textContent = `${formatMoney(reserves.ss || 0)} €`;
     if (elIrs) elIrs.textContent = `160,00 €/mês`;
 
-    // Ticker horizontal de obrigações
+    // PRAZOS REAIS DA AT (substitui os antigos 'Concluída' por prazos futuros reais!)
     const elPills = document.getElementById('overview-obligations-container');
-    if (elPills && calendarData) {
-        elPills.innerHTML = calendarData.slice(0, 3).map(item => `
-            <div class="ob-mini-pill">
-                <span>${item.category === 'IUC' ? '🚗' : (item.category === 'IRS' ? '📑' : '🏛️')}</span>
-                <strong>${item.title.split(' ')[0]}</strong>
-                <span class="ob-mini-days ${item.daysRemaining <= 7 ? 'text-rose' : 'text-amber'}">
-                    ${item.daysRemaining < 0 ? 'Concluída' : (item.daysRemaining === 0 ? 'Hoje' : `${item.daysRemaining}d`)}
-                </span>
+    if (elPills) {
+        const proximoIuc = (iucData && iucData.proximoIuc) ? iucData.proximoIuc : { matricula: '45-AB-89', daysRemaining: 177 };
+        
+        elPills.innerHTML = `
+            <div class="ob-mini-pill" title="IUC Viatura Principal: 30 de Abril de 2027">
+                <span>🚗</span>
+                <strong>IUC ${proximoIuc.matricula}</strong>
+                <span class="ob-mini-days">${proximoIuc.daysRemaining}d (Abril)</span>
             </div>
-        `).join('');
+            <div class="ob-mini-pill" title="IUC Frota Junho (3 Viaturas): 30 de Junho de 2027">
+                <span>🚗</span>
+                <strong>IUC Frota (3 viaturas)</strong>
+                <span class="ob-mini-days">238d (Junho)</span>
+            </div>
+            <div class="ob-mini-pill" title="IRS 2026: Entrega e Liquidação">
+                <span>📑</span>
+                <strong>IRS 2026</strong>
+                <span class="ob-mini-days">238d (Junho)</span>
+            </div>
+            <div class="ob-mini-pill" title="Segurança Social: Contribuição Mensal">
+                <span>🛡️</span>
+                <strong>Seg. Social</strong>
+                <span class="ob-mini-days">Dia 20 Mensal</span>
+            </div>
+        `;
     }
 }
 
@@ -355,7 +368,6 @@ function initActionButtons() {
     setupClassify('btn-auto-classify-hero');
     setupClassify('btn-auto-classify-efatura');
 
-    // Salvar configuração de matrícula
     const btnSaveIuc = document.getElementById('btn-save-iuc-config');
     if (btnSaveIuc) {
         btnSaveIuc.addEventListener('click', async () => {

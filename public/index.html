@@ -11,7 +11,7 @@
 </head>
 <body class="no-scroll-layout">
     <div class="app-viewport">
-        <!-- HEADER ULTRA COMPACTO -->
+        <!-- HEADER EXECUTIVO COMPACTO -->
         <header class="app-header-compact">
             <div class="header-left">
                 <div class="brand-badge">
@@ -25,7 +25,7 @@
                     <span class="sep">•</span>
                     <span class="pill-code">NIF: <strong id="user-display-nif">245804439</strong></span>
                     <span class="sep">•</span>
-                    <span class="pill-code pill-iban">IBAN: <strong id="user-display-iban">PT50 0018 ... 2126 7</strong> <span class="badge-check">✓</span></span>
+                    <span class="pill-code pill-iban">IBAN: <strong id="user-display-iban">PT50 0018 ... 2126 7</strong> <span class="badge-check">✓ Confirmado</span></span>
                 </div>
             </div>
 
@@ -44,7 +44,7 @@
             </div>
         </header>
 
-        <!-- NAVEGAÇÃO COMPACTA EM BARRA -->
+        <!-- NAVEGAÇÃO DE ABAS -->
         <nav class="app-nav-compact">
             <button class="nav-tab active" data-tab="tab-overview">
                 <span class="tab-icon">📊</span>
@@ -70,17 +70,17 @@
             </button>
             <button class="nav-tab" data-tab="tab-settings">
                 <span class="tab-icon">⚙️</span>
-                <span>Configurações & Cron</span>
+                <span>Configurações</span>
             </button>
         </nav>
 
         <!-- VIEWPORT PRINCIPAL (SEM SCROLL NO DASHBOARD) -->
         <main class="app-content-viewport">
-            <!-- ABA 1: DASHBOARD GERAL (TUDO VISÍVEL SEM NECESSIDADE DE SCROLL) -->
+            <!-- ABA 1: DASHBOARD GERAL (TUDO VISÍVEL SEM NECESSIDADE DE SCROLL E SEM ESPAÇOS EM BRANCO) -->
             <section class="tab-pane active h-full" id="tab-overview">
                 <div class="dashboard-fit-grid">
                     
-                    <!-- LINHA SUPERIOR: OS 4 MEGA CARDS EXECUTIVOS -->
+                    <!-- LINHA SUPERIOR: OS 4 MEGA CARDS EXECUTIVOS EQUILIBRADOS -->
                     <div class="dashboard-cards-row">
                         
                         <!-- CARD 1: SENTINELA IUC (TODAS AS VIATURAS ORDENADAS DO MAIS PERTO AO MAIS LONGE) -->
@@ -88,41 +88,50 @@
                             <div class="c-card-header">
                                 <div class="c-title-group">
                                     <span class="c-icon">🚗</span>
-                                    <span class="c-title">Sentinela IUC • Viaturas</span>
+                                    <span class="c-title">Sentinela IUC • Frota</span>
                                 </div>
                                 <span class="badge-status badge-success">✓ 4 Pagas em 2026</span>
                             </div>
 
                             <!-- DESTAQUE DO PRÓXIMO VEÍCULO A VENCER -->
-                            <div class="iuc-hero-top">
-                                <div class="iuc-plate-box">
+                            <div class="iuc-hero-top-box">
+                                <div class="iuc-top-row">
                                     <div class="pt-license-plate" id="hero-iuc-plate">45-AB-89</div>
-                                    <div>
-                                        <div class="vehicle-title-text" id="hero-iuc-name">Viatura Principal</div>
-                                        <div class="vehicle-sub-text">Mês Matrícula: <strong>Abril</strong> • Limite: <strong id="hero-iuc-deadline">30/04/2027</strong></div>
+                                    <div class="iuc-top-val-block">
+                                        <span class="iuc-val-large" id="hero-iuc-amount">45,80</span> <span class="iuc-curr">€</span>
+                                        <span class="iuc-badge-days" id="hero-iuc-days">Faltam 177 dias</span>
                                     </div>
                                 </div>
-                                <div class="iuc-val-box">
-                                    <div class="iuc-val-num"><span id="hero-iuc-amount">45,80</span> €</div>
-                                    <div class="iuc-val-badge" id="hero-iuc-days">Faltam 177 dias</div>
+
+                                <div class="iuc-vehicle-meta-row">
+                                    <strong class="vehicle-name" id="hero-iuc-name">Viatura Principal</strong>
+                                    <span class="vehicle-deadline-sub">Prazo: <strong id="hero-iuc-deadline">30/04/2027</strong> (Mês Abril)</span>
+                                </div>
+
+                                <div class="iuc-progress-wrapper">
+                                    <div class="progress-bar-track">
+                                        <div class="progress-bar-fill fill-gradient-iuc" id="hero-iuc-progress" style="width: 52%;"></div>
+                                    </div>
+                                    <div class="progress-label-bar">
+                                        <span>Início do Ciclo (Mai)</span>
+                                        <strong class="text-amber" id="hero-iuc-percent-label">52% percorrido</strong>
+                                        <span>Vencimento (30 Abr)</span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- BARRA DE PROGRESSO DO PRÓXIMO IUC -->
-                            <div class="iuc-bar-container">
-                                <div class="progress-bar-track">
-                                    <div class="progress-bar-fill fill-gradient-iuc" id="hero-iuc-progress" style="width: 52%;"></div>
-                                </div>
-                                <div class="bar-labels">
-                                    <span>Mai 2026 (Início)</span>
-                                    <span class="text-amber" id="hero-iuc-percent-label">52% percorrido</span>
-                                    <span>30 Abr 2027 (Prazo)</span>
-                                </div>
+                            <!-- TÍTULO DA LISTA DE VIATURAS -->
+                            <div class="sub-list-title">
+                                <span>TODAS AS VIATURAS (POR ORDEM DE VENCIMENTO):</span>
                             </div>
 
-                            <!-- LISTA DE TODOS OS VEÍCULOS ORDENADOS (DO MAIS PERTO AO MAIS LONGE) -->
+                            <!-- LISTA DE TODOS OS VEÍCULOS ORDENADOS DO MAIS PERTO AO MAIS LONGE -->
                             <div class="vehicles-ordered-list" id="dashboard-vehicles-container">
                                 <!-- Gerado dinamicamente via JS ordenado por dias restantes -->
+                            </div>
+
+                            <div class="c-card-footer">
+                                <span>🛡️ Ciclo 2026 100% liquidado. Próximo encargo em Abril 2027.</span>
                             </div>
                         </div>
 
@@ -136,44 +145,53 @@
                                 <span class="badge-status badge-info">Ano Corrente</span>
                             </div>
 
-                            <div class="irs-forecast-body">
-                                <div class="forecast-main-box">
-                                    <div class="forecast-label">Saldo Estimado a Pagar (com deduções atuais)</div>
-                                    <div class="forecast-value text-rose" id="forecast-irs-balance">~1.709,83 €</div>
-                                    <div class="forecast-sub">Poupança acumulada face a 2025: <strong class="text-emerald">+210,39 €</strong></div>
+                            <div class="irs-forecast-top-box">
+                                <div class="f-top-label">Saldo Estimado a Pagar (Deduções Atuais)</div>
+                                <div class="f-top-val-row">
+                                    <div class="f-balance-num text-rose" id="forecast-irs-balance">~1.709,83 €</div>
+                                    <div class="f-compare-pill text-emerald">Melhoria: <strong>+210,39 €</strong></div>
                                 </div>
+                                <div class="f-top-sub">Comparativo c/ 2025: <span id="ref-irs-2025">-1.920,22 €</span> pago no acerto anterior</div>
+                            </div>
 
-                                <div class="forecast-grid-stats">
-                                    <div class="f-stat-tile">
-                                        <span class="f-stat-label">Deduções Acumuladas</span>
-                                        <strong class="f-stat-val text-amber" id="forecast-irs-deductions">210,39 €</strong>
-                                        <span class="f-stat-sub">e-Fatura provisório</span>
-                                    </div>
-                                    <div class="f-stat-tile">
-                                        <span class="f-stat-label">Poupança Sugerida</span>
-                                        <strong class="f-stat-val text-emerald" id="forecast-irs-savings">160,00 €/mês</strong>
-                                        <span class="f-stat-sub">Reserva de tesouraria</span>
-                                    </div>
-                                    <div class="f-stat-tile">
-                                        <span class="f-stat-label">Ganho c/ 167 Faturas</span>
-                                        <strong class="f-stat-val text-blue" id="forecast-irs-potential">+250,00 €</strong>
-                                        <span class="f-stat-sub">Abate direto à coleta</span>
-                                    </div>
-                                    <div class="f-stat-tile">
-                                        <span class="f-stat-label">IRS 2025 (Referência)</span>
-                                        <strong class="f-stat-val text-muted" id="ref-irs-2025">-1.920,22 €</strong>
-                                        <span class="f-stat-sub">Liquidado e arquivado</span>
-                                    </div>
+                            <!-- TILES DE INDICADORES DO IRS 2026 -->
+                            <div class="forecast-tiles-grid">
+                                <div class="f-tile">
+                                    <span class="f-tile-lbl">Deduções Acumuladas</span>
+                                    <strong class="f-tile-num text-amber" id="forecast-irs-deductions">210,39 €</strong>
+                                    <span class="f-tile-foot">e-Fatura atual</span>
                                 </div>
+                                <div class="f-tile">
+                                    <span class="f-tile-lbl">Poupança Sugerida</span>
+                                    <strong class="f-tile-num text-emerald" id="forecast-irs-savings">160,00 €/mês</strong>
+                                    <span class="f-tile-foot">Reserva de tesouraria</span>
+                                </div>
+                                <div class="f-tile">
+                                    <span class="f-tile-lbl">Ganho c/ 167 Faturas</span>
+                                    <strong class="f-tile-num text-blue" id="forecast-irs-potential">+250,00 €</strong>
+                                    <span class="f-tile-foot">Abate direto à coleta</span>
+                                </div>
+                                <div class="f-tile">
+                                    <span class="f-tile-lbl">Retenção na Fonte</span>
+                                    <strong class="f-tile-num text-muted">~250,00 €</strong>
+                                    <span class="f-tile-foot">Estimativa ano 2026</span>
+                                </div>
+                            </div>
 
-                                <div class="irs-advice-pill">
-                                    <span>💡 Valide as 167 faturas para reduzir a fatura fiscal em 2026.</span>
-                                    <button class="btn-link-action" onclick="switchTab('tab-irs')">Ver Simulação →</button>
+                            <div class="irs-strategy-box">
+                                <div class="strat-item">
+                                    <span class="strat-dot">💡</span>
+                                    <span>Ao classificar as <strong>167 faturas pendentes</strong>, reduz a fatura fiscal em até <strong>250 €</strong>.</span>
                                 </div>
+                            </div>
+
+                            <div class="c-card-footer">
+                                <span>Acompanhamento preventivo de tesouraria</span>
+                                <button class="btn-text-link" onclick="switchTab('tab-irs')">Simulação Completa →</button>
                             </div>
                         </div>
 
-                        <!-- CARD 3: SITUAÇÃO TRIBUTÁRIA & DÍVIDAS -->
+                        <!-- CARD 3: SITUAÇÃO TRIBUTÁRIA & AUDITORIA COMPLETA -->
                         <div class="compact-hero-card card-status-glow">
                             <div class="c-card-header">
                                 <div class="c-title-group">
@@ -183,32 +201,45 @@
                                 <span class="badge-status badge-success">Regularizada</span>
                             </div>
 
-                            <div class="status-clean-body">
-                                <div class="clean-amount text-success">0,00 €</div>
-                                <div class="clean-label">Sem dívidas ativas nem penhoras fiscais</div>
+                            <div class="status-top-hero">
+                                <div class="status-hero-num text-success">0,00 €</div>
+                                <div class="status-hero-sub">Situação 100% Regularizada (Sem dívidas ativas)</div>
+                            </div>
 
-                                <div class="status-indicators-mini">
-                                    <div class="s-ind-row">
-                                        <span><span class="check-mark">✓</span> Dívidas Fiscais / Execuções:</span>
-                                        <strong class="text-success">0 ativas</strong>
-                                    </div>
-                                    <div class="s-ind-row">
-                                        <span><span class="check-mark">✓</span> Guias de Pagamento AT:</span>
-                                        <strong class="text-success">0 pendentes</strong>
-                                    </div>
-                                    <div class="s-ind-row">
-                                        <span><span class="check-mark">✓</span> Certidão Não Dívida:</span>
-                                        <strong class="text-success">Válida</strong>
-                                    </div>
-                                    <div class="s-ind-row">
-                                        <span><span class="check-mark">✓</span> IBAN de Reembolso:</span>
-                                        <strong class="text-primary">Confirmado</strong>
-                                    </div>
+                            <!-- AUDITORIA DETALHADA QUE PREENCHE O CARD DE FORMA RICA E NATURAL -->
+                            <div class="audit-checklist-card">
+                                <div class="audit-row">
+                                    <span class="audit-name"><span class="check-green">✓</span> Dívidas Fiscais / Execuções:</span>
+                                    <strong class="text-success">0 ativas (0,00 €)</strong>
                                 </div>
+                                <div class="audit-row">
+                                    <span class="audit-name"><span class="check-green">✓</span> Guias de Pagamento AT:</span>
+                                    <strong class="text-success">0 pendentes</strong>
+                                </div>
+                                <div class="audit-row">
+                                    <span class="audit-name"><span class="check-green">✓</span> Penhoras / Processos:</span>
+                                    <strong class="text-success">Nenhuma ocorrência</strong>
+                                </div>
+                                <div class="audit-row">
+                                    <span class="audit-name"><span class="check-green">✓</span> Certidão Não Dívida:</span>
+                                    <strong class="text-success">Emitida & Válida</strong>
+                                </div>
+                                <div class="audit-row">
+                                    <span class="audit-name"><span class="check-green">✓</span> IBAN de Reembolsos:</span>
+                                    <strong class="text-primary">Confirmado (Santander)</strong>
+                                </div>
+                                <div class="audit-row">
+                                    <span class="audit-name"><span class="check-green">✓</span> Segurança Social Direta:</span>
+                                    <strong class="text-success">Sem Dívidas / Em Dia</strong>
+                                </div>
+                            </div>
+
+                            <div class="c-card-footer">
+                                <span>Certidão permanente de inexistência de dívidas ativa</span>
                             </div>
                         </div>
 
-                        <!-- CARD 4: CENTRAL E-FATURA 2026 -->
+                        <!-- CARD 4: CENTRAL E-FATURA 2026 (COM TODOS OS SETORES PREENCHIDOS) -->
                         <div class="compact-hero-card card-efatura-glow">
                             <div class="c-card-header">
                                 <div class="c-title-group">
@@ -218,48 +249,69 @@
                                 <span class="badge-status badge-warning" id="hero-efatura-badge">167 Pendentes</span>
                             </div>
 
-                            <div class="efatura-clean-body">
-                                <div class="efatura-metric-row">
-                                    <div>
-                                        <div class="efatura-big-num text-amber" id="hero-efatura-amount">210,39 €</div>
-                                        <div class="efatura-sub-label">Deduções provisórias acumuladas</div>
+                            <div class="efatura-top-row">
+                                <div>
+                                    <div class="efatura-hero-num text-amber" id="hero-efatura-amount">210,39 €</div>
+                                    <div class="efatura-hero-sub">Deduções provisórias acumuladas</div>
+                                </div>
+                                <button id="btn-auto-classify-hero" class="btn-classify-action" title="Classificar as 167 faturas nos setores de dedução">
+                                    <span>⚡ Classificar com IA</span>
+                                </button>
+                            </div>
+
+                            <!-- BARRAS DE TODOS OS SETORES LEGAIS DE DEDUÇÃO (PREENCHIMENTO COMPLETO E RICO) -->
+                            <div class="sectors-full-list">
+                                <div class="s-bar-item">
+                                    <div class="s-bar-header">
+                                        <span>🛒 Despesas Gerais Familiares</span>
+                                        <strong>195,27 € / 250 € (78%)</strong>
                                     </div>
-                                    <button id="btn-auto-classify-hero" class="btn-classify-sm" title="Classificar as 167 faturas automaticamente nos setores de dedução">
-                                        <span>⚡ Classificar com IA</span>
-                                    </button>
+                                    <div class="s-bar-track"><div class="s-bar-fill fill-amber" style="width: 78%;"></div></div>
                                 </div>
 
-                                <div class="sectors-mini-list">
-                                    <div class="sector-mini-item">
-                                        <div class="s-item-header">
-                                            <span>🛒 Despesas Gerais Familiares</span>
-                                            <strong>195,27 € / 250 € (78%)</strong>
-                                        </div>
-                                        <div class="mini-track"><div class="mini-fill" style="width: 78%;"></div></div>
+                                <div class="s-bar-item">
+                                    <div class="s-bar-header">
+                                        <span>🔧 Reparação Automóveis</span>
+                                        <strong>9,54 € / 250 € (4%)</strong>
                                     </div>
-                                    <div class="sector-mini-item">
-                                        <div class="s-item-header">
-                                            <span>🔧 Reparação Automóveis</span>
-                                            <strong>9,54 € / 250 € (4%)</strong>
-                                        </div>
-                                        <div class="mini-track"><div class="mini-fill" style="width: 4%;"></div></div>
-                                    </div>
-                                    <div class="sector-mini-item">
-                                        <div class="s-item-header">
-                                            <span>🏋️ Ginásios & Desporto</span>
-                                            <strong>4,48 € / 250 € (2%)</strong>
-                                        </div>
-                                        <div class="mini-track"><div class="mini-fill" style="width: 2%;"></div></div>
-                                    </div>
+                                    <div class="s-bar-track"><div class="s-bar-fill fill-blue" style="width: 4%;"></div></div>
                                 </div>
+
+                                <div class="s-bar-item">
+                                    <div class="s-bar-header">
+                                        <span>🏋️ Ginásios & Desporto</span>
+                                        <strong>4,48 € / 250 € (2%)</strong>
+                                    </div>
+                                    <div class="s-bar-track"><div class="s-bar-fill fill-emerald" style="width: 2%;"></div></div>
+                                </div>
+
+                                <div class="s-bar-item">
+                                    <div class="s-bar-header">
+                                        <span>☕ Restauração & Hotelaria</span>
+                                        <strong>1,10 € / 250 € (0.4%)</strong>
+                                    </div>
+                                    <div class="s-bar-track"><div class="s-bar-fill fill-amber" style="width: 1%;"></div></div>
+                                </div>
+
+                                <div class="s-bar-item">
+                                    <div class="s-bar-header">
+                                        <span>💊 Saúde & Medicamentos</span>
+                                        <strong class="text-muted">0,00 € / 1000 € (0%)</strong>
+                                    </div>
+                                    <div class="s-bar-track"><div class="s-bar-fill" style="width: 0%;"></div></div>
+                                </div>
+                            </div>
+
+                            <div class="c-card-footer">
+                                <span>167 faturas aguardam associação de setor</span>
                             </div>
                         </div>
 
                     </div>
 
-                    <!-- LINHA INFERIOR: RESERVAS FINANCEIRAS & AGENDA RESUMIDA -->
+                    <!-- LINHA INFERIOR: RESERVAS FINANCEIRAS & PRAZOS REAIS -->
                     <div class="dashboard-bottom-row">
-                        <!-- RESERVAS & LIQUIDEZ -->
+                        <!-- RÉGUA DE RESERVAS & LIQUIDEZ -->
                         <div class="reserves-horizontal-strip">
                             <div class="strip-item">
                                 <span class="strip-icon">💰</span>
@@ -291,11 +343,11 @@
                             </div>
                         </div>
 
-                        <!-- AGENDA RESUMIDA (HORIZONTAL) -->
+                        <!-- PRÓXIMOS PRAZOS REAIS DA AT (NÃO MAIS AQUELES 'CONCLUÍDA' INÚTEIS!) -->
                         <div class="obligations-horizontal-strip">
-                            <div class="obligations-strip-title">📅 Próximos Prazos:</div>
+                            <div class="obligations-strip-title">📅 Próximos Prazos Reais:</div>
                             <div class="obligations-pills-row" id="overview-obligations-container">
-                                <!-- Gerado dinamicamente -->
+                                <!-- Gerado dinamicamente com prazos reais de IUC, IRS e SS -->
                             </div>
                         </div>
                     </div>
@@ -303,7 +355,7 @@
                 </div>
             </section>
 
-            <!-- ABA 2: SENTINELA IUC (DETALHADO COM TODAS AS VIATURAS ORDENADAS) -->
+            <!-- ABA 2: SENTINELA IUC DETALHADA -->
             <section class="tab-pane" id="tab-iuc">
                 <div class="pane-scroll-container">
                     <div class="tab-header-banner">
@@ -313,17 +365,11 @@
                         </div>
                     </div>
 
-                    <!-- GRADE DE TODOS OS VEÍCULOS ORDENADOS -->
-                    <div class="all-vehicles-grid" id="all-vehicles-grid-container">
-                        <!-- Gerado dinamicamente com matrícula, mês, dias restantes e barra de progresso -->
-                    </div>
+                    <div class="all-vehicles-grid" id="all-vehicles-grid-container"></div>
 
-                    <!-- HISTÓRICO DE PAGAMENTOS -->
                     <div class="table-card mt-4">
                         <h3 class="box-title mb-3">🧾 Histórico de Pagamentos de IUC Processados na AT</h3>
-                        <div class="history-list-full" id="iuc-history-container">
-                            <!-- Gerado dinamicamente -->
-                        </div>
+                        <div class="history-list-full" id="iuc-history-container"></div>
                     </div>
                 </div>
             </section>
@@ -350,7 +396,7 @@
                                 <thead>
                                     <tr>
                                         <th>Data</th>
-                                        <th>Entidade / Fornecedor</th>
+                                        <th>Fornecedor / Emitente</th>
                                         <th>NIF</th>
                                         <th>Total (€)</th>
                                         <th>IVA (€)</th>
@@ -421,7 +467,7 @@
                 </div>
             </section>
 
-            <!-- ABA 6: CONFIGURAÇÕES & CRON -->
+            <!-- ABA 6: CONFIGURAÇÕES -->
             <section class="tab-pane" id="tab-settings">
                 <div class="pane-scroll-container">
                     <div class="tab-header-banner">

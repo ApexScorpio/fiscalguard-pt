@@ -1,13 +1,13 @@
 /* ==========================================================================
-   FISCALGUARD PRO — NO-SCROLL EXECUTIVE FINTECH DESIGN SYSTEM
-   Compact, Ultra-dense, High-contrast, Single-Screen Viewport Architecture
+   FISCALGUARD PRO — BALANCED NO-SCROLL EXECUTIVE DESIGN SYSTEM
+   Compact, Ultra-dense, High-contrast, Zero-Empty-Space Architecture
    ========================================================================== */
 
 :root {
-    --bg-base: #070A0F;
-    --bg-surface: #0E1626;
-    --bg-surface-elevated: #162032;
-    --bg-card: rgba(22, 32, 50, 0.75);
+    --bg-base: #07090E;
+    --bg-surface: #0D1424;
+    --bg-surface-elevated: #152034;
+    --bg-card: rgba(21, 32, 52, 0.85);
     --border-subtle: rgba(255, 255, 255, 0.08);
     --border-bright: rgba(255, 255, 255, 0.16);
 
@@ -45,12 +45,12 @@ html, body.no-scroll-layout {
     overflow: hidden;
     background-color: var(--bg-base);
     background-image: 
-        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
-        radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
-        radial-gradient(at 50% 100%, rgba(245, 158, 11, 0.03) 0px, transparent 50%);
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.06) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(245, 158, 11, 0.04) 0px, transparent 50%);
     color: var(--text-primary);
     font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-    line-height: 1.4;
+    line-height: 1.35;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -59,20 +59,20 @@ html, body.no-scroll-layout {
     display: flex;
     flex-direction: column;
     padding: 10px 18px;
-    max-width: 1680px;
+    max-width: 1720px;
     margin: 0 auto;
 }
 
-/* HEADER ULTRA COMPACTO */
+/* HEADER COMPACTO */
 .app-header-compact {
     display: flex;
     justify-content: space-between;
     align-items: center;
     background: var(--bg-card);
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(14px);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    padding: 8px 14px;
+    padding: 8px 16px;
     height: 48px;
     flex-shrink: 0;
     margin-bottom: 8px;
@@ -90,14 +90,11 @@ html, body.no-scroll-layout {
     gap: 8px;
 }
 
-.logo-shield {
-    font-size: 20px;
-}
+.logo-shield { font-size: 20px; }
 
 .brand-title {
     font-size: 15px;
     font-weight: 800;
-    letter-spacing: -0.3px;
     color: #fff;
     display: flex;
     align-items: center;
@@ -138,24 +135,10 @@ html, body.no-scroll-layout {
     color: #fff;
 }
 
-.user-name-compact {
-    font-weight: 700;
-    color: #fff;
-}
-
-.sep {
-    color: var(--text-muted);
-}
-
-.pill-code strong {
-    color: #fff;
-    font-family: 'JetBrains Mono', monospace;
-}
-
-.badge-check {
-    color: var(--accent-emerald);
-    font-weight: 800;
-}
+.user-name-compact { font-weight: 700; color: #fff; }
+.sep { color: var(--text-muted); }
+.pill-code strong { color: #fff; font-family: 'JetBrains Mono', monospace; }
+.badge-check { color: var(--accent-emerald); font-weight: 800; }
 
 .sentinel-pill {
     display: flex;
@@ -168,16 +151,8 @@ html, body.no-scroll-layout {
     padding: 4px 12px;
 }
 
-.sentinel-status-text {
-    font-weight: 700;
-    color: var(--accent-emerald);
-}
-
-.cron-timer-sm {
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--text-muted);
-}
-
+.sentinel-status-text { font-weight: 700; color: var(--accent-emerald); }
+.cron-timer-sm { font-family: 'JetBrains Mono', monospace; color: var(--text-muted); }
 .live-dot {
     width: 7px;
     height: 7px;
@@ -185,7 +160,6 @@ html, body.no-scroll-layout {
     background: var(--accent-emerald);
     box-shadow: 0 0 8px var(--accent-emerald);
 }
-
 .pulse-emerald { animation: pulse 2s infinite; }
 @keyframes pulse {
     0%, 100% { transform: scale(1); opacity: 1; }
@@ -217,7 +191,7 @@ html, body.no-scroll-layout {
 .app-nav-compact {
     display: flex;
     gap: 6px;
-    background: rgba(14, 22, 38, 0.6);
+    background: rgba(13, 20, 36, 0.6);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
     padding: 4px;
@@ -265,7 +239,6 @@ html, body.no-scroll-layout {
 .app-content-viewport {
     flex: 1;
     min-height: 0;
-    position: relative;
 }
 
 .tab-pane {
@@ -277,22 +250,22 @@ html, body.no-scroll-layout {
     display: block;
 }
 
-/* DASHBOARD GRID FIT (SEM SCROLL) */
+/* DASHBOARD GRID FIT (SEM SCROLL E SEM ESPAÇOS EM BRANCO) */
 .dashboard-fit-grid {
     height: 100%;
     display: grid;
     grid-template-rows: 1fr auto;
-    gap: 10px;
+    gap: 8px;
 }
 
 .dashboard-cards-row {
     display: grid;
-    grid-template-columns: 1.4fr 1.05fr 0.85fr 1fr;
-    gap: 10px;
+    grid-template-columns: 1.35fr 1.05fr 0.85fr 1fr;
+    gap: 8px;
     min-height: 0;
 }
 
-/* COMPACT HERO CARD */
+/* COMPACT HERO CARD COM FLUXO NATURAL (SEM JUSTIFY-CONTENT SPACE-BETWEEN!) */
 .compact-hero-card {
     background: var(--bg-card);
     backdrop-filter: blur(14px);
@@ -301,33 +274,24 @@ html, body.no-scroll-layout {
     padding: 14px 16px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    gap: 8px;
     overflow: hidden;
 }
 
 .card-iuc-glow {
-    background: linear-gradient(155deg, rgba(22, 32, 50, 0.9), rgba(14, 22, 38, 0.95));
+    background: linear-gradient(155deg, rgba(21, 32, 52, 0.95), rgba(13, 20, 36, 0.95));
     border: 1px solid rgba(245, 158, 11, 0.25);
     box-shadow: 0 0 25px -10px var(--amber-glow);
 }
 
-.card-irs-glow {
-    border-top: 3px solid var(--accent-rose);
-}
-
-.card-status-glow {
-    border-top: 3px solid var(--accent-emerald);
-}
-
-.card-efatura-glow {
-    border-top: 3px solid var(--accent-amber);
-}
+.card-irs-glow { border-top: 3px solid var(--accent-rose); }
+.card-status-glow { border-top: 3px solid var(--accent-emerald); }
+.card-efatura-glow { border-top: 3px solid var(--accent-amber); }
 
 .c-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
     flex-shrink: 0;
 }
 
@@ -337,9 +301,7 @@ html, body.no-scroll-layout {
     gap: 6px;
 }
 
-.c-icon {
-    font-size: 16px;
-}
+.c-icon { font-size: 16px; }
 
 .c-title {
     font-size: 12px;
@@ -394,57 +356,60 @@ html, body.no-scroll-layout {
     border-bottom-left-radius: 3px;
 }
 
-/* CARD IUC ELEMENTOS */
-.iuc-hero-top {
+/* CARD 1: SENTINELA IUC ELEMENTOS */
+.iuc-hero-top-box {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.iuc-top-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
 }
 
-.iuc-plate-box {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.vehicle-title-text {
-    font-size: 13px;
-    font-weight: 800;
-    color: #fff;
-}
-
-.vehicle-sub-text {
-    font-size: 11px;
-    color: var(--text-muted);
-}
-
-.vehicle-sub-text strong {
-    color: #fff;
-}
-
-.iuc-val-box {
+.iuc-top-val-block {
     text-align: right;
 }
 
-.iuc-val-num {
-    font-size: 20px;
+.iuc-val-large {
+    font-size: 22px;
     font-weight: 800;
     font-family: 'JetBrains Mono', monospace;
     color: var(--accent-amber);
 }
 
-.iuc-val-badge {
+.iuc-curr {
+    font-size: 14px;
+    color: var(--accent-amber);
+    font-weight: 700;
+}
+
+.iuc-badge-days {
+    display: block;
     font-size: 10px;
     color: var(--accent-amber);
     font-weight: 700;
 }
 
-.iuc-bar-container {
-    background: rgba(0, 0, 0, 0.25);
-    padding: 6px 10px;
-    border-radius: var(--radius-sm);
-    margin-bottom: 8px;
+.iuc-vehicle-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+}
+
+.vehicle-name { color: #fff; }
+.vehicle-deadline-sub { color: var(--text-muted); }
+.vehicle-deadline-sub strong { color: #fff; }
+
+.iuc-progress-wrapper {
+    margin-top: 2px;
 }
 
 .progress-bar-track {
@@ -452,7 +417,7 @@ html, body.no-scroll-layout {
     background: rgba(255, 255, 255, 0.08);
     border-radius: var(--radius-full);
     overflow: hidden;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 
 .progress-bar-fill {
@@ -465,39 +430,39 @@ html, body.no-scroll-layout {
     background: linear-gradient(90deg, var(--accent-emerald), var(--accent-amber));
 }
 
-.bar-labels {
+.progress-label-bar {
     display: flex;
     justify-content: space-between;
     font-size: 9px;
     color: var(--text-muted);
 }
 
-/* LISTA DE VEÍCULOS ORDENADOS DO MAIS PERTO AO MAIS LONGE */
+.sub-list-title {
+    font-size: 9px;
+    font-weight: 800;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+}
+
+/* LISTA DE VEÍCULOS ORDENADOS */
 .vehicles-ordered-list {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
+    flex: 1;
     overflow-y: auto;
-    max-height: 140px;
-    padding-right: 4px;
-}
-
-.vehicles-ordered-list::-webkit-scrollbar {
-    width: 4px;
-}
-.vehicles-ordered-list::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
+    padding-right: 2px;
 }
 
 .v-item-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.025);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
-    padding: 4px 8px;
+    padding: 5px 8px;
     font-size: 11px;
 }
 
@@ -509,7 +474,7 @@ html, body.no-scroll-layout {
 
 .v-plate-sm {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     color: #fff;
     background: #000;
@@ -518,9 +483,7 @@ html, body.no-scroll-layout {
     border-radius: 3px;
 }
 
-.v-name-sm {
-    color: var(--text-secondary);
-}
+.v-name-sm { color: var(--text-secondary); font-size: 11px; }
 
 .v-item-right {
     display: flex;
@@ -532,10 +495,11 @@ html, body.no-scroll-layout {
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
     color: #fff;
+    font-size: 11px;
 }
 
 .v-days-badge {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
     padding: 1px 6px;
     border-radius: var(--radius-full);
@@ -544,48 +508,54 @@ html, body.no-scroll-layout {
 .v-days-near { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); }
 .v-days-far { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
 
-/* CARD PREVISÃO IRS 2026 */
-.irs-forecast-body {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
-}
-
-.forecast-main-box {
+/* CARD 2: PREVISÃO IRS 2026 */
+.irs-forecast-top-box {
     background: rgba(244, 63, 94, 0.06);
     border: 1px solid rgba(244, 63, 94, 0.2);
     border-radius: var(--radius-md);
     padding: 8px 12px;
-    text-align: center;
-    margin-bottom: 8px;
 }
 
-.forecast-label {
-    font-size: 11px;
-    color: var(--text-secondary);
+.f-top-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
 }
 
-.forecast-value {
+.f-top-val-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 2px 0;
+}
+
+.f-balance-num {
     font-size: 24px;
     font-weight: 800;
     font-family: 'JetBrains Mono', monospace;
     letter-spacing: -0.5px;
 }
 
-.forecast-sub {
+.f-compare-pill {
+    font-size: 10px;
+    font-weight: 700;
+    background: rgba(16, 185, 129, 0.15);
+    padding: 2px 6px;
+    border-radius: var(--radius-full);
+}
+
+.f-top-sub {
     font-size: 10px;
     color: var(--text-muted);
 }
 
-.forecast-grid-stats {
+.forecast-tiles-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 6px;
-    margin-bottom: 8px;
 }
 
-.f-stat-tile {
+.f-tile {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
@@ -594,34 +564,171 @@ html, body.no-scroll-layout {
     flex-direction: column;
 }
 
-.f-stat-label {
+.f-tile-lbl {
     font-size: 9px;
     color: var(--text-muted);
     text-transform: uppercase;
 }
 
-.f-stat-val {
+.f-tile-num {
     font-size: 13px;
     font-family: 'JetBrains Mono', monospace;
+    margin: 1px 0;
 }
 
-.f-stat-sub {
+.f-tile-foot {
     font-size: 9px;
     color: var(--text-muted);
 }
 
-.irs-advice-pill {
+.irs-strategy-box {
+    background: rgba(255, 255, 255, 0.02);
+    border-left: 3px solid var(--accent-amber);
+    padding: 6px 10px;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 10px;
+    line-height: 1.4;
+    color: var(--text-secondary);
+}
+
+/* CARD 3: SITUAÇÃO TRIBUTÁRIA */
+.status-top-hero {
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    text-align: center;
+}
+
+.status-hero-num {
+    font-size: 26px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.5px;
+}
+
+.status-hero-sub {
+    font-size: 10px;
+    color: var(--accent-emerald);
+    font-weight: 600;
+}
+
+.audit-checklist-card {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+.audit-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.check-green {
+    color: var(--accent-emerald);
+    font-weight: 800;
+    margin-right: 4px;
+}
+
+/* CARD 4: E-FATURA */
+.efatura-top-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(255, 255, 255, 0.02);
-    border-top: 1px solid var(--border-subtle);
-    padding-top: 6px;
+    background: rgba(245, 158, 11, 0.06);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+}
+
+.efatura-hero-num {
+    font-size: 22px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.efatura-hero-sub {
     font-size: 10px;
     color: var(--text-muted);
 }
 
-.btn-link-action {
+.btn-classify-action {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(245, 158, 11, 0.15));
+    border: 1px solid var(--accent-amber);
+    color: var(--accent-amber);
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-classify-action:hover {
+    background: var(--accent-amber);
+    color: #000;
+}
+
+.sectors-full-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.s-bar-item {
+    font-size: 10px;
+}
+
+.s-bar-header {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+}
+
+.s-bar-header strong {
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.s-bar-track {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.s-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+}
+
+.fill-amber { background: var(--accent-amber); }
+.fill-blue { background: var(--accent-blue); }
+.fill-emerald { background: var(--accent-emerald); }
+
+/* FOOTERS DOS CARDS */
+.c-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 6px;
+    font-size: 10px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.btn-text-link {
     background: transparent;
     border: none;
     color: var(--primary);
@@ -630,130 +737,12 @@ html, body.no-scroll-layout {
     cursor: pointer;
 }
 
-/* CARD SITUAÇÃO TRIBUTÁRIA */
-.status-clean-body {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
-}
-
-.clean-amount {
-    font-size: 26px;
-    font-weight: 800;
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: -0.5px;
-}
-
-.clean-label {
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-bottom: 12px;
-}
-
-.status-indicators-mini {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    font-size: 11px;
-}
-
-.s-ind-row {
-    display: flex;
-    justify-content: space-between;
-    color: var(--text-secondary);
-}
-
-.check-mark {
-    color: var(--accent-emerald);
-    font-weight: 800;
-    margin-right: 4px;
-}
-
-/* CARD E-FATURA */
-.efatura-clean-body {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
-}
-
-.efatura-metric-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.efatura-big-num {
-    font-size: 24px;
-    font-weight: 800;
-    font-family: 'JetBrains Mono', monospace;
-}
-
-.efatura-sub-label {
-    font-size: 10px;
-    color: var(--text-muted);
-}
-
-.btn-classify-sm {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(245, 158, 11, 0.1));
-    border: 1px solid var(--accent-amber);
-    color: var(--accent-amber);
-    padding: 6px 10px;
-    border-radius: var(--radius-sm);
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-classify-sm:hover {
-    background: var(--accent-amber);
-    color: #000;
-}
-
-.sectors-mini-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.sector-mini-item {
-    font-size: 10px;
-}
-
-.s-item-header {
-    display: flex;
-    justify-content: space-between;
-    color: var(--text-secondary);
-    margin-bottom: 2px;
-}
-
-.s-item-header strong {
-    color: #fff;
-    font-family: 'JetBrains Mono', monospace;
-}
-
-.mini-track {
-    height: 4px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.mini-fill {
-    height: 100%;
-    background: var(--accent-amber);
-    border-radius: 4px;
-}
-
 /* LINHA INFERIOR (RESERVAS & AGENDA) */
 .dashboard-bottom-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    height: 68px;
+    gap: 8px;
+    height: 58px;
     flex-shrink: 0;
 }
 
@@ -761,10 +750,9 @@ html, body.no-scroll-layout {
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    padding: 8px 14px;
+    padding: 6px 14px;
     display: flex;
     align-items: center;
-    gap: 16px;
 }
 
 .reserves-horizontal-strip {
@@ -779,9 +767,7 @@ html, body.no-scroll-layout {
     gap: 8px;
 }
 
-.strip-icon {
-    font-size: 18px;
-}
+.strip-icon { font-size: 16px; }
 
 .strip-title {
     font-size: 9px;
@@ -790,13 +776,19 @@ html, body.no-scroll-layout {
 }
 
 .strip-val {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 800;
     font-family: 'JetBrains Mono', monospace;
 }
 
+.obligations-horizontal-strip {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
 .obligations-strip-title {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     color: var(--text-secondary);
     white-space: nowrap;
@@ -804,7 +796,7 @@ html, body.no-scroll-layout {
 
 .obligations-pills-row {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     overflow-x: auto;
     width: 100%;
 }
@@ -816,39 +808,30 @@ html, body.no-scroll-layout {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
-    padding: 4px 8px;
-    font-size: 11px;
+    padding: 3px 8px;
+    font-size: 10px;
     white-space: nowrap;
 }
 
-.ob-mini-pill strong {
-    color: #fff;
-}
+.ob-mini-pill strong { color: #fff; }
 
 .ob-mini-days {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
     font-family: 'JetBrains Mono', monospace;
-    padding: 1px 5px;
+    padding: 1px 4px;
     border-radius: 3px;
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--accent-amber);
 }
 
-/* CONTAINER SCROLL PARA AS OUTRAS ABAS (IUC, EFATURA, IRS, ETC.) */
+/* CONTAINER SCROLL PARA OUTRAS ABAS */
 .pane-scroll-container {
     height: 100%;
     overflow-y: auto;
     padding-right: 8px;
 }
 
-.pane-scroll-container::-webkit-scrollbar {
-    width: 6px;
-}
-.pane-scroll-container::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 6px;
-}
-
-/* OUTROS ELEMENTOS DAS ABAS */
 .tab-header-banner {
     display: flex;
     justify-content: space-between;
@@ -873,7 +856,6 @@ html, body.no-scroll-layout {
     padding: 18px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     gap: 12px;
 }
 
@@ -901,7 +883,6 @@ html, body.no-scroll-layout {
     margin-bottom: 6px;
 }
 
-/* TABELAS */
 .table-card {
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
