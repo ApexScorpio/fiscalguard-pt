@@ -71,45 +71,58 @@ function renderHeader(data) {
  * Renderiza a parte do IUC com todas as matrículas ordenadas do mais próximo ao mais distante
  */
 function renderIucHeroAndList(iucData) {
-    const proximo = iucData.proximoIuc || {};
-    const todos = iucData.todosVeiculos || [proximo];
+    const todos = iucData.todosVeiculos || [];
+    const proximo = iucData.proximoIuc || (todos.length > 0 ? todos[0] : {});
 
-    // Destaque do veículo mais próximo
-    const elPlate = document.getElementById('hero-iuc-plate');
-    const elName = document.getElementById('hero-iuc-name');
-    const elDeadline = document.getElementById('hero-iuc-deadline');
-    const elAmount = document.getElementById('hero-iuc-amount');
-    const elDays = document.getElementById('hero-iuc-days');
-    const elProgress = document.getElementById('hero-iuc-progress');
-    const elPercentLabel = document.getElementById('hero-iuc-percent-label');
+    // Sumário no topo da Frota
+    const elSumTotal = document.getElementById('iuc-fleet-total-val');
+    const elSumNext = document.getElementById('iuc-fleet-next-val');
+    if (elSumTotal && todos.length > 0) {
+        const total = todos.reduce((acc, v) => acc + (Number(v.valorEstimado) || 0), 0);
+        elSumTotal.textContent = `${formatMoney(total)} €`;
+    }
+    if (elSumNext && proximo.matricula) {
+        elSumNext.textContent = `${proximo.matricula} (${proximo.daysRemaining} dias)`;
+    }
 
-    if (elPlate) elPlate.textContent = proximo.matricula || '45-AB-89';
-    if (elName) elName.textContent = proximo.nome || 'Viatura Principal';
-    if (elDeadline) elDeadline.textContent = proximo.deadlineDate ? formatDatePt(proximo.deadlineDate) : '30/04/2027';
-    if (elAmount) elAmount.textContent = formatMoney(proximo.valorEstimado || 45.80);
-    if (elDays) elDays.textContent = `Faltam ${proximo.daysRemaining} dias`;
-    
-    const pct = Math.min(100, Math.max(0, proximo.progressPercent || 52));
-    if (elProgress) elProgress.style.width = `${pct}%`;
-    if (elPercentLabel) elPercentLabel.textContent = `${pct}% percorrido`;
-
-    // Lista de TODOS os veículos ordenados do mais perto ao mais longe
+    // Renderizar TODAS AS 4 VIATURAS ordenadas do mais próximo ao mais distante
     const listContainer = document.getElementById('dashboard-vehicles-container');
     if (listContainer) {
-        listContainer.innerHTML = todos.map((v, idx) => `
-            <div class="v-item-row" title="Veículo ${idx + 1}: ${v.nome} - Limite ${v.deadlineFormatted}">
-                <div class="v-item-left">
-                    <span class="v-plate-sm">${v.matricula}</span>
-                    <span class="v-name-sm">${v.nome}</span>
+        listContainer.innerHTML = todos.map((v, idx) => {
+            const isFirst = idx === 0;
+            const pct = Math.min(100, Math.max(0, v.progressPercent || 35));
+            return `
+                <div class="fleet-vehicle-item ${isFirst ? 'is-next-due' : ''}" title="${v.nome} - Limite ${v.deadlineFormatted}">
+                    <div class="fv-main-row">
+                        <div class="pt-license-plate">
+                            <span class="pt-eu-flag">P</span>
+                            <span class="pt-plate-num">${v.matricula}</span>
+                        </div>
+                        <div class="fv-details">
+                            <div class="fv-title-line">
+                                <strong class="fv-name">${v.nome}</strong>
+                                <span class="fv-cat">${v.categoria}</span>
+                            </div>
+                            <div class="fv-deadline-line">
+                                Prazo: <strong>${v.deadlineFormatted || v.deadlineDate}</strong> (${v.mesNome})
+                            </div>
+                        </div>
+                        <div class="fv-amount-block">
+                            <div class="fv-price">${formatMoney(v.valorEstimado)} €</div>
+                            <span class="fv-days-pill ${isFirst ? 'pill-alert-amber' : 'pill-calm-slate'}">
+                                ${isFirst ? '⚡ ' : ''}${v.daysRemaining} dias
+                            </span>
+                        </div>
+                    </div>
+                    <div class="fv-progress-row">
+                        <div class="fv-progress-track">
+                            <div class="fv-progress-fill ${isFirst ? 'fill-gold' : 'fill-cyan'}" style="width: ${pct}%;"></div>
+                        </div>
+                        <span class="fv-pct-tag">${pct}% ciclo</span>
+                    </div>
                 </div>
-                <div class="v-item-right">
-                    <span class="v-amount-sm">${formatMoney(v.valorEstimado)} €</span>
-                    <span class="v-days-badge ${idx === 0 ? 'v-days-near' : 'v-days-far'}">
-                        ${v.daysRemaining} dias (${v.mesNome})
-                    </span>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 }
 
@@ -177,31 +190,30 @@ function renderReservesAndAgenda(statusData, calendarData, iucData) {
     if (elSS) elSS.textContent = `${formatMoney(reserves.ss || 0)} €`;
     if (elIrs) elIrs.textContent = `160,00 €/mês`;
 
-    // PRAZOS REAIS DA AT (substitui os antigos 'Concluída' por prazos futuros reais!)
-    const elPills = document.getElementById('overview-obligations-container');
-    if (elPills) {
+    // WIDGET AGENDA FISCAL PRAZOS REAIS AT
+    const elAgenda = document.getElementById('overview-obligations-container');
+    if (elAgenda) {
         const proximoIuc = (iucData && iucData.proximoIuc) ? iucData.proximoIuc : { matricula: '45-AB-89', daysRemaining: 177 };
-        
-        elPills.innerHTML = `
-            <div class="ob-mini-pill" title="IUC Viatura Principal: 30 de Abril de 2027">
-                <span>🚗</span>
-                <strong>IUC ${proximoIuc.matricula}</strong>
-                <span class="ob-mini-days">${proximoIuc.daysRemaining}d (Abril)</span>
+        elAgenda.innerHTML = `
+            <div class="agenda-item-mini" title="IUC Viatura Principal: 30 de Abril de 2027">
+                <span class="ag-icon">🚗</span>
+                <span class="ag-title">IUC ${proximoIuc.matricula}</span>
+                <span class="ag-badge badge-warn">${proximoIuc.daysRemaining}d (Abril)</span>
             </div>
-            <div class="ob-mini-pill" title="IUC Frota Junho (3 Viaturas): 30 de Junho de 2027">
-                <span>🚗</span>
-                <strong>IUC Frota (3 viaturas)</strong>
-                <span class="ob-mini-days">238d (Junho)</span>
+            <div class="agenda-item-mini" title="IUC 3 Viaturas: 30 de Junho de 2027">
+                <span class="ag-icon">🚗</span>
+                <span class="ag-title">IUC Frota (3 viat.)</span>
+                <span class="ag-badge badge-info">238d (Junho)</span>
             </div>
-            <div class="ob-mini-pill" title="IRS 2026: Entrega e Liquidação">
-                <span>📑</span>
-                <strong>IRS 2026</strong>
-                <span class="ob-mini-days">238d (Junho)</span>
+            <div class="agenda-item-mini" title="Limite Validação e-Fatura 2026: 25 de Fevereiro de 2027">
+                <span class="ag-icon">🧾</span>
+                <span class="ag-title">Validação e-Fatura</span>
+                <span class="ag-badge badge-warn">113d (25 Fev)</span>
             </div>
-            <div class="ob-mini-pill" title="Segurança Social: Contribuição Mensal">
-                <span>🛡️</span>
-                <strong>Seg. Social</strong>
-                <span class="ob-mini-days">Dia 20 Mensal</span>
+            <div class="agenda-item-mini" title="Entrega IRS Modelo 3: 30 de Junho de 2027">
+                <span class="ag-icon">📑</span>
+                <span class="ag-title">Entrega IRS 2026</span>
+                <span class="ag-badge badge-info">238d (Junho)</span>
             </div>
         `;
     }

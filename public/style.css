@@ -1,13 +1,13 @@
 /* ==========================================================================
-   FISCALGUARD PRO — BALANCED NO-SCROLL EXECUTIVE DESIGN SYSTEM
-   Compact, Ultra-dense, High-contrast, Zero-Empty-Space Architecture
+   FISCALGUARD PRO — EXECUTIVE NO-SCROLL DASHBOARD ARCHITECTURE
+   Dense, Symmetrical, Zero-Empty-Space, 2-Tier Pro Layout
    ========================================================================== */
 
 :root {
-    --bg-base: #07090E;
-    --bg-surface: #0D1424;
-    --bg-surface-elevated: #152034;
-    --bg-card: rgba(21, 32, 52, 0.85);
+    --bg-base: #06090E;
+    --bg-surface: #0C1220;
+    --bg-surface-elevated: #141E30;
+    --bg-card: rgba(20, 30, 48, 0.88);
     --border-subtle: rgba(255, 255, 255, 0.08);
     --border-bright: rgba(255, 255, 255, 0.16);
 
@@ -58,7 +58,7 @@ html, body.no-scroll-layout {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    padding: 10px 18px;
+    padding: 10px 16px;
     max-width: 1720px;
     margin: 0 auto;
 }
@@ -72,10 +72,10 @@ html, body.no-scroll-layout {
     backdrop-filter: blur(14px);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    padding: 8px 16px;
-    height: 48px;
+    padding: 6px 14px;
+    height: 44px;
     flex-shrink: 0;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .header-left, .header-right {
@@ -90,10 +90,10 @@ html, body.no-scroll-layout {
     gap: 8px;
 }
 
-.logo-shield { font-size: 20px; }
+.logo-shield { font-size: 18px; }
 
 .brand-title {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 800;
     color: #fff;
     display: flex;
@@ -117,20 +117,20 @@ html, body.no-scroll-layout {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-full);
-    padding: 3px 12px 3px 4px;
+    padding: 2px 10px 2px 4px;
     font-size: 11px;
 }
 
 .user-avatar-sm {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     background: #1E293B;
     border: 1px solid var(--primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
     color: #fff;
 }
@@ -148,14 +148,14 @@ html, body.no-scroll-layout {
     background: rgba(16, 185, 129, 0.06);
     border: 1px solid rgba(16, 185, 129, 0.2);
     border-radius: var(--radius-full);
-    padding: 4px 12px;
+    padding: 3px 10px;
 }
 
 .sentinel-status-text { font-weight: 700; color: var(--accent-emerald); }
-.cron-timer-sm { font-family: 'JetBrains Mono', monospace; color: var(--text-muted); }
+.cron-timer-sm { font-family: 'JetBrains Mono', monospace; color: var(--text-muted); font-size: 10px; }
 .live-dot {
-    width: 7px;
-    height: 7px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     background: var(--accent-emerald);
     box-shadow: 0 0 8px var(--accent-emerald);
@@ -169,12 +169,12 @@ html, body.no-scroll-layout {
 .btn-sync-compact {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     background: linear-gradient(135deg, var(--primary), #4F46E5);
     color: #fff;
     border: none;
-    padding: 6px 14px;
-    border-radius: var(--radius-md);
+    padding: 5px 12px;
+    border-radius: var(--radius-sm);
     font-size: 11px;
     font-weight: 700;
     cursor: pointer;
@@ -190,12 +190,12 @@ html, body.no-scroll-layout {
 /* NAVEGAÇÃO COMPACTA */
 .app-nav-compact {
     display: flex;
-    gap: 6px;
-    background: rgba(13, 20, 36, 0.6);
+    gap: 5px;
+    background: rgba(12, 18, 32, 0.6);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    padding: 4px;
-    height: 38px;
+    padding: 3px;
+    height: 36px;
     flex-shrink: 0;
     margin-bottom: 8px;
 }
@@ -207,9 +207,9 @@ html, body.no-scroll-layout {
     background: transparent;
     border: none;
     color: var(--text-secondary);
-    padding: 4px 14px;
+    padding: 4px 12px;
     border-radius: var(--radius-sm);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -250,36 +250,43 @@ html, body.no-scroll-layout {
     display: block;
 }
 
-/* DASHBOARD GRID FIT (SEM SCROLL E SEM ESPAÇOS EM BRANCO) */
+/* DASHBOARD 2-TIER ARCHITECTURE (STRICT NO-SCROLL, ZERO VOIDS, ALL 4 VEHICLES) */
 .dashboard-fit-grid {
     height: 100%;
-    display: grid;
-    grid-template-rows: 1fr auto;
-    gap: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
+/* ==========================================================================
+   TIER 1: OS 4 CARDS HERO (ALTURA EXATA 460px)
+   ========================================================================== */
 .dashboard-cards-row {
     display: grid;
-    grid-template-columns: 1.35fr 1.05fr 0.85fr 1fr;
-    gap: 8px;
-    min-height: 0;
+    grid-template-columns: 1.35fr 1.15fr 0.85fr 1fr;
+    gap: 10px;
+    height: 460px;
+    flex-shrink: 0;
 }
 
-/* COMPACT HERO CARD COM FLUXO EQUILIBRADO */
 .compact-hero-card {
     background: var(--bg-card);
     backdrop-filter: blur(14px);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
-    padding: 14px 16px;
+    padding: 10px 12px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 5px;
     overflow: hidden;
+    height: 100%;
+    box-sizing: border-box;
 }
 
 .card-iuc-glow {
-    background: linear-gradient(155deg, rgba(21, 32, 52, 0.95), rgba(13, 20, 36, 0.95));
+    background: linear-gradient(155deg, rgba(20, 30, 48, 0.95), rgba(12, 18, 32, 0.98));
     border: 1px solid rgba(245, 158, 11, 0.25);
     box-shadow: 0 0 25px -10px var(--amber-glow);
 }
@@ -293,6 +300,7 @@ html, body.no-scroll-layout {
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
+    margin-bottom: 2px;
 }
 
 .c-title-group {
@@ -301,10 +309,10 @@ html, body.no-scroll-layout {
     gap: 6px;
 }
 
-.c-icon { font-size: 16px; }
+.c-icon { font-size: 15px; }
 
 .c-title {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 800;
     color: var(--text-secondary);
     text-transform: uppercase;
@@ -312,191 +320,264 @@ html, body.no-scroll-layout {
 }
 
 .badge-status {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
-    padding: 2px 8px;
+    padding: 2px 7px;
     border-radius: var(--radius-full);
 }
 .badge-success { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
 .badge-info { background: rgba(99, 102, 241, 0.15); color: var(--primary); border: 1px solid rgba(99, 102, 241, 0.3); }
 .badge-warning { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.3); }
 
-/* MATRÍCULA PORTUGUESA REALISTA */
+/* CARD 1: IUC FROTA COMPLETA (4 VIATURAS COM PROGRESSO) */
+.iuc-fleet-summary-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 4px 8px;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+.f-sum-item { display: flex; align-items: center; gap: 5px; }
+.f-sum-lbl { color: var(--text-muted); font-size: 10px; }
+.f-sum-val { color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+.iuc-fleet-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.fleet-vehicle-item {
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 5px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    transition: all 0.2s;
+}
+
+.fleet-vehicle-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.fleet-vehicle-item.is-next-due {
+    border-color: rgba(245, 158, 11, 0.55);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(15, 23, 42, 0.85));
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.1);
+}
+
+.fv-main-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+}
+
 .pt-license-plate {
     display: inline-flex;
     align-items: center;
-    background: #000;
-    color: #fff;
+    background: #FFFFFF;
+    color: #0F172A;
+    border: 1px solid #000;
+    border-radius: 3px;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 800;
-    font-size: 13px;
-    letter-spacing: 1.5px;
-    padding: 2px 8px 2px 24px;
-    border: 1px solid #334155;
-    border-radius: 4px;
-    position: relative;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    overflow: hidden;
+    height: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    flex-shrink: 0;
 }
 
-.pt-license-plate::before {
-    content: "P";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 16px;
+.pt-eu-flag {
     background: #003399;
     color: #FFCC00;
-    font-size: 9px;
-    font-weight: 800;
+    font-size: 8px;
+    font-weight: 900;
+    padding: 0 3px;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-top-left-radius: 3px;
-    border-bottom-left-radius: 3px;
 }
 
-/* CARD 1: SENTINELA IUC ELEMENTOS */
-.iuc-hero-top-box {
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: var(--radius-md);
-    padding: 10px 12px;
+.pt-plate-num {
+    padding: 0 4px;
+    color: #0F172A;
+}
+
+.fv-details {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 1px;
+}
+
+.fv-title-line {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.fv-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fv-cat {
+    font-size: 8px;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0 3px;
+    border-radius: 2px;
+    white-space: nowrap;
+}
+
+.fv-deadline-line {
+    font-size: 9px;
+    color: var(--text-secondary);
+}
+.fv-deadline-line strong { color: #fff; }
+
+.fv-amount-block {
+    text-align: right;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+}
+
+.fv-price {
+    font-size: 11px;
+    font-weight: 800;
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.fv-days-pill {
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: var(--radius-full);
+    font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap;
+}
+
+.pill-alert-amber {
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--accent-amber);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.pill-calm-slate {
+    background: rgba(148, 163, 184, 0.1);
+    color: var(--text-secondary);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.fv-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.fv-progress-track {
+    flex: 1;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.fv-progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+}
+
+.fill-gold {
+    background: linear-gradient(90deg, #F59E0B, #EAB308);
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+}
+
+.fill-cyan {
+    background: linear-gradient(90deg, #06B6D4, #3B82F6);
+}
+
+.fv-pct-tag {
+    font-size: 8px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
     flex-shrink: 0;
 }
 
-.iuc-top-row {
+.iuc-sub-history-box {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    padding: 5px 6px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 3px;
+    flex-shrink: 0;
 }
-
-.iuc-top-val-block { text-align: right; }
-.iuc-val-large {
-    font-size: 22px;
-    font-weight: 800;
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--accent-amber);
-}
-.iuc-curr { font-size: 14px; color: var(--accent-amber); font-weight: 700; }
-.iuc-badge-days { display: block; font-size: 10px; color: var(--accent-amber); font-weight: 700; }
-
-.iuc-vehicle-meta-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 11px;
-}
-.vehicle-name { color: #fff; }
-.vehicle-deadline-sub { color: var(--text-muted); }
-.vehicle-deadline-sub strong { color: #fff; }
-
-.progress-bar-track {
-    height: 6px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius-full);
-    overflow: hidden;
-    margin-bottom: 3px;
-}
-.progress-bar-fill {
-    height: 100%;
-    border-radius: var(--radius-full);
-    transition: width 0.6s ease;
-}
-.fill-gradient-iuc { background: linear-gradient(90deg, var(--accent-emerald), var(--accent-amber)); }
-
-.progress-label-bar {
-    display: flex;
-    justify-content: space-between;
-    font-size: 9px;
-    color: var(--text-muted);
-}
-
-.sub-list-title {
-    font-size: 9px;
+.iuc-hist-title {
+    font-size: 8px;
     font-weight: 800;
     color: var(--text-muted);
     letter-spacing: 0.5px;
-    margin-top: 4px;
+}
+.iuc-hist-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+}
+.hist-mini-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 2px;
+    padding: 2px 4px;
+    font-size: 8px;
+    color: var(--text-secondary);
+}
+.hist-mini-row strong { color: var(--accent-emerald); font-family: 'JetBrains Mono', monospace; }
+
+.iuc-card-footer-note {
+    font-size: 8px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 3px;
     flex-shrink: 0;
 }
-
-/* LISTA DE VEÍCULOS ORDENADOS QUE PREENCHE O RESTO DO CARD */
-.vehicles-ordered-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex: 1;
-    justify-content: space-between;
-}
-
-.v-item-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.025);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-sm);
-    padding: 7px 10px;
-    font-size: 11px;
-}
-
-.v-item-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.v-plate-sm {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 700;
-    color: #fff;
-    background: #000;
-    border: 1px solid #334155;
-    padding: 2px 6px;
-    border-radius: 3px;
-}
-
-.v-name-sm { color: var(--text-secondary); font-size: 11px; }
-
-.v-item-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.v-amount-sm {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    color: #fff;
-    font-size: 11px;
-}
-
-.v-days-badge {
-    font-size: 9px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: var(--radius-full);
-    font-family: 'JetBrains Mono', monospace;
-}
-.v-days-near { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); }
-.v-days-far { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
 
 /* CARD 2: PREVISÃO IRS 2026 */
 .irs-forecast-top-box {
     background: rgba(244, 63, 94, 0.06);
     border: 1px solid rgba(244, 63, 94, 0.2);
     border-radius: var(--radius-md);
-    padding: 8px 12px;
+    padding: 6px 10px;
     flex-shrink: 0;
 }
 
 .f-top-label {
-    font-size: 10px;
+    font-size: 8px;
     color: var(--text-muted);
     text-transform: uppercase;
 }
@@ -505,30 +586,29 @@ html, body.no-scroll-layout {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    margin: 2px 0;
 }
 
 .f-balance-num {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 800;
     font-family: 'JetBrains Mono', monospace;
     letter-spacing: -0.5px;
 }
 
 .f-compare-pill {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
     background: rgba(16, 185, 129, 0.15);
-    padding: 2px 6px;
+    padding: 1px 5px;
     border-radius: var(--radius-full);
 }
 
-.f-top-sub { font-size: 10px; color: var(--text-muted); }
+.f-top-sub { font-size: 8px; color: var(--text-muted); }
 
 .forecast-tiles-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 6px;
+    gap: 4px;
     flex-shrink: 0;
 }
 
@@ -536,26 +616,25 @@ html, body.no-scroll-layout {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
-    padding: 6px 8px;
+    padding: 4px 6px;
     display: flex;
     flex-direction: column;
 }
 
-.f-tile-lbl { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
-.f-tile-num { font-size: 13px; font-family: 'JetBrains Mono', monospace; margin: 1px 0; }
-.f-tile-foot { font-size: 9px; color: var(--text-muted); }
+.f-tile-lbl { font-size: 8px; color: var(--text-muted); text-transform: uppercase; }
+.f-tile-num { font-size: 11px; font-weight: 800; font-family: 'JetBrains Mono', monospace; margin: 1px 0; }
+.f-tile-foot { font-size: 8px; color: var(--text-muted); }
 
-/* MINI TABELA DE SIMULAÇÃO QUE PREENCHE O CARD DE FORMA RICA */
 .irs-mini-sim-table {
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    padding: 8px 10px;
+    padding: 5px 6px;
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
-    flex: 1;
-    font-size: 10px;
+    gap: 2px;
+    font-size: 9px;
+    flex-shrink: 0;
 }
 
 .sim-row {
@@ -567,9 +646,35 @@ html, body.no-scroll-layout {
 .sim-row strong { color: #fff; font-family: 'JetBrains Mono', monospace; }
 .sim-row.highlight { font-weight: 700; }
 .sim-row.total {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding-top: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 2px;
     font-weight: 800;
+    font-size: 10px;
+}
+
+.irs-bracket-box {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    padding: 4px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    font-size: 8px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+.bracket-row { display: flex; justify-content: space-between; }
+.bracket-row strong { color: #fff; }
+
+.irs-advice-pill {
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: var(--radius-sm);
+    padding: 4px 6px;
+    font-size: 8px;
+    color: #A5B4FC;
+    flex-shrink: 0;
 }
 
 /* CARD 3: SITUAÇÃO TRIBUTÁRIA */
@@ -577,20 +682,20 @@ html, body.no-scroll-layout {
     background: rgba(16, 185, 129, 0.06);
     border: 1px solid rgba(16, 185, 129, 0.2);
     border-radius: var(--radius-md);
-    padding: 8px 12px;
+    padding: 5px 8px;
     text-align: center;
     flex-shrink: 0;
 }
 
 .status-hero-num {
-    font-size: 26px;
+    font-size: 20px;
     font-weight: 800;
     font-family: 'JetBrains Mono', monospace;
     letter-spacing: -0.5px;
 }
 
 .status-hero-sub {
-    font-size: 10px;
+    font-size: 9px;
     color: var(--accent-emerald);
     font-weight: 600;
 }
@@ -599,25 +704,50 @@ html, body.no-scroll-layout {
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    padding: 10px 12px;
+    padding: 6px 8px;
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
-    flex: 1;
+    gap: 3px;
+    flex-shrink: 0;
 }
 
 .audit-row {
     display: flex;
     justify-content: space-between;
-    font-size: 11px;
+    font-size: 9px;
     color: var(--text-secondary);
 }
 
 .check-green {
     color: var(--accent-emerald);
     font-weight: 800;
-    margin-right: 4px;
+    margin-right: 3px;
 }
+
+.taxpayer-cadastre-box {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    padding: 4px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 8px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+.cad-title { font-size: 8px; font-weight: 800; color: var(--text-muted); margin-bottom: 1px; }
+.cad-row { display: flex; justify-content: space-between; }
+.cad-row strong { color: #fff; }
+
+.status-card-footer {
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 3px;
+    font-size: 8px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+.audit-stamp { color: var(--accent-emerald); font-weight: 600; }
 
 /* CARD 4: E-FATURA */
 .efatura-top-row {
@@ -627,25 +757,25 @@ html, body.no-scroll-layout {
     background: rgba(245, 158, 11, 0.06);
     border: 1px solid rgba(245, 158, 11, 0.2);
     border-radius: var(--radius-md);
-    padding: 8px 12px;
+    padding: 5px 8px;
     flex-shrink: 0;
 }
 
 .efatura-hero-num {
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 800;
     font-family: 'JetBrains Mono', monospace;
 }
 
-.efatura-hero-sub { font-size: 10px; color: var(--text-muted); }
+.efatura-hero-sub { font-size: 8px; color: var(--text-muted); }
 
 .btn-classify-action {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(245, 158, 11, 0.15));
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(245, 158, 11, 0.18));
     border: 1px solid var(--accent-amber);
     color: var(--accent-amber);
-    padding: 6px 12px;
+    padding: 3px 8px;
     border-radius: var(--radius-sm);
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
@@ -654,24 +784,23 @@ html, body.no-scroll-layout {
 .btn-classify-action:hover {
     background: var(--accent-amber);
     color: #000;
+    box-shadow: 0 0 10px var(--amber-glow);
 }
 
 .sectors-full-list {
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
-    flex: 1;
+    gap: 3px;
+    flex-shrink: 0;
 }
 
-.s-bar-item {
-    font-size: 10px;
-}
+.s-bar-item { font-size: 8px; }
 
 .s-bar-header {
     display: flex;
     justify-content: space-between;
     color: var(--text-secondary);
-    margin-bottom: 2px;
+    margin-bottom: 1px;
 }
 
 .s-bar-header strong {
@@ -680,316 +809,245 @@ html, body.no-scroll-layout {
 }
 
 .s-bar-track {
-    height: 4px;
+    height: 3px;
     background: rgba(255, 255, 255, 0.08);
-    border-radius: 4px;
+    border-radius: 2px;
     overflow: hidden;
 }
 
-.s-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-}
-
+.s-bar-fill { height: 100%; border-radius: 2px; }
 .fill-amber { background: var(--accent-amber); }
 .fill-blue { background: var(--accent-blue); }
 .fill-emerald { background: var(--accent-emerald); }
 
-/* FOOTERS DOS CARDS */
-.c-card-footer {
+.efatura-tips-box {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    padding: 4px 6px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 1px;
+    font-size: 8px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+.ef-tip-title { font-size: 8px; font-weight: 800; color: var(--accent-amber); margin-bottom: 1px; }
+.ef-tip-row { color: var(--text-secondary); }
+
+.efatura-card-footer {
     border-top: 1px solid var(--border-subtle);
-    padding-top: 6px;
-    font-size: 10px;
+    padding-top: 3px;
+    font-size: 8px;
     color: var(--text-muted);
     flex-shrink: 0;
 }
 
-.btn-text-link {
-    background: transparent;
-    border: none;
-    color: var(--primary);
-    font-size: 10px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-/* LINHA INFERIOR (RESERVAS & AGENDA) */
-.dashboard-bottom-row {
+/* ==========================================================================
+   TIER 2: STRIP INFERIOR EQUILIBRADA (OCUPA O RESTANTE DO VIEWPORT 1080p)
+   ========================================================================== */
+.dashboard-bottom-bar {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    height: 54px;
-    flex-shrink: 0;
+    grid-template-columns: 1.2fr 1.4fr 1fr;
+    gap: 10px;
+    flex: 1;
+    min-height: 0;
 }
 
-.reserves-horizontal-strip, .obligations-horizontal-strip {
+.bottom-widget-card {
     background: var(--bg-card);
+    backdrop-filter: blur(14px);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    padding: 6px 14px;
+    padding: 10px 14px;
     display: flex;
-    align-items: center;
-}
-
-.reserves-horizontal-strip {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    flex-direction: column;
     gap: 8px;
-}
-
-.strip-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.strip-icon { font-size: 16px; }
-
-.strip-title {
-    font-size: 9px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-}
-
-.strip-val {
-    font-size: 12px;
-    font-weight: 800;
-    font-family: 'JetBrains Mono', monospace;
-}
-
-.obligations-horizontal-strip {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.obligations-strip-title {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--text-secondary);
-    white-space: nowrap;
-}
-
-.obligations-pills-row {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    width: 100%;
-}
-
-.ob-mini-pill {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-sm);
-    padding: 3px 8px;
-    font-size: 10px;
-    white-space: nowrap;
-}
-
-.ob-mini-pill strong { color: #fff; }
-
-.ob-mini-days {
-    font-size: 9px;
-    font-weight: 700;
-    font-family: 'JetBrains Mono', monospace;
-    padding: 1px 4px;
-    border-radius: 3px;
-    background: rgba(245, 158, 11, 0.15);
-    color: var(--accent-amber);
-}
-
-/* CONTAINER SCROLL PARA OUTRAS ABAS */
-.pane-scroll-container {
+    overflow: hidden;
     height: 100%;
-    overflow-y: auto;
-    padding-right: 8px;
+    box-sizing: border-box;
 }
 
-.tab-header-banner {
+.bw-header {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    background: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-lg);
-    padding: 16px 20px;
-    margin-bottom: 16px;
+    gap: 5px;
+    flex-shrink: 0;
 }
 
-.all-vehicles-grid {
+/* WIDGET 1: TESOURARIA */
+.cashflow-strip-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    grid-template-rows: repeat(2, 1fr);
+    gap: 8px;
+    flex: 1;
+    min-height: 0;
 }
 
-.vehicle-detail-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-lg);
-    padding: 18px;
+.res-mini-box {
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    justify-content: center;
 }
 
-.vehicle-detail-card.closest-vehicle {
-    border: 1px solid rgba(245, 158, 11, 0.4);
-    box-shadow: 0 0 20px -5px var(--amber-glow);
+.res-mini-box.highlight-purple {
+    background: rgba(168, 85, 247, 0.06);
+    border-color: rgba(168, 85, 247, 0.25);
 }
 
-.v-card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.v-card-middle {
-    background: rgba(0,0,0,0.2);
-    padding: 10px;
-    border-radius: var(--radius-sm);
-}
-
-.v-progress-text {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    margin-bottom: 6px;
-}
-
-.table-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-lg);
-    padding: 16px;
-}
-
-.premium-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-}
-
-.premium-table th {
-    text-align: left;
-    padding: 10px;
-    border-bottom: 1px solid var(--border-subtle);
-    color: var(--text-muted);
+.res-lbl {
     font-size: 10px;
+    color: var(--text-muted);
     text-transform: uppercase;
 }
 
-.premium-table td {
-    padding: 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+.res-val {
+    font-size: 16px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    margin: 2px 0;
+}
+
+.res-sub {
+    font-size: 9px;
     color: var(--text-secondary);
 }
 
-.sectors-grid {
+.cashflow-advice-banner {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    font-size: 10px;
+    color: #A5B4FC;
+    flex-shrink: 0;
+}
+
+/* WIDGET 2: AGENDA TABELAR OFICIAL */
+.official-agenda-table {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-height: 0;
+    justify-content: space-around;
+}
+
+.ag-table-header {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-}
-
-.sector-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
-    padding: 12px;
-}
-
-.irs-comparison-grid, .settings-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
-
-.irs-card, .settings-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-lg);
-    padding: 20px;
-}
-
-.irs-stat-highlight {
-    background: rgba(244, 63, 94, 0.08);
-    border: 1px solid rgba(244, 63, 94, 0.2);
-    border-radius: var(--radius-md);
-    padding: 14px;
-    text-align: center;
-    margin-bottom: 16px;
-}
-
-.irs-stat-num {
-    font-size: 28px;
+    grid-template-columns: 85px 1fr 120px 80px;
+    font-size: 9px;
     font-weight: 800;
-    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 3px;
 }
 
-.irs-sheet-table {
+.ag-table-row {
+    display: grid;
+    grid-template-columns: 85px 1fr 120px 80px;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 11px;
+    transition: background 0.2s;
+}
+
+.ag-table-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.ag-col-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: #fff;
+    font-size: 11px;
+}
+
+.ag-col-name {
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 11px;
+}
+
+.ag-col-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 11px;
+}
+
+.ag-col-badge {
+    text-align: right;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: var(--radius-full);
+    font-family: 'JetBrains Mono', monospace;
+    justify-self: end;
+}
+
+.badge-warn { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.3); }
+.badge-info { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); border: 1px solid rgba(59, 130, 246, 0.3); }
+
+/* WIDGET 3: SENTINELA DAEMON */
+.daemon-full-card {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    font-size: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    flex: 1;
+    min-height: 0;
+    justify-content: space-around;
+    font-size: 11px;
 }
 
-.sheet-row {
+.daemon-line {
     display: flex;
     justify-content: space-between;
-    padding: 6px 8px;
-    border-radius: var(--radius-sm);
+    align-items: center;
     color: var(--text-secondary);
 }
 
-.sheet-row strong {
-    color: #fff;
+.daemon-line strong {
     font-family: 'JetBrains Mono', monospace;
 }
 
-.sheet-row.highlight {
-    background: rgba(255, 255, 255, 0.03);
-    font-weight: 700;
+.daemon-action-row {
+    flex-shrink: 0;
 }
 
-.sheet-row.total {
-    background: rgba(244, 63, 94, 0.15);
-    border: 1px solid rgba(244, 63, 94, 0.3);
-    color: #fff;
-    font-weight: 800;
-}
-
-.premium-input {
+.btn-daemon-run {
     width: 100%;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--border-subtle);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(16, 185, 129, 0.1));
+    border: 1px solid var(--accent-emerald);
+    color: var(--accent-emerald);
+    padding: 8px;
     border-radius: var(--radius-sm);
-    padding: 8px 10px;
-    color: #fff;
-    font-size: 12px;
-    outline: none;
-}
-
-.btn-primary-action {
-    background: linear-gradient(135deg, var(--primary), #4F46E5);
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: var(--radius-sm);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     cursor: pointer;
+    transition: all 0.2s;
 }
 
-.text-emerald { color: var(--accent-emerald); }
-.text-amber { color: var(--accent-amber); }
-.text-rose { color: var(--accent-rose); }
-.text-blue { color: var(--accent-blue); }
-.text-purple { color: var(--accent-purple); }
-.text-muted { color: var(--text-muted); }
-.text-primary { color: var(--primary); }
-.text-success { color: var(--accent-emerald); }
+.btn-daemon-run:hover {
+    background: var(--accent-emerald);
+    color: #000;
+    box-shadow: 0 0 14px var(--emerald-glow);
+}

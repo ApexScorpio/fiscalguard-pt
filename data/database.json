@@ -63,66 +63,115 @@
       "estado": "Sem veículos com imposto pendente no ano em curso (Em dia)",
       "veiculos": [
         {
-          "id": "v-abril-1",
-          "nome": "Viatura Principal",
-          "matricula": "45-AB-89",
-          "categoria": "Ligeiro de Passageiros",
-          "mesRegisto": 4,
-          "mesNome": "Abril",
+          "id": "v-57-ua-97",
+          "nome": "VORTEX 125 cc",
+          "matricula": "57-UA-97",
+          "categoria": "Motociclo (Cat. E)",
+          "combustivel": "Gasolina",
+          "cilindrada": "125 cc",
+          "emissoes": "50 g CO2/km",
+          "mesRegisto": 12,
+          "mesNome": "Dezembro",
+          "ultimoPagamento": null,
+          "valorEstimado": 6.19,
+          "estado": "pendente_dezembro_2026"
+        },
+        {
+          "id": "v-ag-14-dp",
+          "nome": "VORTEX 378 cc",
+          "matricula": "AG-14-DP",
+          "categoria": "Motociclo (Cat. E)",
+          "combustivel": "Gasolina",
+          "cilindrada": "378 cc",
+          "emissoes": "108 g CO2/km",
+          "mesRegisto": 3,
+          "mesNome": "Março",
           "ultimoPagamento": "2026-04-19",
-          "valorEstimado": 45.8,
+          "valorEstimado": 21.18,
           "estado": "pago_2026"
         },
         {
-          "id": "v-junho-1",
-          "nome": "Viatura Familiar",
-          "matricula": "62-TX-14",
-          "categoria": "Ligeiro de Passageiros",
+          "id": "v-84-uz-80",
+          "nome": "OPEL 1.490 cc",
+          "matricula": "84-UZ-80",
+          "categoria": "Automóvel Ligeiro (Cat. B)",
+          "combustivel": "Gasolina",
+          "cilindrada": "1.490 cc",
+          "emissoes": "136 g CO2/km",
           "mesRegisto": 6,
           "mesNome": "Junho",
           "ultimoPagamento": "2026-06-15",
-          "valorEstimado": 58.2,
+          "valorEstimado": 185.58,
           "estado": "pago_2026"
         },
         {
-          "id": "v-junho-2",
-          "nome": "Viatura Urbana",
-          "matricula": "18-94-ZV",
-          "categoria": "Ligeiro de Passageiros",
+          "id": "v-61-rn-60",
+          "nome": "RIDE 125 cc",
+          "matricula": "61-RN-60",
+          "categoria": "Motociclo (Cat. E)",
+          "combustivel": "Gasolina",
+          "cilindrada": "125 cc",
+          "emissoes": "-",
           "mesRegisto": 6,
           "mesNome": "Junho",
           "ultimoPagamento": "2026-06-15",
-          "valorEstimado": 38.5,
+          "valorEstimado": 0.0,
           "estado": "pago_2026"
         },
         {
-          "id": "v-junho-3",
-          "nome": "Comercial / Mota",
-          "matricula": "AA-01-BB",
-          "categoria": "Comercial / Motociclo",
-          "mesRegisto": 6,
-          "mesNome": "Junho",
-          "ultimoPagamento": "2026-06-26",
-          "valorEstimado": 22.4,
+          "id": "v-21-ag-91",
+          "nome": "OPEL 1.364 cc",
+          "matricula": "21-AG-91",
+          "categoria": "Automóvel Ligeiro (Cat. A)",
+          "combustivel": "Gasolina",
+          "cilindrada": "1.364 cc",
+          "emissoes": "151 g CO2/km",
+          "mesRegisto": 7,
+          "mesNome": "Julho",
+          "ultimoPagamento": "2026-07-31",
+          "valorEstimado": 62.4,
+          "estado": "pago_2026"
+        },
+        {
+          "id": "v-74-78-ap",
+          "nome": "VOLKSWAGEN 1.391 cc",
+          "matricula": "74-78-AP",
+          "categoria": "Automóvel Ligeiro (Cat. A)",
+          "combustivel": "Gasolina",
+          "cilindrada": "1.391 cc",
+          "emissoes": "-",
+          "mesRegisto": 7,
+          "mesNome": "Julho",
+          "ultimoPagamento": "2026-06-15",
+          "valorEstimado": 34.87,
           "estado": "pago_2026"
         }
       ],
       "historico_recente": [
         {
-          "data": "2026-06-26",
-          "evento": "IUC - Pagamento de Documento de Cobrança"
+          "data": "2026-07-31",
+          "evento": "IUC - Pagamento Documento Cobrança (Matr. 21-AG-91 • OPEL)",
+          "valor": "62,40 €"
         },
         {
           "data": "2026-06-15",
-          "evento": "IUC - Pagamento de Documento de Cobrança"
+          "evento": "IUC - Pagamento Documento Cobrança (Matr. 84-UZ-80 • OPEL)",
+          "valor": "185,58 €"
         },
         {
           "data": "2026-06-15",
-          "evento": "IUC - Pagamento de Documento de Cobrança"
+          "evento": "IUC - Pagamento Documento Cobrança (Matr. 74-78-AP • VW)",
+          "valor": "34,87 €"
+        },
+        {
+          "data": "2026-06-15",
+          "evento": "IUC - Pagamento Documento Cobrança (Matr. 61-RN-60 • RIDE)",
+          "valor": "0,00 €"
         },
         {
           "data": "2026-04-19",
-          "evento": "IUC - Pagamento de Documento de Cobrança"
+          "evento": "IUC - Pagamento Documento Cobrança (Matr. AG-14-DP • VORTEX)",
+          "valor": "21,18 €"
         }
       ]
     },
