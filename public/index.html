@@ -241,6 +241,7 @@
                                 <div class="cad-row"><span>CAE Principal:</span><strong>43210 (Instalação Elétrica)</strong></div>
                                 <div class="cad-row"><span>Regime IVA:</span><strong>Normal Trimestral</strong></div>
                                 <div class="cad-row"><span>Faturação 2026:</span><strong class="text-emerald">7.320,00 €</strong></div>
+                                <div class="cad-row"><span>Cliente Líder:</span><strong title="SANDRO BARROSÃO - CONSTRUÇÕES UNIPESSOAL LDA">Sandro Barrosão (96%)</strong></div>
                             </div>
 
                             <div class="status-card-footer">
@@ -341,7 +342,7 @@
                                 </div>
                             </div>
                             <div class="cashflow-advice-banner">
-                                <span>🏦 Santander Totta (PT50...21267): Guardar 160 €/mês na conta poupança liquida 100% do IRS sem esforço.</span>
+                                <span>⚡ <strong>Atividade Cat. B (CAE 43210):</strong> 7.320 € faturados (Sandro Barrosão 96%) • 805 € retidos na fonte cobrem imposto isolado (+91 € reembolso) ou limitam saldo a ~403 € englobado. Reembolso/Pagamento até <strong>31/08/2027</strong>.</span>
                             </div>
                         </div>
 
@@ -620,7 +621,10 @@
                                 <div class="client-rank-item">
                                     <div style="display: flex; align-items: center; gap: 8px;">
                                         <span class="client-badge-rank">1.º</span>
-                                        <strong>Cliente Principal</strong>
+                                        <div>
+                                            <strong style="color: #fff; font-size: 12px;">SANDRO BARROSÃO - CONSTRUÇÕES UNIPESSOAL LDA</strong>
+                                            <div style="font-size: 10px; color: var(--text-muted);">4 faturas emitidas • CAE 43210</div>
+                                        </div>
                                     </div>
                                     <span class="client-pct">96%</span>
                                     <span class="client-amount">7.000,00 €</span>
@@ -628,7 +632,10 @@
                                 <div class="client-rank-item">
                                     <div style="display: flex; align-items: center; gap: 8px;">
                                         <span class="client-badge-rank">2.º</span>
-                                        <strong>Cliente Secundário</strong>
+                                        <div>
+                                            <strong style="color: #fff; font-size: 12px;">CONDOMÍNIO DA TORRE I DO COMPLEXO TURÍSTICO DO ALVOR</strong>
+                                            <div style="font-size: 10px; color: var(--text-muted);">1 fatura emitida • CAE 43210</div>
+                                        </div>
                                     </div>
                                     <span class="client-pct">3%</span>
                                     <span class="client-amount">250,00 €</span>
@@ -636,7 +643,10 @@
                                 <div class="client-rank-item">
                                     <div style="display: flex; align-items: center; gap: 8px;">
                                         <span class="client-badge-rank">3.º</span>
-                                        <strong>Cliente Terciário</strong>
+                                        <div>
+                                            <strong style="color: #fff; font-size: 12px;">CARLOS MANUEL GUERREIRO ANICETO</strong>
+                                            <div style="font-size: 10px; color: var(--text-muted);">1 fatura emitida • CAE 43210</div>
+                                        </div>
                                     </div>
                                     <span class="client-pct">1%</span>
                                     <span class="client-amount">70,00 €</span>
@@ -644,6 +654,106 @@
                             </div>
                             <div style="margin-top: 12px; font-size: 11px; color: var(--text-muted);">
                                 📊 Concentração: 96% dos rendimentos derivam do cliente principal.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SIMULAÇÃO DE IRS DEDICADA À ATIVIDADE (CATEGORIA B) -->
+                    <div class="act-simulation-card">
+                        <div class="sim-header-row">
+                            <div class="sim-title">
+                                <span>🎯 Simulação de IRS — Rendimentos Exclusivos da Atividade (Cat. B)</span>
+                            </div>
+                            <span class="badge-status badge-info">Regime Simplificado (Coef. 0,75)</span>
+                        </div>
+
+                        <!-- 2 CENÁRIOS: ATIVIDADE ISOLADA vs ENGLOBADA -->
+                        <div class="sim-scenarios-grid">
+                            <!-- CENÁRIO 1: ATIVIDADE ISOLADA -->
+                            <div class="sim-scenario-box highlight-refund">
+                                <span class="sim-tag tag-emerald">Cenário A: Apenas Esta Atividade</span>
+                                <div style="color: var(--text-muted); font-size: 11px;">Saldo Final Estimado (Isolado):</div>
+                                <div class="sim-main-val text-emerald">+91,30 €</div>
+                                <div style="font-size: 11px; color: var(--accent-emerald); font-weight: 700;">🟢 REEMBOLSO A RECEBER DA AT</div>
+
+                                <table class="sim-breakdown-table">
+                                    <tr>
+                                        <td>Rendimento Bruto Faturado:</td>
+                                        <td class="text-white">7.320,00 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Dedução Forfetária Automática (25%):</td>
+                                        <td class="text-muted">-1.830,00 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Despesas Afetas Registadas na AT:</td>
+                                        <td class="text-muted">0,00 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Rendimento Coletável Tributável (75%):</td>
+                                        <td class="text-cyan">5.490,00 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Coleta de IRS Estimada (1.º Escalão ~13,0%):</td>
+                                        <td class="text-amber">713,70 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Retenção na Fonte já Paga à AT (Crédito):</td>
+                                        <td class="text-emerald">-805,00 €</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- CENÁRIO 2: ENGLOBADO COM TRABALHO DEPENDENTE -->
+                            <div class="sim-scenario-box highlight-payable">
+                                <span class="sim-tag tag-amber">Cenário B: Englobado com Outros Rendimentos</span>
+                                <div style="color: var(--text-muted); font-size: 11px;">Impacto Adicional no teu IRS Geral:</div>
+                                <div class="sim-main-val text-amber">402,80 €</div>
+                                <div style="font-size: 11px; color: var(--accent-amber); font-weight: 700;">🟡 SALDO ESTIMADO A PAGAR PELA ATIVIDADE</div>
+
+                                <table class="sim-breakdown-table">
+                                    <tr>
+                                        <td>Rendimento Coletável da Atividade:</td>
+                                        <td class="text-white">5.490,00 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Escalão Marginal Global (3.º Escalão):</td>
+                                        <td class="text-purple">22,0%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Coleta Marginal Gerada pela Atividade:</td>
+                                        <td class="text-amber">1.207,80 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Retenção na Fonte já Paga (Crédito):</td>
+                                        <td class="text-emerald">-805,00 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Saldo Efetivo Restante a Liquidar:</td>
+                                        <td class="text-amber font-bold">402,80 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Reserva Mensal Recomendada (10 meses):</td>
+                                        <td class="text-blue">~40,00 €/mês</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- TIMELINE E DATAS OFICIAIS DE REEMBOLSO / PAGAMENTO -->
+                        <div class="sim-timeline-banner">
+                            <div>
+                                <strong style="color: #fff; font-size: 13px;">📅 Calendário Oficial de Execução na AT:</strong>
+                                <div style="margin-top: 4px;">
+                                    • <strong>01/04 a 30/06/2027</strong>: Entrega da Declaração Modelo 3 com Anexo B.<br>
+                                    • <strong>31/07/2027</strong>: Liquidação oficial e emissão da nota de cobrança pela AT.<br>
+                                    • <strong>31/08/2027</strong>: <strong style="color: #fff;">Data Limite para Reembolso ou Pagamento</strong> (Transferência para IBAN Santander Totta PT50...21267).
+                                </div>
+                            </div>
+                            <div style="text-align: right; min-width: 200px;">
+                                <div style="font-size: 11px; color: var(--text-muted);">Conta de Reembolso na AT:</div>
+                                <div style="font-family: 'JetBrains Mono'; font-weight: 700; color: #fff;">PT50...003921267</div>
+                                <div style="font-size: 10px; color: var(--accent-emerald);">✓ Santander Totta Confirmado</div>
                             </div>
                         </div>
                     </div>
