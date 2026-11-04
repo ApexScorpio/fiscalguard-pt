@@ -68,7 +68,7 @@
                 <span class="tab-icon">📅</span>
                 <span>Agenda Fiscal</span>
             </button>
-            <button class="nav-tab" data-tab="tab-activity">
+                        <button class="nav-tab" data-tab="tab-activity">
                 <span class="tab-icon">⚡</span>
                 <span>Atividade, CAE & IVA</span>
                 <span class="nav-tag tag-success">Aberta</span>
@@ -221,7 +221,116 @@
                                     <strong class="text-primary">Confirmado</strong>
                                 </div>
                                 <div class="audit-row">
-                                    <span class="audit-name"><span class="check-green">✓</span> Retenção IRS Faturas</div>
+                                    <span class="audit-name"><span class="check-green">✓</span> Segurança Social:</span>
+                                    <strong class="text-success">Em Dia</strong>
+                                </div>
+                                <div class="audit-row">
+                                    <span class="audit-name"><span class="check-green">✓</span> Contactos AT:</span>
+                                    <strong class="text-success">SMS Ativo</strong>
+                                </div>
+                            </div>
+
+                            <!-- CADASTRO OFICIAL DO CONTRIBUINTE -->
+                            <div class="taxpayer-cadastre-box">
+                                <div class="cad-title">👤 CADASTRO OFICIAL AT:</div>
+                                <div class="cad-row"><span>Contribuinte:</span><strong>Miguel Lopes (Singular)</strong></div>
+                                <div class="cad-row"><span>Repartição:</span><strong>1112 - Loures 2</strong></div>
+                                <div class="cad-row"><span>Via CTT:</span><strong>Subscrito e Ativo</strong></div>
+                                <div class="cad-row"><span>Senha Portal:</span><strong>Atualizada em 04/02/2026</strong></div>
+                                <div class="cad-row"><span>Atividade AT:</span><strong class="text-success">Aberta (Cat. B)</strong></div>
+                                <div class="cad-row"><span>CAE Principal:</span><strong>43210 (Instalação Elétrica)</strong></div>
+                                <div class="cad-row"><span>Regime IVA:</span><strong>Normal Trimestral</strong></div>
+                                <div class="cad-row"><span>Faturação 2026:</span><strong class="text-emerald">7.320,00 €</strong></div>
+                            </div>
+
+                            <div class="status-card-footer">
+                                <span class="audit-stamp">🛡️ Auditoria AT: Em conformidade total</span>
+                            </div>
+                        </div>
+
+                        <!-- CARD 4: E-FATURA 2026 -->
+                        <div class="compact-hero-card card-efatura-glow">
+                            <div class="c-card-header">
+                                <div class="c-title-group">
+                                    <span class="c-icon">🧾</span>
+                                    <span class="c-title">e-Fatura 2026</span>
+                                </div>
+                                <span class="badge-status badge-warning" id="hero-efatura-badge">167 Pendentes</span>
+                            </div>
+
+                            <div class="efatura-top-row">
+                                <div>
+                                    <div class="efatura-hero-num text-amber" id="hero-efatura-amount">210,39 €</div>
+                                    <div class="efatura-hero-sub">Deduções provisórias</div>
+                                </div>
+                                <button id="btn-auto-classify-hero" class="btn-classify-action" title="Classificar as 167 faturas">
+                                    <span>⚡ Classificar com IA</span>
+                                </button>
+                            </div>
+
+                            <div class="sectors-full-list">
+                                <div class="s-bar-item">
+                                    <div class="s-bar-header"><span>🛒 Gerais Familiares</span><strong>195,27 € / 250 € (78%)</strong></div>
+                                    <div class="s-bar-track"><div class="s-bar-fill fill-amber" style="width: 78%;"></div></div>
+                                </div>
+                                <div class="s-bar-item">
+                                    <div class="s-bar-header"><span>🔧 Reparação Auto</span><strong>9,54 € / 250 € (4%)</strong></div>
+                                    <div class="s-bar-track"><div class="s-bar-fill fill-blue" style="width: 4%;"></div></div>
+                                </div>
+                                <div class="s-bar-item">
+                                    <div class="s-bar-header"><span>🏋️ Ginásios</span><strong>4,48 € / 250 € (2%)</strong></div>
+                                    <div class="s-bar-track"><div class="s-bar-fill fill-emerald" style="width: 2%;"></div></div>
+                                </div>
+                                <div class="s-bar-item">
+                                    <div class="s-bar-header"><span>☕ Restauração</span><strong>1,10 € / 250 € (0.4%)</strong></div>
+                                    <div class="s-bar-track"><div class="s-bar-fill fill-amber" style="width: 1%;"></div></div>
+                                </div>
+                                <div class="s-bar-item">
+                                    <div class="s-bar-header"><span>💊 Saúde</span><strong class="text-muted">0,00 € / 1.000 € (0%)</strong></div>
+                                    <div class="s-bar-track"><div class="s-bar-fill" style="width: 0%;"></div></div>
+                                </div>
+                                <div class="s-bar-item">
+                                    <div class="s-bar-header"><span>📚 Educação</span><strong class="text-muted">0,00 € / 800 € (0%)</strong></div>
+                                    <div class="s-bar-track"><div class="s-bar-fill" style="width: 0%;"></div></div>
+                                </div>
+                                <div class="s-bar-item">
+                                    <div class="s-bar-header"><span>🐾 Veterinário</span><strong class="text-muted">0,00 € / 250 € (0%)</strong></div>
+                                    <div class="s-bar-track"><div class="s-bar-fill" style="width: 0%;"></div></div>
+                                </div>
+                            </div>
+
+                            <!-- OPORTUNIDADES DE RECUPERAÇÃO -->
+                            <div class="efatura-tips-box">
+                                <div class="ef-tip-title">💡 OPORTUNIDADES NAS 167 FATURAS:</div>
+                                <div class="ef-tip-row"><span>💊 Saúde: Potencial de abate até 1.000 €</span></div>
+                                <div class="ef-tip-row"><span>☕ Restauração: 15% de IVA dedutível</span></div>
+                            </div>
+
+                            <div class="efatura-card-footer">
+                                <span>⚡ Classifique até 25 Fev 2027 para abater até +250 € no IRS.</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- LINHA 2: TIER INFERIOR EQUILIBRADO (TESOURARIA, AGENDA FISCAL REAL E SENTINELA) -->
+                    <div class="dashboard-bottom-bar">
+                        <!-- WIDGET 1: TESOURARIA & GESTÃO DE FLUXO -->
+                        <div class="bottom-widget-card">
+                            <div class="bw-header">💰 Atividade & Tesouraria 2026:</div>
+                            <div class="cashflow-strip-grid">
+                                <div class="res-mini-box">
+                                    <div class="res-lbl">Faturado 2026 (Cat. B)</div>
+                                    <div class="res-val text-emerald" id="overview-net-amount">7.320,00 €</div>
+                                    <div class="res-sub">100% CAE 43210</div>
+                                </div>
+                                <div class="res-mini-box">
+                                    <div class="res-lbl">IVA Liquidado 2026</div>
+                                    <div class="res-val text-amber" id="overview-vat-reserve">73,60 €</div>
+                                    <div class="res-sub">Normal Trimestral</div>
+                                </div>
+                                <div class="res-mini-box">
+                                    <div class="res-lbl">Retenção IRS Faturas</div>
                                     <div class="res-val text-blue" id="overview-ss-reserve">805,00 €</div>
                                     <div class="res-sub">Retido na Fonte</div>
                                 </div>
@@ -433,7 +542,6 @@
                 </div>
             </section>
 
-            
             <!-- ABA DEDICADA: ATIVIDADE, CAE & IVA (OFICIAL AT) -->
             <section class="tab-pane" id="tab-activity">
                 <div class="pane-scroll-container">
