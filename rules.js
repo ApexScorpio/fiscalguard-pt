@@ -51,14 +51,17 @@ function predictCategory(supplierName, supplierNif) {
  * Gera as obrigações fiscais e contributivas do ano com prazos oficiais
  */
 function getFiscalCalendar(year = new Date().getFullYear(), profile = {}) {
+    const isIndependent = profile.activityType === 'independent';
+    const isVatSubject = profile.vatRegime && profile.vatRegime !== 'exempt' && profile.vatRegime !== 'exempt_53';
+
     const list = [
         {
             id: "efatura_validacao",
             title: "Validação de Faturas no e-fatura",
             entity: "Autoridade Tributária",
             type: "IRS / e-fatura",
-            description: "Data limite para associar o setor de atividade a todas as faturas pendentes do ano anterior.",
-            deadline: `${year}-02-25`,
+            description: "Data limite para associar o setor a todas as faturas pendentes do ano anterior.",
+            deadline: `${year + 1}-02-25`,
             frequency: "Anual",
             urgency: "alta",
             actionUrl: "https://faturas.portaldasfinancas.gov.pt/",
@@ -69,80 +72,127 @@ function getFiscalCalendar(year = new Date().getFullYear(), profile = {}) {
             title: "Entrega do IRS (Modelo 3)",
             entity: "Autoridade Tributária",
             type: "IRS",
-            description: "Submissão da declaração anual de rendimentos (Trabalho Dependente, Recibos Verdes, Capitais, Prediais).",
-            deadline: `${year}-06-30`,
-            startDate: `${year}-04-01`,
+            description: "Submissão da declaração anual de rendimentos de 2026 (Categoria A).",
+            deadline: `${year + 1}-06-30`,
+            startDate: `${year + 1}-04-01`,
             frequency: "Anual",
             urgency: "media",
             actionUrl: "https://irs.portaldasfinancas.gov.pt/",
             penaltyWarning: "Coima por entrega fora de prazo varia entre 150€ e 3.750€."
         },
         {
-            id: "ss_declaracao_t1",
-            title: "Declaração Trimestral Segurança Social (1.º Trimestre)",
-            entity: "Segurança Social Direta",
-            type: "Segurança Social",
-            description: "Registo dos rendimentos recebidos em Janeiro, Fevereiro e Março. Fixa as contribuições de Maio, Junho e Julho.",
-            deadline: `${year}-04-30`,
-            startDate: `${year}-04-01`,
-            frequency: "Trimestral",
-            urgency: "alta",
-            actionUrl: "https://app.seg-social.pt/",
-            penaltyWarning: "Falta de declaração sujeita a contribuição mínima oficiosa e coimas de 50€ a 500€."
-        },
-        {
-            id: "ss_declaracao_t2",
-            title: "Declaração Trimestral Segurança Social (2.º Trimestre)",
-            entity: "Segurança Social Direta",
-            type: "Segurança Social",
-            description: "Registo dos rendimentos recebidos em Abril, Maio e Junho. Fixa as contribuições de Agosto, Setembro e Outubro.",
-            deadline: `${year}-07-31`,
-            startDate: `${year}-07-01`,
-            frequency: "Trimestral",
-            urgency: "alta",
-            actionUrl: "https://app.seg-social.pt/",
-            penaltyWarning: "Falta de declaração sujeita a contribuição mínima oficiosa e coimas de 50€ a 500€."
-        },
-        {
-            id: "ss_declaracao_t3",
-            title: "Declaração Trimestral Segurança Social (3.º Trimestre)",
-            entity: "Segurança Social Direta",
-            type: "Segurança Social",
-            description: "Registo dos rendimentos recebidos em Julho, Agosto e Setembro. Fixa as contribuições de Novembro, Dezembro e Janeiro.",
-            deadline: `${year}-10-31`,
-            startDate: `${year}-10-01`,
-            frequency: "Trimestral",
-            urgency: "alta",
-            actionUrl: "https://app.seg-social.pt/",
-            penaltyWarning: "Falta de declaração sujeita a contribuição mínima oficiosa e coimas de 50€ a 500€."
-        },
-        {
-            id: "ss_declaracao_t4",
-            title: "Declaração Trimestral Segurança Social (4.º Trimestre)",
-            entity: "Segurança Social Direta",
-            type: "Segurança Social",
-            description: "Registo dos rendimentos recebidos em Outubro, Novembro e Dezembro. Fixa as contribuições de Fevereiro, Março e Abril.",
-            deadline: `${year + 1}-01-31`,
-            startDate: `${year + 1}-01-01`,
-            frequency: "Trimestral",
-            urgency: "alta",
-            actionUrl: "https://app.seg-social.pt/",
-            penaltyWarning: "Falta de declaração sujeita a contribuição mínima oficiosa e coimas de 50€ a 500€."
-        },
-        {
-            id: "ss_pagamento_mensal",
-            title: "Pagamento Mensal de Contribuições à Segurança Social",
-            entity: "Segurança Social",
-            type: "Segurança Social",
-            description: "Pagamento da contribuição mensal dos Trabalhadores Independentes relativa ao mês anterior (entre dia 10 e dia 20).",
-            deadline: getNextSSPaymentDate(),
-            frequency: "Mensal",
-            urgency: "critica",
-            actionUrl: "https://app.seg-social.pt/",
-            paymentDetails: null,
-            penaltyWarning: "Juros de mora diários e perda do direito a certidão de situação contributiva regularizada."
-        },
-        {
+            id: "irs_pagamento",
+            title: "Liquidação e Pagamento do IRS",
+            entity: "Autoridade Tributária",
+            type: "IRS",
+            description: "Data limite para pagamento da nota de cobrança da liquidação de IRS caso haja saldo a pagar.",
+            deadline: `${year + 1}-08-31`,
+            frequency: "Anual",
+            urgency: "media",
+            actionUrl: "https://sitfiscal.portaldasfinancas.gov.pt/inffin/pagamentosDecorrer.html"
+        }
+    ];
+
+    // Adicionar IUC oficial de todas as viaturas reais da frota
+    if (profile.veiculos && Array.isArray(profile.veiculos) && profile.veiculos.length > 0) {
+        profile.veiculos.forEach(v => {
+            const mes = Number(v.mesRegisto) || 12;
+            const now = new Date();
+            let dYear = now.getFullYear();
+            let d = new Date(dYear, mes, 0);
+            if (v.estado === 'pago_2026' || (now > d && v.estado !== 'pendente_dezembro_2026')) {
+                d = new Date(dYear + 1, mes, 0);
+            }
+            const deadlineStr = d.toISOString().split('T')[0];
+
+            list.push({
+                id: `iuc_${v.matricula.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+                title: `IUC ${v.nome} (${v.matricula})`,
+                entity: "Autoridade Tributária",
+                type: "IUC",
+                description: `IUC anual da viatura ${v.matricula} (${v.categoria}) • Montante: ${Number(v.valorEstimado).toFixed(2).replace('.', ',')} €`,
+                deadline: deadlineStr,
+                frequency: "Anual",
+                urgency: "media",
+                actionUrl: "https://sitfiscal.portaldasfinancas.gov.pt/iuc/consultarIUC/consultaIUCANO"
+            });
+        });
+    }
+
+    // Apenas adicionar obrigações de Segurança Social para quem tem atividade independente aberta
+    if (isIndependent) {
+        list.push(
+            {
+                id: "ss_declaracao_t1",
+                title: "Declaração Trimestral Segurança Social (1.º Trimestre)",
+                entity: "Segurança Social Direta",
+                type: "Segurança Social",
+                description: "Registo dos rendimentos recebidos em Janeiro, Fevereiro e Março. Fixa as contribuições de Maio, Junho e Julho.",
+                deadline: `${year}-04-30`,
+                startDate: `${year}-04-01`,
+                frequency: "Trimestral",
+                urgency: "alta",
+                actionUrl: "https://app.seg-social.pt/",
+                penaltyWarning: "Falta de declaração sujeita a contribuição mínima oficiosa e coimas de 50€ a 500€."
+            },
+            {
+                id: "ss_declaracao_t2",
+                title: "Declaração Trimestral Segurança Social (2.º Trimestre)",
+                entity: "Segurança Social Direta",
+                type: "Segurança Social",
+                description: "Registo dos rendimentos recebidos em Abril, Maio e Junho. Fixa as contribuições de Agosto, Setembro e Outubro.",
+                deadline: `${year}-07-31`,
+                startDate: `${year}-07-01`,
+                frequency: "Trimestral",
+                urgency: "alta",
+                actionUrl: "https://app.seg-social.pt/",
+                penaltyWarning: "Falta de declaração sujeita a contribuição mínima oficiosa e coimas de 50€ a 500€."
+            },
+            {
+                id: "ss_declaracao_t3",
+                title: "Declaração Trimestral Segurança Social (3.º Trimestre)",
+                entity: "Segurança Social Direta",
+                type: "Segurança Social",
+                description: "Registo dos rendimentos recebidos em Julho, Agosto e Setembro. Fixa as contribuições de Novembro, Dezembro e Janeiro.",
+                deadline: `${year}-10-31`,
+                startDate: `${year}-10-01`,
+                frequency: "Trimestral",
+                urgency: "alta",
+                actionUrl: "https://app.seg-social.pt/",
+                penaltyWarning: "Falta de declaração sujeita a contribuição mínima oficiosa e coimas de 50€ a 500€."
+            },
+            {
+                id: "ss_declaracao_t4",
+                title: "Declaração Trimestral Segurança Social (4.º Trimestre)",
+                entity: "Segurança Social Direta",
+                type: "Segurança Social",
+                description: "Registo dos rendimentos recebidos em Outubro, Novembro e Dezembro. Fixa as contribuições de Fevereiro, Março e Abril.",
+                deadline: `${year + 1}-01-31`,
+                startDate: `${year + 1}-01-01`,
+                frequency: "Trimestral",
+                urgency: "alta",
+                actionUrl: "https://app.seg-social.pt/",
+                penaltyWarning: "Falta de declaração sujeita a contribuição mínima oficiosa e coimas de 50€ a 500€."
+            },
+            {
+                id: "ss_pagamento_mensal",
+                title: "Pagamento Mensal de Contribuições à Segurança Social",
+                entity: "Segurança Social",
+                type: "Segurança Social",
+                description: "Pagamento da contribuição mensal dos Trabalhadores Independentes relativa ao mês anterior (entre dia 10 e dia 20).",
+                deadline: getNextSSPaymentDate(),
+                frequency: "Mensal",
+                urgency: "critica",
+                actionUrl: "https://app.seg-social.pt/",
+                paymentDetails: null,
+                penaltyWarning: "Juros de mora diários e perda do direito a certidão de situação contributiva regularizada."
+            }
+        );
+    }
+
+    // Apenas adicionar obrigações periódicas de IVA para sujeitos passivos com atividade
+    if (isVatSubject) {
+        list.push({
             id: "iva_declaracao_t3",
             title: "Declaração Periódica do IVA (3.º Trimestre)",
             entity: "Autoridade Tributária",
@@ -154,8 +204,11 @@ function getFiscalCalendar(year = new Date().getFullYear(), profile = {}) {
             urgency: "alta",
             actionUrl: "https://iva.portaldasfinancas.gov.pt/",
             penaltyWarning: "Coimas entre 150€ e 3.750€ por atraso e juros de mora compensatórios."
-        },
-        {
+        });
+    }
+
+    if (profile.hasRealEstate) {
+        list.push({
             id: "imi_prestacao_1",
             title: "Pagamento do IMI (1.ª Prestação ou Pagamento Total)",
             entity: "Autoridade Tributária",
@@ -165,26 +218,10 @@ function getFiscalCalendar(year = new Date().getFullYear(), profile = {}) {
             frequency: "Anual / Parcelado",
             urgency: "media",
             actionUrl: "https://imoveis.portaldasfinancas.gov.pt/"
-        },
-        {
-            id: "iuc_veiculo",
-            title: "Pagamento do IUC (Imposto Único de Circulação)",
-            entity: "Autoridade Tributária",
-            type: "IUC",
-            description: "Pagamento do selo do automóvel no mês da matrícula da viatura.",
-            deadline: getIucDeadline(),
-            frequency: "Anual",
-            urgency: "media",
-            actionUrl: "https://iuc.portaldasfinancas.gov.pt/"
-        }
-    ];
+        });
+    }
 
-    // Filtrar rigorosamente por perfil real: não inventar impostos de carro ou imóveis se o utilizador não tiver configurado
-    return list.filter(item => {
-        if (item.id === 'iuc_veiculo' && (!profile.vehiclePlate || !profile.vehicleRegMonth)) return false;
-        if (item.id === 'imi_prestacao_1' && !profile.hasRealEstate) return false;
-        return true;
-    });
+    return list;
 }
 
 function getNextSSPaymentDate() {

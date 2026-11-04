@@ -497,12 +497,13 @@
                             </div>
 
                             <div class="irs-sheet-table">
-                                <div class="sheet-row"><span>Rendimento Global Previsto:</span> <strong>~21.000,00 €</strong></div>
-                                <div class="sheet-row"><span>Dedução Específica (Art. 25.º):</span> <strong>-4.462,40 €</strong></div>
-                                <div class="sheet-row"><span>Coleta Bruta Estimada:</span> <strong>~3.050,00 €</strong></div>
-                                <div class="sheet-row highlight"><span>Deduções Atuais e-Fatura:</span> <strong class="text-emerald">-210,39 €</strong></div>
-                                <div class="sheet-row"><span>Potencial Extra c/ 167 Faturas:</span> <strong class="text-blue">-250,00 €</strong></div>
-                                <div class="sheet-row"><span>Retenção na Fonte Estimada:</span> <strong>-250,00 €</strong></div>
+                                <div class="sheet-row"><span>Rendimento Global de Referência:</span> <strong id="sheet-irs-income">20.722,74 €</strong></div>
+                                <div class="sheet-row"><span>Dedução Específica (Art. 25.º CIRS):</span> <strong id="sheet-irs-ded-spec">-4.462,10 €</strong></div>
+                                <div class="sheet-row"><span>Rendimento Coletável:</span> <strong id="sheet-irs-taxable">16.260,64 €</strong></div>
+                                <div class="sheet-row"><span>Coleta Bruta Estimada (3.º Escalão, 22%):</span> <strong id="sheet-irs-gross-tax">2.141,22 €</strong></div>
+                                <div class="sheet-row"><span>Retenção na Fonte de Referência:</span> <strong id="sheet-irs-retention">-221,00 €</strong></div>
+                                <div class="sheet-row highlight"><span>Deduções Provisórias e-Fatura (167 faturas):</span> <strong class="text-emerald" id="sheet-irs-deductions">-210,39 €</strong></div>
+                                <div class="sheet-row"><span>Potencial Extra c/ Validação de Faturas:</span> <strong class="text-blue" id="sheet-irs-potential">-250,00 €</strong></div>
                                 <div class="sheet-row total"><span>SALDO ESTIMADO A PAGAR:</span> <strong class="text-rose" id="irs-tab-total">~1.709,83 €</strong></div>
                             </div>
                         </div>
@@ -557,30 +558,42 @@
                             <div class="form-group">
                                 <label>Viatura a Editar:</label>
                                 <select id="cfg-select-vehicle" class="premium-input">
-                                    <option value="v-abril-1">Viatura Principal (Abril)</option>
-                                    <option value="v-junho-1">Viatura Familiar (Junho)</option>
-                                    <option value="v-junho-2">Viatura Urbana (Junho)</option>
-                                    <option value="v-junho-3">Comercial / Mota (Junho)</option>
+                                    <option value="v-57-ua-97" selected>VORTEX 125 cc (57-UA-97) — Dezembro</option>
+                                    <option value="v-ag-14-dp">VORTEX 378 cc (AG-14-DP) — Março</option>
+                                    <option value="v-84-uz-80">OPEL 1.490 cc (84-UZ-80) — Junho</option>
+                                    <option value="v-61-rn-60">RIDE 125 cc (61-RN-60) — Junho</option>
+                                    <option value="v-21-ag-91">OPEL 1.364 cc (21-AG-91) — Julho</option>
+                                    <option value="v-74-78-ap">VOLKSWAGEN 1.391 cc (74-78-AP) — Julho</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label>Nome:</label>
-                                <input type="text" id="cfg-iuc-name" class="premium-input" value="Viatura Principal">
+                                <input type="text" id="cfg-iuc-name" class="premium-input" value="VORTEX 125 cc">
                             </div>
                             <div class="form-group">
                                 <label>Matrícula:</label>
-                                <input type="text" id="cfg-iuc-plate" class="premium-input" value="45-AB-89">
+                                <input type="text" id="cfg-iuc-plate" class="premium-input" value="57-UA-97">
                             </div>
                             <div class="form-group">
                                 <label>Mês de Matrícula:</label>
                                 <select id="cfg-iuc-month" class="premium-input">
-                                    <option value="4" selected>Abril</option>
+                                    <option value="1">Janeiro</option>
+                                    <option value="2">Fevereiro</option>
+                                    <option value="3">Março</option>
+                                    <option value="4">Abril</option>
+                                    <option value="5">Maio</option>
                                     <option value="6">Junho</option>
+                                    <option value="7">Julho</option>
+                                    <option value="8">Agosto</option>
+                                    <option value="9">Setembro</option>
+                                    <option value="10">Outubro</option>
+                                    <option value="11">Novembro</option>
+                                    <option value="12" selected>Dezembro</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label>Valor Estimado (€):</label>
-                                <input type="number" id="cfg-iuc-val" class="premium-input" value="45.80" step="0.1">
+                                <input type="number" id="cfg-iuc-val" class="premium-input" value="6.19" step="0.01">
                             </div>
                             <button id="btn-save-iuc-config" class="btn-primary-action">Guardar Alterações</button>
                         </div>

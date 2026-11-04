@@ -149,13 +149,15 @@ const DEFAULT_AT_DATA = {
     irs: {
         previsao_2026: {
             ano: 2026,
-            saldo_previsto_a_pagar: "1.709,83 €",
+            rendimento_global: "20.722,74 €",
+            deducao_especifica: "4.462,10 €",
+            rendimento_coletavel: "16.260,64 €",
+            coleta_bruta: "2.141,22 €",
+            retencao_fonte: "221,00 €",
             deducoes_acumuladas: "210,39 €",
+            saldo_previsto_a_pagar: "1.709,83 €",
             poupanca_mensal_sugerida: "160,00 €",
             potencial_recuperacao: "250,00 €",
-            rendimento_estimado: "21.000,00 €",
-            coleta_estimada: "3.100,00 €",
-            retencao_estimada: "250,00 €",
             estado_apuramento: "Em acumulação (167 faturas por classificar)",
             comparativo_2025: "1.920,22 € (poupança de ~210 € já garantida)"
         },
@@ -208,10 +210,12 @@ const EMPTY_STATE = {
         name: "Miguel Angelo Correia Lopes",
         nif: "245804439",
         niss: "",
-        activityType: "independent",
-        vatRegime: "normal",
+        activityType: "dependent",
+        vatRegime: "exempt",
         directDebitSS: false,
         directDebitAT: false,
+        iban: "PT50 0018 0359 0020 0039 2126 7",
+        bank: "Banco Santander Totta",
         alertDays: [30, 7, 2, 0]
     },
     status: {
@@ -471,7 +475,8 @@ class Database {
 
     getCalendar() {
         this.data = this.load();
-        const fiscalList = getFiscalCalendar(new Date().getFullYear(), this.data.profile);
+        const profileWithVehicles = { ...this.data.profile, veiculos: (this.data.atData && this.data.atData.iuc && this.data.atData.iuc.veiculos) || [] };
+        const fiscalList = getFiscalCalendar(new Date().getFullYear(), profileWithVehicles);
         const savedStates = this.data.calendarState || {};
 
         return fiscalList.map(item => {

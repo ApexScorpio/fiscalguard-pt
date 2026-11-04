@@ -190,32 +190,16 @@ function renderReservesAndAgenda(statusData, calendarData, iucData) {
     if (elSS) elSS.textContent = `${formatMoney(reserves.ss || 0)} €`;
     if (elIrs) elIrs.textContent = `160,00 €/mês`;
 
-    // WIDGET AGENDA FISCAL PRAZOS REAIS AT
+    // WIDGET AGENDA FISCAL DINÂMICA COM PRAZOS OFICIAIS
     const elAgenda = document.getElementById('overview-obligations-container');
-    if (elAgenda) {
-        const proximoIuc = (iucData && iucData.proximoIuc) ? iucData.proximoIuc : { matricula: '45-AB-89', daysRemaining: 177 };
-        elAgenda.innerHTML = `
-            <div class="agenda-item-mini" title="IUC Viatura Principal: 30 de Abril de 2027">
-                <span class="ag-icon">🚗</span>
-                <span class="ag-title">IUC ${proximoIuc.matricula}</span>
-                <span class="ag-badge badge-warn">${proximoIuc.daysRemaining}d (Abril)</span>
+    if (elAgenda && calendarData && calendarData.length) {
+        elAgenda.innerHTML = calendarData.slice(0, 4).map(item => `
+            <div class="agenda-item-mini" title="${item.title}: ${item.deadline}">
+                <span class="ag-icon">${item.type === 'IUC' ? '🚗' : (item.type.includes('IRS') ? '📑' : '🏛️')}</span>
+                <span class="ag-title">${item.title}</span>
+                <span class="ag-badge ${item.daysRemaining <= 60 ? 'badge-warn' : 'badge-info'}">${item.daysRemaining}d</span>
             </div>
-            <div class="agenda-item-mini" title="IUC 3 Viaturas: 30 de Junho de 2027">
-                <span class="ag-icon">🚗</span>
-                <span class="ag-title">IUC Frota (3 viat.)</span>
-                <span class="ag-badge badge-info">238d (Junho)</span>
-            </div>
-            <div class="agenda-item-mini" title="Limite Validação e-Fatura 2026: 25 de Fevereiro de 2027">
-                <span class="ag-icon">🧾</span>
-                <span class="ag-title">Validação e-Fatura</span>
-                <span class="ag-badge badge-warn">113d (25 Fev)</span>
-            </div>
-            <div class="agenda-item-mini" title="Entrega IRS Modelo 3: 30 de Junho de 2027">
-                <span class="ag-icon">📑</span>
-                <span class="ag-title">Entrega IRS 2026</span>
-                <span class="ag-badge badge-info">238d (Junho)</span>
-            </div>
-        `;
+        `).join('');
     }
 }
 
