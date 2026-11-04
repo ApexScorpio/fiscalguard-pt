@@ -68,6 +68,11 @@
                 <span class="tab-icon">📅</span>
                 <span>Agenda Fiscal</span>
             </button>
+            <button class="nav-tab" data-tab="tab-activity">
+                <span class="tab-icon">⚡</span>
+                <span>Atividade, CAE & IVA</span>
+                <span class="nav-tag tag-success">Aberta</span>
+            </button>
             <button class="nav-tab" data-tab="tab-settings">
                 <span class="tab-icon">⚙️</span>
                 <span>Configurações</span>
@@ -216,114 +221,9 @@
                                     <strong class="text-primary">Confirmado</strong>
                                 </div>
                                 <div class="audit-row">
-                                    <span class="audit-name"><span class="check-green">✓</span> Segurança Social:</span>
-                                    <strong class="text-success">Em Dia</strong>
-                                </div>
-                                <div class="audit-row">
-                                    <span class="audit-name"><span class="check-green">✓</span> Contactos AT:</span>
-                                    <strong class="text-success">SMS Ativo</strong>
-                                </div>
-                            </div>
-
-                            <!-- CADASTRO OFICIAL DO CONTRIBUINTE -->
-                            <div class="taxpayer-cadastre-box">
-                                <div class="cad-title">👤 CADASTRO OFICIAL AT:</div>
-                                <div class="cad-row"><span>Contribuinte:</span><strong>Miguel Lopes (Singular)</strong></div>
-                                <div class="cad-row"><span>Repartição:</span><strong>1112 - Loures 2</strong></div>
-                                <div class="cad-row"><span>Via CTT:</span><strong>Subscrito e Ativo</strong></div>
-                                <div class="cad-row"><span>Senha Portal:</span><strong>Atualizada em 04/02/2026</strong></div>
-                            </div>
-
-                            <div class="status-card-footer">
-                                <span class="audit-stamp">🛡️ Auditoria AT: Em conformidade total</span>
-                            </div>
-                        </div>
-
-                        <!-- CARD 4: E-FATURA 2026 -->
-                        <div class="compact-hero-card card-efatura-glow">
-                            <div class="c-card-header">
-                                <div class="c-title-group">
-                                    <span class="c-icon">🧾</span>
-                                    <span class="c-title">e-Fatura 2026</span>
-                                </div>
-                                <span class="badge-status badge-warning" id="hero-efatura-badge">167 Pendentes</span>
-                            </div>
-
-                            <div class="efatura-top-row">
-                                <div>
-                                    <div class="efatura-hero-num text-amber" id="hero-efatura-amount">210,39 €</div>
-                                    <div class="efatura-hero-sub">Deduções provisórias</div>
-                                </div>
-                                <button id="btn-auto-classify-hero" class="btn-classify-action" title="Classificar as 167 faturas">
-                                    <span>⚡ Classificar com IA</span>
-                                </button>
-                            </div>
-
-                            <div class="sectors-full-list">
-                                <div class="s-bar-item">
-                                    <div class="s-bar-header"><span>🛒 Gerais Familiares</span><strong>195,27 € / 250 € (78%)</strong></div>
-                                    <div class="s-bar-track"><div class="s-bar-fill fill-amber" style="width: 78%;"></div></div>
-                                </div>
-                                <div class="s-bar-item">
-                                    <div class="s-bar-header"><span>🔧 Reparação Auto</span><strong>9,54 € / 250 € (4%)</strong></div>
-                                    <div class="s-bar-track"><div class="s-bar-fill fill-blue" style="width: 4%;"></div></div>
-                                </div>
-                                <div class="s-bar-item">
-                                    <div class="s-bar-header"><span>🏋️ Ginásios</span><strong>4,48 € / 250 € (2%)</strong></div>
-                                    <div class="s-bar-track"><div class="s-bar-fill fill-emerald" style="width: 2%;"></div></div>
-                                </div>
-                                <div class="s-bar-item">
-                                    <div class="s-bar-header"><span>☕ Restauração</span><strong>1,10 € / 250 € (0.4%)</strong></div>
-                                    <div class="s-bar-track"><div class="s-bar-fill fill-amber" style="width: 1%;"></div></div>
-                                </div>
-                                <div class="s-bar-item">
-                                    <div class="s-bar-header"><span>💊 Saúde</span><strong class="text-muted">0,00 € / 1.000 € (0%)</strong></div>
-                                    <div class="s-bar-track"><div class="s-bar-fill" style="width: 0%;"></div></div>
-                                </div>
-                                <div class="s-bar-item">
-                                    <div class="s-bar-header"><span>📚 Educação</span><strong class="text-muted">0,00 € / 800 € (0%)</strong></div>
-                                    <div class="s-bar-track"><div class="s-bar-fill" style="width: 0%;"></div></div>
-                                </div>
-                                <div class="s-bar-item">
-                                    <div class="s-bar-header"><span>🐾 Veterinário</span><strong class="text-muted">0,00 € / 250 € (0%)</strong></div>
-                                    <div class="s-bar-track"><div class="s-bar-fill" style="width: 0%;"></div></div>
-                                </div>
-                            </div>
-
-                            <!-- OPORTUNIDADES DE RECUPERAÇÃO -->
-                            <div class="efatura-tips-box">
-                                <div class="ef-tip-title">💡 OPORTUNIDADES NAS 167 FATURAS:</div>
-                                <div class="ef-tip-row"><span>💊 Saúde: Potencial de abate até 1.000 €</span></div>
-                                <div class="ef-tip-row"><span>☕ Restauração: 15% de IVA dedutível</span></div>
-                            </div>
-
-                            <div class="efatura-card-footer">
-                                <span>⚡ Classifique até 25 Fev 2027 para abater até +250 € no IRS.</span>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- LINHA 2: TIER INFERIOR EQUILIBRADO (TESOURARIA, AGENDA FISCAL REAL E SENTINELA) -->
-                    <div class="dashboard-bottom-bar">
-                        <!-- WIDGET 1: TESOURARIA & GESTÃO DE FLUXO -->
-                        <div class="bottom-widget-card">
-                            <div class="bw-header">💰 Tesouraria & Plano Preventivo:</div>
-                            <div class="cashflow-strip-grid">
-                                <div class="res-mini-box">
-                                    <div class="res-lbl">Líquido no Bolso</div>
-                                    <div class="res-val text-emerald" id="overview-net-amount">0,00 €</div>
-                                    <div class="res-sub">Livre de impostos</div>
-                                </div>
-                                <div class="res-mini-box">
-                                    <div class="res-lbl">Provisão IVA</div>
-                                    <div class="res-val text-amber" id="overview-vat-reserve">0,00 €</div>
-                                    <div class="res-sub">Trimestral / Isento</div>
-                                </div>
-                                <div class="res-mini-box">
-                                    <div class="res-lbl">Segurança Social</div>
-                                    <div class="res-val text-blue" id="overview-ss-reserve">0,00 €</div>
-                                    <div class="res-sub">Em dia (Sem dívida)</div>
+                                    <span class="audit-name"><span class="check-green">✓</span> Retenção IRS Faturas</div>
+                                    <div class="res-val text-blue" id="overview-ss-reserve">805,00 €</div>
+                                    <div class="res-sub">Retido na Fonte</div>
                                 </div>
                                 <div class="res-mini-box highlight-purple">
                                     <div class="res-lbl">Reserva Mensal IRS</div>
@@ -530,6 +430,201 @@
                         </div>
                     </div>
                     <div class="obligations-list" id="calendar-full-container"></div>
+                </div>
+            </section>
+
+            
+            <!-- ABA DEDICADA: ATIVIDADE, CAE & IVA (OFICIAL AT) -->
+            <section class="tab-pane" id="tab-activity">
+                <div class="pane-scroll-container">
+                    <div class="tab-header-banner">
+                        <div>
+                            <h2>⚡ Gestão Oficial de Atividade, CAE & IVA</h2>
+                            <p>Dados extraídos diretamente da Posição Integrada e Gestão Integrada da Actividade (GIA) da AT.</p>
+                        </div>
+                        <div class="badge-status badge-success" style="font-size: 13px; padding: 6px 14px;">
+                            🟢 Atividade Aberta na AT
+                        </div>
+                    </div>
+
+                    <!-- 4 KPIS PRINCIPAIS DA ATIVIDADE -->
+                    <div class="act-kpis-grid">
+                        <div class="act-kpi-box">
+                            <span class="act-kpi-lbl">Estado da Atividade</span>
+                            <span class="act-kpi-val text-emerald">ABERTA</span>
+                            <span class="act-kpi-sub">Início: 17/02/2021 • Alt: 04/02/2026</span>
+                        </div>
+                        <div class="act-kpi-box">
+                            <span class="act-kpi-lbl">CAE Principal & CIRS</span>
+                            <span class="act-kpi-val text-cyan">43210</span>
+                            <span class="act-kpi-sub">Instalação Elétrica (CIRS 1519)</span>
+                        </div>
+                        <div class="act-kpi-box">
+                            <span class="act-kpi-lbl">Enquadramento IVA</span>
+                            <span class="act-kpi-val text-amber">Normal Trim.</span>
+                            <span class="act-kpi-sub">Operações com Direito à Dedução</span>
+                        </div>
+                        <div class="act-kpi-box">
+                            <span class="act-kpi-lbl">Rendimentos 2026 (Cat. B)</span>
+                            <span class="act-kpi-val text-purple">7.320,00 €</span>
+                            <span class="act-kpi-sub">IVA: 73,60 € • Retenção IRS: 805,00 €</span>
+                        </div>
+                    </div>
+
+                    <!-- 2 COLUNAS: FATURAÇÃO MENSAL E TOP CLIENTES -->
+                    <div class="act-columns-split">
+                        <div class="act-card-box">
+                            <div class="act-box-title">
+                                <span>📈 Evolução do Rendimento Mensal (Ano 2026)</span>
+                            </div>
+                            <div class="monthly-invoicing-list">
+                                <div class="month-bar-row">
+                                    <span class="month-lbl">Fevereiro</span>
+                                    <div class="month-track"><div class="month-fill" style="width: 100%;"></div></div>
+                                    <span class="month-val">5.000,00 €</span>
+                                </div>
+                                <div class="month-bar-row">
+                                    <span class="month-lbl">Maio</span>
+                                    <div class="month-track"><div class="month-fill" style="width: 20%;"></div></div>
+                                    <span class="month-val">1.000,00 €</span>
+                                </div>
+                                <div class="month-bar-row">
+                                    <span class="month-lbl">Julho</span>
+                                    <div class="month-track"><div class="month-fill" style="width: 26.4%;"></div></div>
+                                    <span class="month-val">1.320,00 €</span>
+                                </div>
+                                <div class="month-bar-row">
+                                    <span class="month-lbl">Outros</span>
+                                    <div class="month-track"><div class="month-fill" style="width: 0%;"></div></div>
+                                    <span class="month-val text-muted">0,00 €</span>
+                                </div>
+                            </div>
+                            <div style="margin-top: 12px; font-size: 11px; color: var(--text-muted);">
+                                ⚡ Total faturado em 2026: <strong>7.320,00 €</strong> • Média mensal ativa: <strong>2.440,00 €</strong>.
+                            </div>
+                        </div>
+
+                        <div class="act-card-box">
+                            <div class="act-box-title">
+                                <span>👥 Top Clientes da Atividade (Ano 2026)</span>
+                            </div>
+                            <div class="client-rank-list">
+                                <div class="client-rank-item">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span class="client-badge-rank">1.º</span>
+                                        <strong>Cliente Principal</strong>
+                                    </div>
+                                    <span class="client-pct">96%</span>
+                                    <span class="client-amount">7.000,00 €</span>
+                                </div>
+                                <div class="client-rank-item">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span class="client-badge-rank">2.º</span>
+                                        <strong>Cliente Secundário</strong>
+                                    </div>
+                                    <span class="client-pct">3%</span>
+                                    <span class="client-amount">250,00 €</span>
+                                </div>
+                                <div class="client-rank-item">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span class="client-badge-rank">3.º</span>
+                                        <strong>Cliente Terciário</strong>
+                                    </div>
+                                    <span class="client-pct">1%</span>
+                                    <span class="client-amount">70,00 €</span>
+                                </div>
+                            </div>
+                            <div style="margin-top: 12px; font-size: 11px; color: var(--text-muted);">
+                                📊 Concentração: 96% dos rendimentos derivam do cliente principal.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TABELA DE DECLARAÇÕES PERIÓDICAS DO IVA -->
+                    <div class="table-card mb-4">
+                        <div class="act-box-title">
+                            <span>📑 Declarações Periódicas do IVA Submetidas na AT (Ano 2026)</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="premium-table">
+                                <thead>
+                                    <tr>
+                                        <th>Período</th>
+                                        <th>N.º Documento Oficial AT</th>
+                                        <th>Data / Hora de Receção</th>
+                                        <th>Situação Oficial</th>
+                                        <th>Comprovativo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>2609T</strong> (3.º Trimestre)</td>
+                                        <td style="font-family: 'JetBrains Mono';">112581748362</td>
+                                        <td style="font-family: 'JetBrains Mono';">2026-10-27 23:21:57</td>
+                                        <td><span class="badge-status badge-success">✓ Pendente de Liquidação</span></td>
+                                        <td><a href="https://iva.portaldasfinancas.gov.pt/dpiva/portal" target="_blank" class="text-cyan font-bold">Ver na AT →</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>2606T</strong> (2.º Trimestre - Subst.)</td>
+                                        <td style="font-family: 'JetBrains Mono';">112575592704</td>
+                                        <td style="font-family: 'JetBrains Mono';">2026-09-17 14:13:07</td>
+                                        <td><span class="badge-status badge-success">✓ Pendente de Liquidação</span></td>
+                                        <td><a href="https://iva.portaldasfinancas.gov.pt/dpiva/portal" target="_blank" class="text-cyan font-bold">Ver na AT →</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>2606T</strong> (2.º Trimestre)</td>
+                                        <td style="font-family: 'JetBrains Mono';">112571882295</td>
+                                        <td style="font-family: 'JetBrains Mono';">2026-08-26 23:33:16</td>
+                                        <td><span class="badge-status badge-success">✓ Pendente de Liquidação</span></td>
+                                        <td><a href="https://iva.portaldasfinancas.gov.pt/dpiva/portal" target="_blank" class="text-cyan font-bold">Ver na AT →</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>2603T</strong> (1.º Trimestre)</td>
+                                        <td style="font-family: 'JetBrains Mono';">112554006156</td>
+                                        <td style="font-family: 'JetBrains Mono';">2026-05-02 22:00:50</td>
+                                        <td><span class="badge-status badge-success">✓ Pendente de Liquidação</span></td>
+                                        <td><a href="https://iva.portaldasfinancas.gov.pt/dpiva/portal" target="_blank" class="text-cyan font-bold">Ver na AT →</a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TABELA DE DECLARAÇÕES CADASTRAIS DA ATIVIDADE -->
+                    <div class="table-card">
+                        <div class="act-box-title">
+                            <span>📜 Declarações Cadastrais de Atividade Registadas na AT</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="premium-table">
+                                <thead>
+                                    <tr>
+                                        <th>N.º Documento</th>
+                                        <th>Data de Receção</th>
+                                        <th>Tipo de Declaração</th>
+                                        <th>Situação</th>
+                                        <th>Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-family: 'JetBrains Mono'; font-weight: 700;">9996N01713890</td>
+                                        <td style="font-family: 'JetBrains Mono';">2026-02-04</td>
+                                        <td><span class="badge-status badge-info">Alteração de Atividade</span></td>
+                                        <td><span class="badge-status badge-success">✓ Declaração Certa</span></td>
+                                        <td><span class="text-muted">Fixou CAE 43210 & IVA Trimestral</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-family: 'JetBrains Mono'; font-weight: 700;">9996004275326</td>
+                                        <td style="font-family: 'JetBrains Mono';">2021-02-17</td>
+                                        <td><span class="badge-status badge-info">Início de Atividade</span></td>
+                                        <td><span class="badge-status badge-success">✓ Declaração Certa</span></td>
+                                        <td><span class="text-muted">Abertura de Atividade (Cat. B)</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </section>
 

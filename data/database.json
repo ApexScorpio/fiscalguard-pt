@@ -3,12 +3,18 @@
     "name": "Miguel Angelo Correia Lopes",
     "nif": "245804439",
     "niss": "",
-    "activityType": "dependent",
-    "vatRegime": "exempt",
+    "activityType": "independent",
+    "activityStatus": "Aberta",
+    "cae": "43210",
+    "caeDesc": "Instalação Elétrica",
+    "cirs": "1519",
+    "cirsDesc": "Outros Prestadores de Serviços",
+    "vatRegime": "normal_trimestral",
     "directDebitSS": false,
     "directDebitAT": false,
     "iban": "PT50 0018 0359 0020 0039 2126 7",
     "bank": "Banco Santander Totta",
+    "eori": "PT245804439",
     "alertDays": [
       30,
       7,
@@ -33,6 +39,48 @@
     }
   },
   "invoices": [
+    {
+      "id": "inv-emit-2026-02-fev",
+      "date": "2026-02-28",
+      "entity": "Cliente Principal (96% - Instalação Elétrica)",
+      "supplierName": "Cliente Principal",
+      "supplierNif": "509******",
+      "documentNumber": "FT 2026/01",
+      "baseAmount": 5000,
+      "vatAmount": 0,
+      "total": 5000,
+      "category": "CAE 43210",
+      "efaturaStatus": "validated",
+      "type": "issued"
+    },
+    {
+      "id": "inv-emit-2026-05-mai",
+      "date": "2026-05-31",
+      "entity": "Cliente Principal (Instalação Elétrica)",
+      "supplierName": "Cliente Principal",
+      "supplierNif": "509******",
+      "documentNumber": "FT 2026/02",
+      "baseAmount": 1000,
+      "vatAmount": 0,
+      "total": 1000,
+      "category": "CAE 43210",
+      "efaturaStatus": "validated",
+      "type": "issued"
+    },
+    {
+      "id": "inv-emit-2026-07-jul",
+      "date": "2026-07-31",
+      "entity": "Clientes Diversos (Instalação Elétrica)",
+      "supplierName": "Clientes Diversos",
+      "supplierNif": "Consumidor Final",
+      "documentNumber": "FT 2026/03",
+      "baseAmount": 1320,
+      "vatAmount": 73.6,
+      "total": 1393.6,
+      "category": "CAE 43210",
+      "efaturaStatus": "validated",
+      "type": "issued"
+    },
     {
       "id": "inv-2026-09-03-pingodoce",
       "date": "2026-09-03",
@@ -414,6 +462,104 @@
       "intervalo": "5 horas",
       "ultima_execucao": "2026-11-03T23:07:28.574Z",
       "proxima_execucao": "2026-11-04T04:07:28.575Z"
+    },
+    "atividade": {
+      "estado": "Aberta",
+      "data_inicio": "2021-02-17",
+      "data_ultima_alteracao": "2026-02-04",
+      "tipo_sujeito_passivo": "Cat. B - Rendimentos Profissionais",
+      "tipo_contabilidade": "Não organizada (Regime Simplificado)",
+      "numero_eori": "PT245804439",
+      "cae_principal": {
+        "codigo": "43210",
+        "descricao": "Instalação Elétrica",
+        "data_inicio": "2026-02-04"
+      },
+      "cirs_secundario": {
+        "codigo": "1519",
+        "descricao": "Outros Prestadores de Serviços",
+        "data_inicio": "2026-02-04"
+      },
+      "enquadramento_iva": {
+        "regime": "Normal Trimestral (Não Isento)",
+        "data_enquadramento": "2026-02-04",
+        "operacoes_com_direito_deducao": true,
+        "periodicidade": "Trimestral"
+      },
+      "enquadramento_irs": {
+        "categoria": "B",
+        "regime": "Simplificado",
+        "coeficiente_servicos": 0.75
+      },
+      "faturacao_2026": {
+        "total_rendimentos": "7.320,00 €",
+        "total_iva_liquidado": "73,60 €",
+        "total_irs_retido": "805,00 €",
+        "imposto_selo": "0,00 €",
+        "despesas_afetas": "0,00 €",
+        "meses": {
+          "fevereiro": "5.000,00 €",
+          "maio": "1.000,00 €",
+          "julho": "1.320,00 €"
+        },
+        "top_clientes": [
+          {
+            "posicao": 1,
+            "percentagem": "96%",
+            "valor": "7.000,00 €"
+          },
+          {
+            "posicao": 2,
+            "percentagem": "3%",
+            "valor": "250,00 €"
+          },
+          {
+            "posicao": 3,
+            "percentagem": "1%",
+            "valor": "70,00 €"
+          }
+        ]
+      },
+      "declaracoes_iva_2026": [
+        {
+          "periodo": "2609T (3.º Trimestre)",
+          "doc": "112581748362",
+          "data": "2026-10-27 23:21:57",
+          "situacao": "Pendente de Liquidação"
+        },
+        {
+          "periodo": "2606T (2.º Trimestre - Subst.)",
+          "doc": "112575592704",
+          "data": "2026-09-17 14:13:07",
+          "situacao": "Pendente de Liquidação"
+        },
+        {
+          "periodo": "2606T (2.º Trimestre)",
+          "doc": "112571882295",
+          "data": "2026-08-26 23:33:16",
+          "situacao": "Pendente de Liquidação"
+        },
+        {
+          "periodo": "2603T (1.º Trimestre)",
+          "doc": "112554006156",
+          "data": "2026-05-02 22:00:50",
+          "situacao": "Pendente de Liquidação"
+        }
+      ],
+      "declaracoes_cadastro": [
+        {
+          "doc": "9996N01713890",
+          "data": "2026-02-04",
+          "tipo": "Alteração de Atividade",
+          "situacao": "Declaração Certa"
+        },
+        {
+          "doc": "9996004275326",
+          "data": "2021-02-17",
+          "tipo": "Início de Atividade",
+          "situacao": "Declaração Certa"
+        }
+      ]
     }
   }
 }

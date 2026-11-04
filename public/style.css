@@ -1051,3 +1051,153 @@ html, body.no-scroll-layout {
     color: #000;
     box-shadow: 0 0 14px var(--emerald-glow);
 }
+
+
+/* ========================================================
+   ESTILOS DEDICADOS À ABA DE ATIVIDADE, CAE E IVA
+======================================================== */
+.activity-banner-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.act-kpis-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.act-kpi-box {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.act-kpi-lbl {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.act-kpi-val {
+    font-size: 18px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.act-kpi-sub {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.act-columns-split {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.act-card-box {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px;
+}
+
+.act-box-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.monthly-invoicing-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.month-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+}
+
+.month-lbl {
+    width: 60px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.month-track {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.month-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-emerald), var(--accent-cyan));
+    border-radius: 4px;
+}
+
+.month-val {
+    width: 80px;
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: #fff;
+}
+
+.client-rank-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.client-rank-item {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+}
+
+.client-badge-rank {
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--accent-blue);
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+}
+
+.client-pct {
+    font-weight: 700;
+    color: var(--accent-amber);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.client-amount {
+    font-weight: 700;
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+}

@@ -178,16 +178,18 @@ function renderEfaturaSummary(statusData) {
 
 function renderReservesAndAgenda(statusData, calendarData, iucData) {
     const stats = statusData.stats || {};
-    const reserves = stats.recommendedReserves || {};
+    const at = statusData.atData || {};
+    const ativ = at.atividade || {};
+    const fat = ativ.faturacao_2026 || {};
 
     const elNet = document.getElementById('overview-net-amount');
     const elVat = document.getElementById('overview-vat-reserve');
     const elSS = document.getElementById('overview-ss-reserve');
     const elIrs = document.getElementById('overview-irs-reserve');
 
-    if (elNet) elNet.textContent = `${formatMoney(reserves.netTakeHome || 0)} €`;
-    if (elVat) elVat.textContent = `${formatMoney(reserves.vat || 0)} €`;
-    if (elSS) elSS.textContent = `${formatMoney(reserves.ss || 0)} €`;
+    if (elNet) elNet.textContent = fat.total_rendimentos || `${formatMoney(stats.totalIssued || 7320)} €`;
+    if (elVat) elVat.textContent = fat.total_iva_liquidado || `${formatMoney(stats.totalVatCollected || 73.6)} €`;
+    if (elSS) elSS.textContent = fat.total_irs_retido || '805,00 €';
     if (elIrs) elIrs.textContent = `160,00 €/mês`;
 
     // WIDGET AGENDA FISCAL DINÂMICA COM PRAZOS OFICIAIS
