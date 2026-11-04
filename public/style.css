@@ -1369,3 +1369,14 @@ html, body.no-scroll-layout {
     font-size: 12px;
     color: var(--text-muted);
 }
+
+/* SCROLL FOR DETAILED TABS */
+.tab-pane:not(#tab-overview) {
+    overflow-y: auto;
+    height: 100%;
+    padding-right: 6px;
+}
+
+.pane-scroll-container {
+    padding-bottom: 40px;
+}
