@@ -26,6 +26,46 @@ function sendNativeToast(title, message, iconType = "Info") {
     });
 }
 
+/**
+ * Envia uma mensagem direta de alerta para o telemóvel via Telegram Bot API
+ */
+async function sendTelegramMessage(text, options = {}) {
+    const settings = (typeof db.getSettings === 'function' ? db.getSettings() : {}) || {};
+    const tgConfig = settings.telegram || {};
+
+    const botToken = options.botToken || tgConfig.botToken || process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = options.chatId || tgConfig.chatId || process.env.TELEGRAM_CHAT_ID;
+
+    if (!botToken || !chatId) {
+        return { success: false, reason: "Telegram não configurado (Falta Bot Token ou Chat ID)" };
+    }
+
+    try {
+        const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+        const resp = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: text,
+                parse_mode: 'Markdown',
+                disable_web_page_preview: true
+            })
+        });
+
+        const data = await resp.json();
+        if (data.ok) {
+            return { success: true, messageId: data.result.message_id };
+        } else {
+            console.error("[Telegram Error]", data);
+            return { success: false, error: data.description };
+        }
+    } catch (err) {
+        console.error("[Telegram Fetch Error]", err.message);
+        return { success: false, error: err.message };
+    }
+}
+
 async function checkAndTriggerAlerts() {
     const calendar = db.getCalendar();
     const profile = db.getProfile();
@@ -74,6 +114,10 @@ async function checkAndTriggerAlerts() {
                 try {
                     await sendNativeToast(title, message, icon);
                     alertsTriggered.push({ id: obligation.id, title, message, days });
+
+                    // Disparar também via Telegram se configurado
+                    const tgText = `*🛡️ FiscalGuard PT — Alerta Fiscal*\n\n${title}\n\n${message}\n📅 *Prazo:* \`${obligation.deadline}\`\n\n_Consulta os detalhes no teu painel FiscalGuard._`;
+                    await sendTelegramMessage(tgText);
                 } catch (e) {
                     console.error("Falha ao disparar alerta:", e.message);
                 }
@@ -86,5 +130,6 @@ async function checkAndTriggerAlerts() {
 
 module.exports = {
     sendNativeToast,
+    sendTelegramMessage,
     checkAndTriggerAlerts
 };

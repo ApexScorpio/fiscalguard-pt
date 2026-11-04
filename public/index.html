@@ -37,6 +37,10 @@
                     <span class="cron-timer-sm" id="cron-countdown-text">Ciclo 5h: Ativo (4h 28m)</span>
                 </div>
 
+                <button id="btn-export-pdf" class="btn-nav-export-pdf" title="Exportar Relatório Oficial em PDF">
+                    <span>📄</span>
+                    <span>Exportar PDF</span>
+                </button>
                 <button id="btn-sync-now" class="btn-sync-compact" title="Sincronizar com o Portal das Finanças agora">
                     <span class="icon-refresh">⚡</span>
                     <span>Sincronizar AT</span>
@@ -426,6 +430,29 @@
                                 </button>
                             </div>
                         </div>
+                        <div class="settings-card telegram-settings-card">
+                            <div class="tg-header-badge">
+                                <span>📲 Notificações Telegram no Telemóvel</span>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted); margin: 6px 0 12px;">Recebe alertas instantâneos no teu smartphone quando os prazos de IUC, IVA ou IRS estiverem próximos.</p>
+                            
+                            <div class="form-group">
+                                <label>Bot Token do Telegram:</label>
+                                <input type="text" id="cfg-tg-token" class="premium-input" placeholder="ex: 123456789:ABCdefGhIJKlmNoPQRstuVWXyz">
+                                <span style="font-size: 10px; color: var(--text-muted);">Obtém gratuitamente com o @BotFather no Telegram.</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Chat ID do teu Utilizador:</label>
+                                <input type="text" id="cfg-tg-chatid" class="premium-input" placeholder="ex: 987654321">
+                                <span style="font-size: 10px; color: var(--text-muted);">Descobre o teu ID enviando mensagem ao @userinfobot.</span>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 14px;">
+                                <button id="btn-save-tg-config" class="btn-primary-action" style="flex: 1;">Guardar Configuração</button>
+                                <button id="btn-test-tg-alert" class="btn-primary-action" style="background: #2563eb; border-color: #3b82f6;">🔔 Testar Alerta</button>
+                            </div>
+                            <div id="tg-test-status" style="margin-top: 10px; font-size: 12px;"></div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -445,6 +472,29 @@
                     <div class="table-card mt-4">
                         <h3 class="box-title mb-3">🧾 Histórico de Pagamentos de IUC Processados na AT</h3>
                         <div class="history-list-full" id="iuc-history-container"></div>
+                        <div class="settings-card telegram-settings-card">
+                            <div class="tg-header-badge">
+                                <span>📲 Notificações Telegram no Telemóvel</span>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted); margin: 6px 0 12px;">Recebe alertas instantâneos no teu smartphone quando os prazos de IUC, IVA ou IRS estiverem próximos.</p>
+                            
+                            <div class="form-group">
+                                <label>Bot Token do Telegram:</label>
+                                <input type="text" id="cfg-tg-token" class="premium-input" placeholder="ex: 123456789:ABCdefGhIJKlmNoPQRstuVWXyz">
+                                <span style="font-size: 10px; color: var(--text-muted);">Obtém gratuitamente com o @BotFather no Telegram.</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Chat ID do teu Utilizador:</label>
+                                <input type="text" id="cfg-tg-chatid" class="premium-input" placeholder="ex: 987654321">
+                                <span style="font-size: 10px; color: var(--text-muted);">Descobre o teu ID enviando mensagem ao @userinfobot.</span>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 14px;">
+                                <button id="btn-save-tg-config" class="btn-primary-action" style="flex: 1;">Guardar Configuração</button>
+                                <button id="btn-test-tg-alert" class="btn-primary-action" style="background: #2563eb; border-color: #3b82f6;">🔔 Testar Alerta</button>
+                            </div>
+                            <div id="tg-test-status" style="margin-top: 10px; font-size: 12px;"></div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -481,6 +531,29 @@
                                 </thead>
                                 <tbody id="invoices-table-body"></tbody>
                             </table>
+                        </div>
+                        <div class="settings-card telegram-settings-card">
+                            <div class="tg-header-badge">
+                                <span>📲 Notificações Telegram no Telemóvel</span>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted); margin: 6px 0 12px;">Recebe alertas instantâneos no teu smartphone quando os prazos de IUC, IVA ou IRS estiverem próximos.</p>
+                            
+                            <div class="form-group">
+                                <label>Bot Token do Telegram:</label>
+                                <input type="text" id="cfg-tg-token" class="premium-input" placeholder="ex: 123456789:ABCdefGhIJKlmNoPQRstuVWXyz">
+                                <span style="font-size: 10px; color: var(--text-muted);">Obtém gratuitamente com o @BotFather no Telegram.</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Chat ID do teu Utilizador:</label>
+                                <input type="text" id="cfg-tg-chatid" class="premium-input" placeholder="ex: 987654321">
+                                <span style="font-size: 10px; color: var(--text-muted);">Descobre o teu ID enviando mensagem ao @userinfobot.</span>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 14px;">
+                                <button id="btn-save-tg-config" class="btn-primary-action" style="flex: 1;">Guardar Configuração</button>
+                                <button id="btn-test-tg-alert" class="btn-primary-action" style="background: #2563eb; border-color: #3b82f6;">🔔 Testar Alerta</button>
+                            </div>
+                            <div id="tg-test-status" style="margin-top: 10px; font-size: 12px;"></div>
                         </div>
                     </div>
                 </div>
@@ -525,6 +598,29 @@
                                 <p><strong>Saldo Liquidado em 2025:</strong> 1.920,22 € a pagar devido a retenção na fonte reduzida (221,00 €).</p>
                                 <p class="mt-2"><strong>Meta Estratégica 2026:</strong> Poupar <strong>160,00 €/mês</strong> numa conta separada e associar 100% das despesas no e-Fatura.</p>
                             </div>
+                        </div>
+                        <div class="settings-card telegram-settings-card">
+                            <div class="tg-header-badge">
+                                <span>📲 Notificações Telegram no Telemóvel</span>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted); margin: 6px 0 12px;">Recebe alertas instantâneos no teu smartphone quando os prazos de IUC, IVA ou IRS estiverem próximos.</p>
+                            
+                            <div class="form-group">
+                                <label>Bot Token do Telegram:</label>
+                                <input type="text" id="cfg-tg-token" class="premium-input" placeholder="ex: 123456789:ABCdefGhIJKlmNoPQRstuVWXyz">
+                                <span style="font-size: 10px; color: var(--text-muted);">Obtém gratuitamente com o @BotFather no Telegram.</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Chat ID do teu Utilizador:</label>
+                                <input type="text" id="cfg-tg-chatid" class="premium-input" placeholder="ex: 987654321">
+                                <span style="font-size: 10px; color: var(--text-muted);">Descobre o teu ID enviando mensagem ao @userinfobot.</span>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 14px;">
+                                <button id="btn-save-tg-config" class="btn-primary-action" style="flex: 1;">Guardar Configuração</button>
+                                <button id="btn-test-tg-alert" class="btn-primary-action" style="background: #2563eb; border-color: #3b82f6;">🔔 Testar Alerta</button>
+                            </div>
+                            <div id="tg-test-status" style="margin-top: 10px; font-size: 12px;"></div>
                         </div>
                     </div>
                 </div>
@@ -758,6 +854,99 @@
                         </div>
                     </div>
 
+
+                    <!-- SIMULADOR RÁPIDO DE ORÇAMENTOS E MARGEM LIMPA -->
+                    <div class="budget-sim-box">
+                        <div class="sim-header-row">
+                            <div class="sim-title">
+                                <span>🧮 Calculadora de Orçamentos & Margem Limpa no Bolso (CAE 43210)</span>
+                            </div>
+                            <span class="badge-status badge-info">Cálculo Instantâneo</span>
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 12px;">
+                            Insere o valor de um trabalho de eletricidade/instalação para saberes exatamente quanto cobrar, quanto guardar para a AT e quanto sobra limpo na tua conta.
+                        </p>
+
+                        <div class="budget-sim-grid">
+                            <div class="budget-inputs-col">
+                                <div class="budget-input-group">
+                                    <label>Valor do Serviço / Orçamento (€):</label>
+                                    <input type="number" id="calc-budget-amount" value="2500" step="50" min="50">
+                                </div>
+                                <div class="budget-input-group">
+                                    <label>Tipo de Cliente:</label>
+                                    <select id="calc-client-type">
+                                        <option value="company-25" selected>Empresa / Coletiva (Retenção 25% CIRS)</option>
+                                        <option value="company-115">Empresa / Coletiva (Retenção 11.5% CIRS 1519)</option>
+                                        <option value="particular-0">Particular / Consumidor Final (Sem retenção)</option>
+                                    </select>
+                                </div>
+                                <div class="budget-input-group">
+                                    <label>Regime de IVA da Fatura:</label>
+                                    <select id="calc-vat-mode">
+                                        <option value="normal-23" selected>Normal (23% IVA cobrado ao cliente)</option>
+                                        <option value="reverse-0">Autoliquidação / Inversão (0% - Regra da Construção Civil)</option>
+                                    </select>
+                                </div>
+                                <div class="budget-input-group">
+                                    <label>Despesas Previstas de Materiais / Peças (€):</label>
+                                    <input type="number" id="calc-materials-cost" value="350" step="10" min="0">
+                                </div>
+                            </div>
+
+                            <div class="budget-results-col">
+                                <div class="budget-final-hero">
+                                    <div class="hero-lbl">Margem Limpa Livre no Bolso:</div>
+                                    <div class="hero-num" id="calc-result-net">1.687,50 €</div>
+                                    <div style="font-size: 11px; color: var(--accent-emerald);">Livre de IVA, retenções e materiais</div>
+                                </div>
+
+                                <div class="budget-breakdown-list">
+                                    <div class="budget-b-row">
+                                        <span>Total Cobrado ao Cliente (c/ IVA):</span>
+                                        <strong id="calc-result-billed">3.075,00 €</strong>
+                                    </div>
+                                    <div class="budget-b-row">
+                                        <span>Provisão IVA a Entregar à AT:</span>
+                                        <strong class="text-amber" id="calc-result-vat">494,50 €</strong>
+                                    </div>
+                                    <div class="budget-b-row">
+                                        <span>Retenção na Fonte (Retido pelo Cliente):</span>
+                                        <strong class="text-blue" id="calc-result-withheld">625,00 €</strong>
+                                    </div>
+                                    <div class="budget-b-row">
+                                        <span>Cai Imediato na Conta Bancária:</span>
+                                        <strong class="text-cyan" id="calc-result-immediate">2.450,00 €</strong>
+                                    </div>
+                                    <div class="budget-b-row">
+                                        <span>Custo Real de Materiais (IVA Dedutível):</span>
+                                        <strong id="calc-result-materials">284,55 €</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- OTIMIZADOR DE DESPESAS AFETAS À ATIVIDADE -->
+                    <div class="activity-expenses-card">
+                        <div class="sim-header-row">
+                            <div class="sim-title">
+                                <span>🔧 Detetor de Despesas Afetas à Atividade (CAE 43210)</span>
+                            </div>
+                            <span class="badge-status badge-success" id="act-expenses-count-badge">Despesas Profissionais Identificadas</span>
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 14px;">
+                            Identificámos compras no teu e-Fatura que podem ser afetas à atividade de Instalação Elétrica para deduzir o IVA no 4.º Trimestre (2612T) e amortizar impostos.
+                        </p>
+
+                        <div id="activity-eligible-expenses-list">
+                            <!-- Gerado dinamicamente por app.js -->
+                        </div>
+                        <div style="margin-top: 12px; font-size: 11px; color: var(--text-muted);">
+                            💡 <em>Nota: Ao afetar despesas de telecomunicações, combustíveis ou ferramentas ao teu CAE, o IVA suportado passa a ser dedutível na tua próxima declaração periódica.</em>
+                        </div>
+                    </div>
+
                     <!-- TABELA DE DECLARAÇÕES PERIÓDICAS DO IVA -->
                     <div class="table-card mb-4">
                         <div class="act-box-title">
@@ -842,6 +1031,29 @@
                                 </tbody>
                             </table>
                         </div>
+                        <div class="settings-card telegram-settings-card">
+                            <div class="tg-header-badge">
+                                <span>📲 Notificações Telegram no Telemóvel</span>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted); margin: 6px 0 12px;">Recebe alertas instantâneos no teu smartphone quando os prazos de IUC, IVA ou IRS estiverem próximos.</p>
+                            
+                            <div class="form-group">
+                                <label>Bot Token do Telegram:</label>
+                                <input type="text" id="cfg-tg-token" class="premium-input" placeholder="ex: 123456789:ABCdefGhIJKlmNoPQRstuVWXyz">
+                                <span style="font-size: 10px; color: var(--text-muted);">Obtém gratuitamente com o @BotFather no Telegram.</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Chat ID do teu Utilizador:</label>
+                                <input type="text" id="cfg-tg-chatid" class="premium-input" placeholder="ex: 987654321">
+                                <span style="font-size: 10px; color: var(--text-muted);">Descobre o teu ID enviando mensagem ao @userinfobot.</span>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 14px;">
+                                <button id="btn-save-tg-config" class="btn-primary-action" style="flex: 1;">Guardar Configuração</button>
+                                <button id="btn-test-tg-alert" class="btn-primary-action" style="background: #2563eb; border-color: #3b82f6;">🔔 Testar Alerta</button>
+                            </div>
+                            <div id="tg-test-status" style="margin-top: 10px; font-size: 12px;"></div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -909,6 +1121,29 @@
                                 <input type="number" id="cfg-iuc-val" class="premium-input" value="6.19" step="0.01">
                             </div>
                             <button id="btn-save-iuc-config" class="btn-primary-action">Guardar Alterações</button>
+                        </div>
+                        <div class="settings-card telegram-settings-card">
+                            <div class="tg-header-badge">
+                                <span>📲 Notificações Telegram no Telemóvel</span>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted); margin: 6px 0 12px;">Recebe alertas instantâneos no teu smartphone quando os prazos de IUC, IVA ou IRS estiverem próximos.</p>
+                            
+                            <div class="form-group">
+                                <label>Bot Token do Telegram:</label>
+                                <input type="text" id="cfg-tg-token" class="premium-input" placeholder="ex: 123456789:ABCdefGhIJKlmNoPQRstuVWXyz">
+                                <span style="font-size: 10px; color: var(--text-muted);">Obtém gratuitamente com o @BotFather no Telegram.</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Chat ID do teu Utilizador:</label>
+                                <input type="text" id="cfg-tg-chatid" class="premium-input" placeholder="ex: 987654321">
+                                <span style="font-size: 10px; color: var(--text-muted);">Descobre o teu ID enviando mensagem ao @userinfobot.</span>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 14px;">
+                                <button id="btn-save-tg-config" class="btn-primary-action" style="flex: 1;">Guardar Configuração</button>
+                                <button id="btn-test-tg-alert" class="btn-primary-action" style="background: #2563eb; border-color: #3b82f6;">🔔 Testar Alerta</button>
+                            </div>
+                            <div id="tg-test-status" style="margin-top: 10px; font-size: 12px;"></div>
                         </div>
                     </div>
                 </div>

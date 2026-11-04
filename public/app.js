@@ -4,6 +4,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     initTabs();
+    initBudgetSimulator();
     loadDashboardData();
     initActionButtons();
     initCronTimer();
@@ -49,6 +50,7 @@ async function loadDashboardData() {
         renderEfaturaSummary(resStatus);
         renderReservesAndAgenda(resStatus, resCalendar, resIuc);
         renderDetailedTabs(resStatus, resIuc, resInvoices, resCalendar);
+        loadTelegramSettings();
 
     } catch (err) {
         console.error('[FiscalGuard] Erro ao carregar dados:', err);
@@ -304,6 +306,42 @@ function renderDetailedTabs(statusData, iucData, invoicesData, calendarData) {
         `).join('');
     }
 
+    // ABA ATIVIDADE: OTIMIZADOR DE DESPESAS AFETAS (CAE 43210)
+    const expContainer = document.getElementById('activity-eligible-expenses-list');
+    if (expContainer && invoicesData && invoicesData.invoices) {
+        const expenses = invoicesData.invoices.filter(i => i.type === 'expense');
+        const badgeCount = document.getElementById('act-expenses-count-badge');
+        if (badgeCount) badgeCount.textContent = `${expenses.length} Faturas Analisadas`;
+
+        expContainer.innerHTML = expenses.slice(0, 6).map(inv => `
+            <div class="exp-detect-item">
+                <div>
+                    <div style="font-weight: 700; color: #fff; font-size: 13px;">${inv.entity || inv.supplierName}</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">${inv.date} • Total: <strong style="color: #fff;">${formatMoney(inv.total)} €</strong> (IVA: ${formatMoney(inv.vatAmount)} €)</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="btn-toggle-activity ${inv.isActivity ? 'active' : ''}" data-id="${inv.id}">
+                        ${inv.isActivity ? '✓ Afeta à Atividade (IVA Dedutível)' : '+ Afetar à Atividade (CAE 43210)'}
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+        expContainer.querySelectorAll('.btn-toggle-activity').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                const isCurrently = btn.classList.contains('active');
+                btn.textContent = 'A atualizar...';
+                await fetch('/api/activity/expenses/toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, isActivity: !isCurrently })
+                });
+                await loadDashboardData();
+            });
+        });
+    }
+
     // ABA CALENDÁRIO COMPLETA
     const calFull = document.getElementById('calendar-full-container');
     if (calFull && calendarData) {
@@ -366,6 +404,58 @@ function initActionButtons() {
     setupClassify('btn-auto-classify-hero');
     setupClassify('btn-auto-classify-efatura');
 
+    // BOTÃO EXPORTAR PDF OFICIAL
+    const btnExport = document.getElementById('btn-export-pdf');
+    if (btnExport) {
+        btnExport.addEventListener('click', () => {
+            window.open('/report/print', '_blank');
+        });
+    }
+
+    // TELEGRAM CONFIG & TEST
+    const btnSaveTg = document.getElementById('btn-save-tg-config');
+    if (btnSaveTg) {
+        btnSaveTg.addEventListener('click', async () => {
+            const botToken = document.getElementById('cfg-tg-token').value.trim();
+            const chatId = document.getElementById('cfg-tg-chatid').value.trim();
+            await fetch('/api/notifications/telegram-config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ botToken, chatId, enabled: !!(botToken && chatId) })
+            });
+            alert("✓ Configurações do Telegram guardadas!");
+        });
+    }
+
+    const btnTestTg = document.getElementById('btn-test-tg-alert');
+    const tgStatus = document.getElementById('tg-test-status');
+    if (btnTestTg) {
+        btnTestTg.addEventListener('click', async () => {
+            const botToken = document.getElementById('cfg-tg-token').value.trim();
+            const chatId = document.getElementById('cfg-tg-chatid').value.trim();
+            btnTestTg.disabled = true;
+            btnTestTg.textContent = 'A enviar...';
+            if (tgStatus) tgStatus.innerHTML = '<span class="text-muted">A comunicar com o Telegram Bot API...</span>';
+            try {
+                const res = await fetch('/api/notifications/telegram-test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ botToken, chatId })
+                }).then(r => r.json());
+                if (res.success) {
+                    if (tgStatus) tgStatus.innerHTML = '<span class="text-emerald font-bold">✅ Alerta de teste enviado com sucesso para o teu Telegram!</span>';
+                } else {
+                    if (tgStatus) tgStatus.innerHTML = `<span class="text-amber font-bold">❌ Falha: ${res.error || 'Verifica o Bot Token e Chat ID.'}</span>`;
+                }
+            } catch (e) {
+                if (tgStatus) tgStatus.innerHTML = `<span class="text-amber">Erro: ${e.message}</span>`;
+            } finally {
+                btnTestTg.disabled = false;
+                btnTestTg.textContent = '🔔 Testar Alerta';
+            }
+        });
+    }
+
     const btnSaveIuc = document.getElementById('btn-save-iuc-config');
     if (btnSaveIuc) {
         btnSaveIuc.addEventListener('click', async () => {
@@ -399,6 +489,78 @@ function initActionButtons() {
             }
         });
     }
+}
+
+
+async function loadTelegramSettings() {
+    try {
+        const res = await fetch('/api/settings').then(r => r.json());
+        const tg = (res.settings && res.settings.telegram) || {};
+        const elToken = document.getElementById('cfg-tg-token');
+        const elChat = document.getElementById('cfg-tg-chatid');
+        if (elToken && tg.botToken) elToken.value = tg.botToken;
+        if (elChat && tg.chatId) elChat.value = tg.chatId;
+    } catch (e) {}
+}
+
+function initBudgetSimulator() {
+    const elAmount = document.getElementById('calc-budget-amount');
+    const elClient = document.getElementById('calc-client-type');
+    const elVat = document.getElementById('calc-vat-mode');
+    const elMat = document.getElementById('calc-materials-cost');
+
+    if (!elAmount || !elClient || !elVat || !elMat) return;
+
+    function recalculate() {
+        const base = Math.max(0, parseFloat(elAmount.value) || 0);
+        const materials = Math.max(0, parseFloat(elMat.value) || 0);
+        const isVat23 = elVat.value === 'normal-23';
+        const clientMode = elClient.value;
+
+        // IVA cobrado ao cliente
+        const vatRate = isVat23 ? 0.23 : 0;
+        const vatCharged = Math.round(base * vatRate * 100) / 100;
+        const billedTotal = base + vatCharged;
+
+        // Retenção na fonte
+        let retRate = 0;
+        if (clientMode === 'company-25') retRate = 0.25;
+        else if (clientMode === 'company-115') retRate = 0.115;
+        const withheld = Math.round(base * retRate * 100) / 100;
+
+        // Dinheiro imediato que entra na conta
+        const immediateCash = billedTotal - withheld;
+
+        // IVA suportado nos materiais (dedutível)
+        const materialsVatDeductible = Math.round((materials * 0.23 / 1.23) * 100) / 100;
+        const netMaterialsCost = materials - materialsVatDeductible;
+
+        // Provisão de IVA a entregar à AT
+        const netVatToPay = Math.max(0, vatCharged - materialsVatDeductible);
+
+        // Previsão de IRS adicional (75% coef simplificado * 22% taxa marginal - retenção)
+        const taxableIncome = base * 0.75;
+        const totalIrsLiability = Math.round(taxableIncome * 0.22 * 100) / 100;
+        const extraIrsToSave = Math.max(0, totalIrsLiability - withheld);
+
+        // Líquido final livre no bolso
+        const finalNet = Math.max(0, Math.round((immediateCash - netVatToPay - materials - extraIrsToSave) * 100) / 100);
+
+        // Atualizar interface
+        document.getElementById('calc-result-net').textContent = `${formatMoney(finalNet)} €`;
+        document.getElementById('calc-result-billed').textContent = `${formatMoney(billedTotal)} €`;
+        document.getElementById('calc-result-vat').textContent = `${formatMoney(netVatToPay)} €`;
+        document.getElementById('calc-result-withheld').textContent = `${formatMoney(withheld)} €`;
+        document.getElementById('calc-result-immediate').textContent = `${formatMoney(immediateCash)} €`;
+        document.getElementById('calc-result-materials').textContent = `${formatMoney(netMaterialsCost)} €`;
+    }
+
+    elAmount.addEventListener('input', recalculate);
+    elClient.addEventListener('change', recalculate);
+    elVat.addEventListener('change', recalculate);
+    elMat.addEventListener('input', recalculate);
+
+    recalculate();
 }
 
 function initCronTimer() {

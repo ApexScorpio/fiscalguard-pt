@@ -340,6 +340,17 @@ const EMPTY_STATE = {
     atData: DEFAULT_AT_DATA,
     invoices: [],
     calendarState: {},
+    settings: {
+        telegram: {
+            enabled: false,
+            botToken: "",
+            chatId: "",
+            alertIuc: true,
+            alertIva: true,
+            alertIrs: true,
+            alertEfatura: true
+        }
+    },
     vault: {
         hasFinancasCredentials: true,
         hasSSCredentials: false,
@@ -550,6 +561,62 @@ class Database {
             inv.efaturaStatus = 'validated';
             this.save();
             return inv;
+        }
+        return null;
+    }
+
+    getSettings() {
+        this.data = this.load();
+        if (!this.data.settings) {
+            this.data.settings = {
+                telegram: {
+                    enabled: false,
+                    botToken: "",
+                    chatId: "",
+                    alertIuc: true,
+                    alertIva: true,
+                    alertIrs: true,
+                    alertEfatura: true
+                }
+            };
+            this.save();
+        }
+        return this.data.settings;
+    }
+
+    updateSettings(updates) {
+        this.data = this.load();
+        this.data.settings = { ...(this.data.settings || {}), ...updates };
+        if (updates.telegram) {
+            this.data.settings.telegram = { ...(this.data.settings.telegram || {}), ...updates.telegram };
+        }
+        this.save();
+        return this.data.settings;
+    }
+
+    toggleExpenseActivity(id, isActivity) {
+        this.data = this.load();
+        if (!this.data.invoices) this.data.invoices = [];
+        const inv = this.data.invoices.find(i => i.id === id);
+        if (inv) {
+            inv.isActivity = isActivity;
+            inv.category = isActivity ? 'Atividade (CAE 43210)' : (inv.suggestedCategory || 'Gerais Familiares');
+            
+            // Recalcular despesas afetas à atividade
+            const totalAfetas = this.data.invoices
+                .filter(i => i.isActivity)
+                .reduce((sum, i) => sum + (Number(i.baseAmount) || 0), 0);
+            
+            const totalVatAfetas = this.data.invoices
+                .filter(i => i.isActivity)
+                .reduce((sum, i) => sum + (Number(i.vatAmount) || 0), 0);
+
+            if (this.data.atData && this.data.atData.atividade && this.data.atData.atividade.faturacao_2026) {
+                this.data.atData.atividade.faturacao_2026.despesas_afetas = totalAfetas.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+                this.data.atData.atividade.faturacao_2026.iva_dedutivel_afeto = totalVatAfetas.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+            }
+            this.save();
+            return { inv, totalAfetas, totalVatAfetas };
         }
         return null;
     }

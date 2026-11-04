@@ -46,10 +46,10 @@
       "supplierName": "SANDRO BARROSÃO - CONSTRUÇÕES UNIPESSOAL LDA",
       "supplierNif": "514******",
       "documentNumber": "FT 2026/01",
-      "baseAmount": 5000.0,
-      "vatAmount": 0.0,
-      "irsWithheld": 550.0,
-      "total": 5000.0,
+      "baseAmount": 5000,
+      "vatAmount": 0,
+      "irsWithheld": 550,
+      "total": 5000,
       "category": "CAE 43210 (Instalação Elétrica)",
       "efaturaStatus": "validated",
       "type": "issued"
@@ -61,10 +61,10 @@
       "supplierName": "SANDRO BARROSÃO - CONSTRUÇÕES UNIPESSOAL LDA",
       "supplierNif": "514******",
       "documentNumber": "FT 2026/02",
-      "baseAmount": 1000.0,
-      "vatAmount": 0.0,
-      "irsWithheld": 115.0,
-      "total": 1000.0,
+      "baseAmount": 1000,
+      "vatAmount": 0,
+      "irsWithheld": 115,
+      "total": 1000,
       "category": "CAE 43210 (Instalação Elétrica)",
       "efaturaStatus": "validated",
       "type": "issued"
@@ -76,10 +76,10 @@
       "supplierName": "SANDRO BARROSÃO - CONSTRUÇÕES UNIPESSOAL LDA",
       "supplierNif": "514******",
       "documentNumber": "FT 2026/03",
-      "baseAmount": 1000.0,
-      "vatAmount": 0.0,
-      "irsWithheld": 115.0,
-      "total": 1000.0,
+      "baseAmount": 1000,
+      "vatAmount": 0,
+      "irsWithheld": 115,
+      "total": 1000,
       "category": "CAE 43210 (Instalação Elétrica)",
       "efaturaStatus": "validated",
       "type": "issued"
@@ -91,9 +91,9 @@
       "supplierName": "CONDOMÍNIO DA TORRE I DO COMPLEXO TURÍSTICO DO ALVOR",
       "supplierNif": "900******",
       "documentNumber": "FT 2026/04",
-      "baseAmount": 250.0,
+      "baseAmount": 250,
       "vatAmount": 57.5,
-      "irsWithheld": 25.0,
+      "irsWithheld": 25,
       "total": 307.5,
       "category": "CAE 43210 (Instalação Elétrica)",
       "efaturaStatus": "validated",
@@ -106,9 +106,9 @@
       "supplierName": "CARLOS MANUEL GUERREIRO ANICETO",
       "supplierNif": "180******",
       "documentNumber": "FT 2026/05",
-      "baseAmount": 70.0,
+      "baseAmount": 70,
       "vatAmount": 16.1,
-      "irsWithheld": 0.0,
+      "irsWithheld": 0,
       "total": 86.1,
       "category": "CAE 43210 (Instalação Elétrica)",
       "efaturaStatus": "validated",
@@ -599,6 +599,17 @@
           "situacao": "Declaração Certa"
         }
       ]
+    }
+  },
+  "settings": {
+    "telegram": {
+      "enabled": false,
+      "botToken": "",
+      "chatId": "",
+      "alertIuc": true,
+      "alertIva": true,
+      "alertIrs": true,
+      "alertEfatura": true
     }
   }
 }
